@@ -27,7 +27,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null); // Estado para edición
+  const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
 
   useEffect(() => {
     const fetchCursos = async () => {
@@ -82,7 +82,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         {/* Botón de cerrar */}
         <button className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90" onClick={onClose}>
           <XMarkIcon className="w-6 h-6" />
@@ -102,8 +102,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
           />
         </div>
 
-        {/* Lista de cursos */}
-        <div className="flex-1 overflow-y-auto space-y-2">
+        {/* Lista de cursos con scroll */}
+        <div className="flex-1 overflow-y-auto max-h-[60vh] space-y-2">
           {cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso) => (
               <div key={curso.id} className="border-b py-2">
@@ -142,21 +142,22 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
             <p className="text-center py-4">No hay cursos disponibles.</p>
           )}
         </div>
+      </div>
 
-        {/* Modal de Edición */}
-        {editandoCurso && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-lg font-bold">Editar Curso</h2>
-              <input type="text" value={editandoCurso.NombreCurso} onChange={(e) => setEditandoCurso({ ...editandoCurso, NombreCurso: e.target.value })} className="border p-2 w-full rounded mt-2" />
-              <div className="mt-4 flex space-x-2">
-                <button onClick={handleGuardarEdicion} className="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
-                <button onClick={() => setEditandoCurso(null)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-              </div>
+      {/* Modal de Edición con scroll */}
+      {editandoCurso && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto">
+            <h2 className="text-lg font-bold">Editar Curso</h2>
+            <input type="text" value={editandoCurso.NombreCurso} onChange={(e) => setEditandoCurso({ ...editandoCurso, NombreCurso: e.target.value })} className="border p-2 w-full rounded mt-2" />
+            <div className="mt-4 flex space-x-2">
+              <button onClick={handleGuardarEdicion} className="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
+              <button onClick={() => setEditandoCurso(null)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
+  
