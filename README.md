@@ -1,146 +1,186 @@
-import React, { useState } from "react";
+"use client";
+import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { useEffect, useState } from "react";
 
-interface CursoModalProps {
-  onClose: () => void;
+// Definimos la interfaz Curso con las propiedades correctas
+interface Curso {
+id: number;
+NombreCurso: string;
+Valor: number;
+Publico: number;
+Periodo: string;
+Inicio: string;
+Fin: string;
+Horas: number;
+CupoMax: number;
+Lugar: string;
+LunesIni?: string;
+LunesFin?: string;
+MartesIni?: string;
+MartesFin?: string;
+MiercolesIni?: string;
+MiercolesFin?: string;
+JuevesIni?: string;
+JuevesFin?: string;
+ViernesIni?: string;
+ViernesFin?: string;
+SabadoIni?: string;
+SabadoFin?: string;
+DomingoIni?: string;
+DomingoFin?: string;
+Linea: number;
+Estado: number;
+Modalidad: number;
+Unidad: number;
+Profesor: number;
+SegundoPro: string;
+Proexterno: string;
+Descripcion: string;
 }
 
-const CursoModal: React.FC<CursoModalProps> = ({ onClose }) => {
-  // Estado para manejar los datos del formulario
-  const [curso, setCurso] = useState({
-    nombre_curso: "",
-    valor: "",
-    público: "",
-    periodo: "",
-    inicio: "",
-    fin: "",
-    horas: "",
-  });
+export default function CatalogoModal({ onClose }: { onClose: () => void }) {
+   const [cursos, setCursos] = useState<Curso[]>([]);
+   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
+   const [busqueda, setBusqueda] = useState("");
+   const [isSearchActive, setIsSearchActive] = useState(false);
 
-  // Manejar cambios en los inputs
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurso({ ...curso, [e.target.name]: e.target.value });
+   useEffect(() => {
+    const fetchCursos = async () => {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos");
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setCursos(data);
+        setCursosFiltrados(data);
+
+    } catch (error) {
+        console.error("Error al obtener los cursos:", error);
+      }
+    };
+
+    fetchCursos();
+  }, []);
+
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+
+   const filtrados = cursos.filter((curso) =>
+      curso.NombreCurso.toLowerCase().includes(texto)
+    );
+    setCursosFiltrados(filtrados);
   };
 
-  // Enviar datos al backend
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(curso),
-      });
+  const handleVerMas = (id: number) => {
+    setExpandedCursoId(expandedCursoId === id ? null : id);
+  };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error al guardar el curso:", errorData);
-        alert("Error: " + (errorData.message || "No se pudo guardar el curso"));
-        return;
-      }
 
-      alert("Curso guardado con éxito");
-      onClose(); // Cierra el modal después de guardar
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      alert("Error en la conexión con el servidor");
+
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(false);
     }
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl flex flex-col max-h-[80vh] overflow-y-auto">
-        {/* Botón de cerrar */}
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-red-600">
-          ✖
-        </button>
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
+        {/* BARRA DE BUSQUEDA */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative flex items-center"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}>
+            <button
+              onClick={() => setIsSearchActive(!isSearchActive)}
+              className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out"
+              
+              >
+              {isSearchActive ? (
+                <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" />
+              ) : (
+                <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />
+              )}
+            </button>
 
-        <h2 className="text-xl font-bold mb-6 text-center text-[#990000]">Crear Curso</h2>
+            <input
+              type="text"
+              placeholder="Busque el nombre del curso"
+              value={busqueda}
+              onChange={handleBuscar}
+              className={` px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+            />
+          </div>
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block font-semibold">Nombre del Curso:</label>
-          <input
-            type="text"
-            name="nombre_curso"
-            value={curso.nombre_curso}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-
-          <label className="block font-semibold">Valor:</label>
-          <input
-            type="number"
-            name="valor"
-            value={curso.valor}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-
-          <label className="block font-semibold">Público:</label>
-          <input
-            type="text"
-            name="público"
-            value={curso.público}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-
-          <label className="block font-semibold">Periodo:</label>
-          <input
-            type="text"
-            name="periodo"
-            value={curso.periodo}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-
-          <label className="block font-semibold">Fecha de Inicio:</label>
-          <input
-            type="date"
-            name="inicio"
-            value={curso.inicio}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-
-          <label className="block font-semibold">Fecha de Fin:</label>
-          <input
-            type="date"
-            name="fin"
-            value={curso.fin}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-
-          <label className="block font-semibold">Horas:</label>
-          <input
-            type="number"
-            name="horas"
-            value={curso.horas}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-
+          {/* BOTÓN CERRAR */}
           <button
-            type="submit"
-            className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
+            className="text-red-600 transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+            onClick={onClose}
           >
-            Guardar
+            <XMarkIcon className="h-6 w-6 text-[#990000]" />
           </button>
-        </form>
+        </div>
+
+        {/* ENCABEZADOS */}
+        <div className="grid grid-cols-3 font-semibold border-b pb-2">
+          <span className="">Nombre del curso</span>
+          <span className="text-center">Fecha</span>
+          <span className="text-right w-16"></span>
+        </div>
+
+        {/* CONTENIDO DE LOS CURSOS*/}
+        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+          {cursosFiltrados.length > 0 ? (
+            cursosFiltrados.map((curso) => (
+              <div key={curso.id} className="border-b py-2">
+                <div className="grid grid-cols-3 items-center">
+                  <span className="text-left">{curso.NombreCurso}</span>
+                  <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
+
+                 {/* BOTÓN VER MÁS */}
+                  <button
+                    onClick={() => handleVerMas(curso.id)}
+                    className="ml-4 bg-[#990000] text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
+                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+                  >
+                    {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+                  </button>
+                </div>
+
+               {/* CONTENIDO DEL CURSO */}
+                {expandedCursoId === curso.id && (
+                  
+                  <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
+                     <h3 className="text-ig font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
+                   
+                    <p><strong>Id:</strong> {curso.id}</p>
+                    <p><strong>Valor:</strong> {curso.Valor}</p>
+                    <p><strong>Fin:</strong> {curso.Fin}</p>
+                    <p><strong>Publico:</strong> {curso.Publico}</p>
+                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
+                    <p><strong>Horas:</strong> {curso.Horas}</p>
+                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
+                    <p><strong>Profesor:</strong> {curso.Profesor}</p>
+                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-center py-4">No hay cursos disponibles.</p>
+          )}
+        </div>
       </div>
     </div>
   );
-};
-
-export default CursoModal;
+}
