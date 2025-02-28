@@ -1,63 +1,41 @@
 "use client";
-import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 
-// Definimos la interfaz Curso con las propiedades correctas
 interface Curso {
-id: number;
-NombreCurso: string;
-Valor: number;
-Publico: number;
-Periodo: string;
-Inicio: string;
-Fin: string;
-Horas: number;
-CupoMax: number;
-Lugar: string;
-LunesIni?: string;
-LunesFin?: string;
-MartesIni?: string;
-MartesFin?: string;
-MiercolesIni?: string;
-MiercolesFin?: string;
-JuevesIni?: string;
-JuevesFin?: string;
-ViernesIni?: string;
-ViernesFin?: string;
-SabadoIni?: string;
-SabadoFin?: string;
-DomingoIni?: string;
-DomingoFin?: string;
-Linea: number;
-Estado: number;
-Modalidad: number;
-Unidad: number;
-Profesor: number;
-SegundoPro: string;
-Proexterno: string;
-Descripcion: string;
+  id: number;
+  NombreCurso: string;
+  Valor: number;
+  Publico: number;
+  Periodo: string;
+  Inicio: string;
+  Fin: string;
+  Horas: number;
+  CupoMax: number;
+  Lugar: string;
+  Profesor: number;
+  Descripcion: string;
 }
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-   const [cursos, setCursos] = useState<Curso[]>([]);
-   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-   const [busqueda, setBusqueda] = useState("");
-   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [cursos, setCursos] = useState<Curso[]>([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [editingCurso, setEditingCurso] = useState<Curso | null>(null);
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchCursos = async () => {
       try {
         const response = await fetch("http://localhost:8090/api/cursos");
         if (!response.ok) {
           throw new Error(`Error HTTP: ${response.status}`);
         }
-
         const data = await response.json();
         setCursos(data);
         setCursosFiltrados(data);
-
-    } catch (error) {
+      } catch (error) {
         console.error("Error al obtener los cursos:", error);
       }
     };
@@ -68,105 +46,112 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const texto = e.target.value.toLowerCase();
     setBusqueda(texto);
-
-   const filtrados = cursos.filter((curso) =>
-      curso.NombreCurso.toLowerCase().includes(texto)
-    );
-    setCursosFiltrados(filtrados);
+    setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
   };
-
 
   const handleVerMas = (id: number) => {
     setExpandedCursoId(expandedCursoId === id ? null : id);
   };
 
-
-
-  const handleMouseEnter = () => {
-    setIsSearchActive(true);
+  const handleEditClick = (curso: Curso) => {
+    setEditingCurso(curso);
   };
 
-  const handleMouseLeave = () => {
-    if (busqueda === "") {
-      setIsSearchActive(false);
+  const handleEditCurso = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCurso) return;
+
+    try {
+      const response = await fetch(`http://localhost:8090/api/cursos/${editingCurso.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingCurso),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      alert("Curso actualizado correctamente");
+      setEditingCurso(null);
+
+      // Recargar cursos después de editar
+      const updatedCursos = cursos.map((curso) =>
+        curso.id === editingCurso.id ? editingCurso : curso
+      );
+      setCursos(updatedCursos);
+      setCursosFiltrados(updatedCursos);
+    } catch (error) {
+      console.error("Error al actualizar el curso:", error);
     }
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
-        {/* BARRA DE BUSQUEDA */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="relative flex items-center"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}>
-            <button
-              onClick={() => setIsSearchActive(!isSearchActive)}
-              className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out"
-              
-              >
-              {isSearchActive ? (
-                <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" />
-              ) : (
-                <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />
-              )}
-            </button>
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+        
+        {/* Botón de cerrar */}
+        <button
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90"
+          onClick={onClose}
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
 
-            <input
-              type="text"
-              placeholder="Busque el nombre del curso"
-              value={busqueda}
-              onChange={handleBuscar}
-              className={` px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
-                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />
-          </div>
+        <h2 className="text-xl font-bold mb-4">Catálogo de Cursos</h2>
 
-          {/* BOTÓN CERRAR */}
-          <button
-            className="text-red-600 transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-            onClick={onClose}
-          >
-            <XMarkIcon className="h-6 w-6 text-[#990000]" />
+        {/* Barra de búsqueda */}
+        <div className="flex items-center gap-2 mb-4">
+          <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+            {isSearchActive ? (
+              <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" />
+            ) : (
+              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
+            )}
           </button>
+          <input
+            type="text"
+            placeholder="Busque el nombre del curso"
+            value={busqueda}
+            onChange={handleBuscar}
+            className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+              ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+          />
         </div>
 
-        {/* ENCABEZADOS */}
-        <div className="grid grid-cols-3 font-semibold border-b pb-2">
-          <span className="">Nombre del curso</span>
-          <span className="text-center">Fecha</span>
-          <span className="text-right w-16"></span>
-        </div>
-
-        {/* CONTENIDO DE LOS CURSOS*/}
-        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+        {/* Lista de cursos */}
+        <div className="space-y-2 overflow-y-auto max-h-96">
           {cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso) => (
               <div key={curso.id} className="border-b py-2">
-                <div className="grid grid-cols-3 items-center">
-                  <span className="text-left">{curso.NombreCurso}</span>
-                  <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">{curso.NombreCurso}</span>
+                  <span className="text-gray-600">{curso.Inicio || "dd/mm/aaaa"}</span>
 
-                 {/* BOTÓN VER MÁS */}
-                  <button
-                    onClick={() => handleVerMas(curso.id)}
-                    className="ml-4 bg-[#990000] text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
-                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-                  >
-                    {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
-                  </button>
+                  <div className="flex gap-2">
+                    {/* Botón Ver Más */}
+                    <button
+                      onClick={() => handleVerMas(curso.id)}
+                      className="bg-[#990000] text-white px-4 py-1 rounded transition hover:scale-105"
+                    >
+                      {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+                    </button>
+
+                    {/* Botón Editar */}
+                    <button
+                      onClick={() => handleEditClick(curso)}
+                      className="bg-blue-500 text-white px-4 py-1 rounded transition hover:scale-105 flex items-center gap-1"
+                    >
+                      <PencilSquareIcon className="h-5 w-5" />
+                      Editar
+                    </button>
+                  </div>
                 </div>
 
-               {/* CONTENIDO DEL CURSO */}
+                {/* Información completa del curso */}
                 {expandedCursoId === curso.id && (
-                  
                   <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
-                     <h3 className="text-ig font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
-                   
-                    <p><strong>Id:</strong> {curso.id}</p>
                     <p><strong>Valor:</strong> {curso.Valor}</p>
-                    <p><strong>Fin:</strong> {curso.Fin}</p>
-                    <p><strong>Publico:</strong> {curso.Publico}</p>
                     <p><strong>Periodo:</strong> {curso.Periodo}</p>
                     <p><strong>Horas:</strong> {curso.Horas}</p>
                     <p><strong>Lugar:</strong> {curso.Lugar}</p>
@@ -180,7 +165,14 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
             <p className="text-center py-4">No hay cursos disponibles.</p>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
+
+        {/* Formulario de edición */}
+        {editingCurso && (
+          <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-4">
+            <h3 className="text-lg font-bold mb-2">Editar Curso</h3>
+            <form onSubmit={handleEditCurso} className="space-y-2">
+              <input
+                type="text"
+                name="NombreCurso"
+                value={editingCurso.NombreCurso}
+                on
