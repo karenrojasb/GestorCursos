@@ -1,161 +1,57 @@
-"use client";
-import { XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
+import { ArrowLeftCircleIcon, ArrowLeftIcon } from "@heroicons/react/16/solid";
+import Image from "next/image";
+import "./globals.css";
+import { ReactNode } from "react";
 
-interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: string;
-  Lugar: string;
-  Linea: number;
-  Estado: number;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: number;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
+interface LayoutProps {
+  children : ReactNode;
 }
 
-export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
-
-  useEffect(() => {
-    const fetchCursos = async () => {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos");
-        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
-        const data = await response.json();
-        setCursos(data);
-        setCursosFiltrados(data);
-      } catch (error) {
-        console.error("Error al obtener los cursos:", error);
-      }
-    };
-    fetchCursos();
-  }, []);
-
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
-
-  const handleVerMas = (id: number) => {
-    setExpandedCursoId(expandedCursoId === id ? null : id);
-  };
-
-  const handleEditar = (curso: Curso) => {
-    setEditandoCurso(curso);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (!editandoCurso) return;
-    setEditandoCurso({ ...editandoCurso, [e.target.name]: e.target.value });
-  };
-
-  const handleGuardarEdicion = async () => {
-    if (!editandoCurso) return;
-
-    try {
-      const response = await fetch(`http://localhost:8090/api/cursos/${editandoCurso.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editandoCurso),
-      });
-
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
-      const updatedCursos = cursos.map(c => (c.id === editandoCurso.id ? editandoCurso : c));
-      setCursos(updatedCursos);
-      setCursosFiltrados(updatedCursos);
-      setEditandoCurso(null);
-    } catch (error) {
-      console.error("Error al guardar la edición:", error);
-    }
-  };
-
+export default function RootLayout ({children}: LayoutProps ){
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        {/* Botón de cerrar */}
-        <button className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90" onClick={onClose}>
-          <XMarkIcon className="w-6 h-6" />
-        </button>
+    <html lang="es">
+      <body style={{
+        margin: 0,
+        fontFamily: "Arial, sans-serif"
+      }}>
 
-        {/* Barra de búsqueda */}
-        <div className="flex items-center space-x-2 mb-4">
-          <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out">
-            {isSearchActive ? <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />}
-          </button>
-          <input
-            type="text"
-            placeholder="Busque el nombre del curso"
-            value={busqueda}
-            onChange={handleBuscar}
-            className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-          />
-        </div>
 
-        {/* Lista de cursos con scroll */}
-        <div className="flex-1 overflow-y-auto max-h-[60vh] space-y-2">
-          {cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map((curso) => (
-              <div key={curso.id} className="border-b py-2">
-                <div className="grid grid-cols-3 items-center">
-                  <span className="text-left">{curso.NombreCurso}</span>
-                  <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-                  <button onClick={() => handleEditar(curso)} className="bg-[#990000] text-white px-4 py-1 rounded">
-                    <PencilSquareIcon className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center py-4">No hay cursos disponibles.</p>
-          )}
-        </div>
-      </div>
 
-      {/* Modal de Edición con scroll */}
-      {editandoCurso && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
-            <h2 className="text-lg font-bold">Editar Curso</h2>
-            {Object.keys(editandoCurso).map((key) => (
-              key !== "id" && (
-                <div key={key} className="mt-2">
-                  <label className="block text-sm font-medium">{key}</label>
-                  <input
-                    type="text"
-                    name={key}
-                    value={(editandoCurso as any)[key]}
-                    onChange={handleChange}
-                    className="border p-2 w-full rounded"
-                  />
-                </div>
-              )
-            ))}
-            <div className="mt-4 flex space-x-2">
-              <button onClick={handleGuardarEdicion} className="bg-[#990000] text-white px-4 py-2 rounded">Guardar</button>
-              <button onClick={() => setEditandoCurso(null)} className="bg-gray-700 text-white px-4 py-2 rounded">Cancelar</button>
+<header className="w-full flex items-center justify-between px-6 py-4  ">
+            {/*LOGO */}
+            <img src="/img/ecijg126.png" alt="Logo" className="h-20"></img>
+
+
+            <div className="flex flex-col items-center space-x-1 ml-auto">
+                <span className=" text-xl text-gray-700 font-medium ">NOMBRE USUARIO</span>
+                {/*BOTÓN DE SALIDA*/}
+                <button className="flex items-center space-x-2 border  border-[#990000] px-2 py-2 rounded hover:bg-[#990000]  hover:text-white transition">
+                <ArrowLeftIcon className="h-6 w-6"/>
+                    SALIR
+                </button>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+            
+        </header>
+
+
+        <main style={{padding: "0px"}}>
+          {children}
+        </main>
+
+
+        <footer style={{
+          marginTop: "10px",
+          padding: "10px",
+          textAlign: "center",
+          backgroundColor: "white"
+        }}>
+          <div className="bg-blue-800 absolute bottom-0 left-4  border border-blue-700 p-4 rounded-lg c" >
+                    <Image  src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60}/>
+                </div>
+          <p>&copy: {new Date().getFullYear()} - Plataforma de gestion de cursos</p>
+        </footer>
+      </body>
+    </html>
   );
+
 }
