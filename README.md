@@ -3,24 +3,38 @@ import { XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/rea
 import { useEffect, useState } from "react";
 
 interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: string;
-  Lugar: string;
-  Linea: number;
-  Estado: number;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: number;
-  Proexterno: number; // Corregido a número
-  Descripcion: number; // Corregido a número
+  id: number;                               
+  NombreCurso: string;                       
+  Valor: number;                             
+  Publico: number;                           
+  Periodo: string;                           
+  Inicio: string;                            
+  Fin: string;                               
+  Horas: number;                             
+  CupoMax: number;                           
+  Lugar: string;                             
+  LunesIni?: string;                          
+  LunesFin? : string;                         
+  MartesIni?  : string;                       
+  MartesFin? : string;                        
+  MiercolesIni?: string;                      
+  MiercolesFin? : string;                     
+  JuevesIni?: string;                         
+  JuevesFin?: string;                        
+  ViernesIni?: string;                       
+  ViernesFin?: string;                      
+  SabadoIni?: string;                       
+  SabadoFin?: string;                        
+  DomingoIni?: string;                        
+  DomingoFin? : string;                      
+  Linea: number;                             
+  Estado: number;                             
+  Modalidad: number;                          
+  Unidad: number;                             
+  Profesor: number;                           
+  SegundoPro : string;                       
+  Proexterno : number;                     
+  Descripcion: string; 
   IdTipoCurso: number;
 }
 
@@ -31,6 +45,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [busqueda, setBusqueda] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
+  const [mensajeExito, setMensajeExito] = useState("");
 
   // OBTENER CURSOS DEL BACKEND
   const fetchCursos = async () => {
@@ -56,7 +71,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setBusqueda(texto);
     setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
   };
-
   const handleMouseEnter = () => {
     setIsSearchActive(true);
   };
@@ -77,29 +91,28 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setEditandoCurso({ ...curso });
   };
 
-  // ACTUALIZAR VALORES EN EL FORMULARIO DE EDICIÓN
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!editandoCurso) return;
-
     const { name, value } = e.target;
 
     setEditandoCurso((prev) => {
       if (!prev) return null;
-
-      // Convertir los campos numéricos a enteros
-      const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso", "Proexterno", "Descripcion"];
+      
+      const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"];
 
       return {
         ...prev,
         [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
       };
+    
     });
   };
 
   // GUARDAR CAMBIOS AL EDITAR
   const handleGuardarEdicion = async () => {
     if (!editandoCurso) return;
-    console.log("Enviando actualización:", editandoCurso);
+    console.log("Intentando guardar cambios...");
+    console.log("Datos enviados al backend:", JSON.stringify(editandoCurso, null, 2));
 
     try {
       const response = await fetch(`http://localhost:8090/api/cursos/${editandoCurso.id}`, {
@@ -110,16 +123,24 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
       if (!response.ok) {
         console.error("Error HTTP al actualizar:", response.status);
+        const errorText = await response.text();
+        console.error("Respuesta del servidor:", errorText)
         return;
       }
 
       console.log("Curso actualizado con éxito");
+      
+      setMensajeExito("¡Curso actualizado con éxito!");
 
       // Recargar la lista de cursos después de la actualización
       await fetchCursos();
 
       // Cerrar el modal de edición
-      setEditandoCurso(null);
+      setTimeout(()=> {
+        setMensajeExito("");
+        setEditandoCurso(null);
+      }, 3000);
+      
     } catch (error) {
       console.error("Error al guardar la edición:", error);
     }
@@ -130,7 +151,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         
         {/* BOTÓN CERRAR */}
-        <button className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90" onClick={onClose}>
+        <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" onClick={onClose}>
           <XMarkIcon className="w-6 h-6" />
         </button>
 
@@ -168,29 +189,62 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                   </div>
-                </div>
+                  {expandedCursoId === curso.id && (
+                  
+
+
+                  <div className="p-8 px-4 py-2  space-x-2 border border-gray-300 bg-gray-50 rounded-lg  shadow-md mt-2">
+                     <h3 className="text-ig font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
+                    
+                    
+                    <p><strong>Id:</strong> {curso.id}</p>
+                    <p><strong>Valor:</strong> {curso.Valor}</p>
+                    <p><strong>Fin:</strong> {curso.Fin}</p>
+                    <p><strong>Publico:</strong> {curso.Publico}</p>
+                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
+                    <p><strong>Horas:</strong> {curso.Horas}</p>
+                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
+                    <p><strong>Profesor:</strong> {curso.Profesor}</p>
+                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
+                  </div>
+                )}
               </div>
-            ))
+                </div>
+             ))
           ) : (
             <p className="text-center py-4">No hay cursos disponibles.</p>
           )}
         </div>
       </div>
+      {mensajeExito && (
+        <div className="bg-green-100 text-green-800 p-2 rounded text-center mb-400">
+          {mensajeExito}
+           </div>
+      )}
+      
 
       {/* MODAL EDICIÓN DE CURSO */}
       {editandoCurso && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
+          <div className="relative bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
+          
             <h2 className="text-lg font-bold">Editar Curso</h2>
+            
+            {/* BOTÓN PARA CERRAR */}
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" 
+            onClick={() => setEditandoCurso(null)}>
+          <XMarkIcon className="w-6 h-6" />
+        </button>
 
             {Object.keys(editandoCurso).map((key) => (
               key !== "id" && (
                 <div key={key} className="mt-2">
                   <label className="block text-sm font-medium">{key}</label>
+                  
                   <input
                     type="text"
                     name={key}
-                    value={(editandoCurso as any)[key]}
+                    value={editandoCurso ? (editandoCurso as any)[key] ?? "" : ""}
                     onChange={handleChange}
                     className="border p-2 w-full rounded"
                   />
@@ -199,7 +253,9 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
             ))}
             <div className="mt-4 flex space-x-2">
               <button onClick={handleGuardarEdicion} className="bg-[#990000] text-white px-4 py-2 rounded">Guardar</button>
+              <button onClick={() => setEditandoCurso(null)} className="bg-gray-700 text-white px-4 py-2 rounded">Cancelar</button>
             </div>
+            
           </div>
         </div>
       )}
