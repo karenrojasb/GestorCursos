@@ -56,6 +56,15 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setBusqueda(texto);
     setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
   };
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(false);
+    }
+  };
 
   // EXPANDIR DETALLES DEL CURSO
   const handleVerMas = (id: number) => {
@@ -109,13 +118,16 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        
         {/* BOTÓN CERRAR */}
         <button className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90" onClick={onClose}>
           <XMarkIcon className="w-6 h-6" />
         </button>
 
         {/* BARRA BUSQUEDA */}
-        <div className="flex items-center space-x-2 mb-4">
+        <div className="flex items-center space-x-2 mb-4"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}>
           <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out">
             {isSearchActive ? <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />}
           </button>
