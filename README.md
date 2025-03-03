@@ -233,7 +233,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
       {/* MENSAJE DE ÉXITO */}
       {mensajeExito && (
-        <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-green-100 text-green-800 p-2 rounded text-center mb-4">
+        <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-[#990000] text-white p-2 rounded text-center mb-4">
           {mensajeExito}
         </div>
       )}
