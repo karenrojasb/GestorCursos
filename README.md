@@ -27,41 +27,53 @@ interface Curso {
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
 
+  // FUNCIÓN PARA OBTENER CURSOS DEL BACKEND
+  const fetchCursos = async () => {
+    try {
+      const response = await fetch("http://localhost:8090/api/cursos");
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      const data = await response.json();
+      setCursos(data);
+      setCursosFiltrados(data);
+    } catch (error) {
+      console.error("Error al obtener los cursos:", error);
+    }
+  };
+
+  // CARGAR CURSOS AL MONTAR COMPONENTE
   useEffect(() => {
-    const fetchCursos = async () => {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos");
-        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-        const data = await response.json();
-        setCursos(data);
-        setCursosFiltrados(data);
-      } catch (error) {
-        console.error("Error al obtener los cursos:", error);
-      }
-    };
     fetchCursos();
   }, []);
 
+  // BUSCAR CURSOS POR NOMBRE
   const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const texto = e.target.value.toLowerCase();
     setBusqueda(texto);
     setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
   };
 
+  // EXPANDIR DETALLES DEL CURSO
+  const handleVerMas = (id: number) => {
+    setExpandedCursoId(expandedCursoId === id ? null : id);
+  };
+
+  // INICIAR EDICIÓN DEL CURSO
   const handleEditar = (curso: Curso) => {
-    setEditandoCurso(curso);
+    setEditandoCurso({ ...curso });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = ( e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!editandoCurso) return;
-    const { name, value } = e.target;
-    setEditandoCurso({ ...editandoCurso, [name]: value });
+    const { name, value} = e.target;
+    setEditandoCurso({...editandoCurso, [name]: value});
   };
 
+  // GUARDAR CAMBIOS AL EDITAR
   const handleGuardarEdicion = async () => {
     if (!editandoCurso) return;
 
@@ -74,10 +86,13 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
-      const updatedCursos = cursos.map(c => (c.id === editandoCurso.id ? editandoCurso : c));
-      setCursos(updatedCursos);
-      setCursosFiltrados(updatedCursos);
+      // RESPUESTA DEL BACKEND
+      const updatedCourse = cursos.map(c => (c.id === editandoCurso.id ? editandoCurso : c));
+      setCursos(updatedCourse);
+      setCursosFiltrados(updatedCourse);
       setEditandoCurso(null);
+
+      
     } catch (error) {
       console.error("Error al guardar la edición:", error);
     }
@@ -86,12 +101,12 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        {/* Botón de cerrar */}
+        {/* BOTÓN CERRAR */}
         <button className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90" onClick={onClose}>
           <XMarkIcon className="w-6 h-6" />
         </button>
 
-        {/* Barra de búsqueda */}
+        {/* BARRA BUSQUEDA */}
         <div className="flex items-center space-x-2 mb-4">
           <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out">
             {isSearchActive ? <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />}
@@ -105,7 +120,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
           />
         </div>
 
-        {/* Lista de cursos con scroll */}
+        {/* LISTA DE CURSOS */}
         <div className="flex-1 overflow-y-auto max-h-[60vh] space-y-2">
           {cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso) => (
@@ -113,10 +128,45 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                 <div className="grid grid-cols-3 items-center">
                   <span className="text-left">{curso.NombreCurso}</span>
                   <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-                  <button onClick={() => handleEditar(curso)} className="bg-[#990000] text-white px-4 py-1 rounded">
-                    <PencilSquareIcon className="h-5 w-5" />
-                  </button>
+
+                  {/* BOTONES */}
+
+                  {/* BOTÓN VER MÁS */}
+                  <div className="flex space-x-2">
+                    <button onClick={() => handleVerMas(curso.id)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
+                      {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+                    </button>
+
+                    {/* BOTÓN PARA EDITAR CURSO */}
+                    <button onClick={() => handleEditar(curso)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
+                      <PencilSquareIcon className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
+
+                {/* DETALLE DE CURSOS */}
+                {expandedCursoId === curso.id && (
+                  <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
+                    <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
+                    <p><strong>Id:</strong> {curso.id}</p>
+                    <p><strong>Valor:</strong> {curso.Valor}</p>
+                    <p><strong>Publico:</strong> {curso.Publico}</p>
+                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
+                    <p><strong>Inicio:</strong> {curso.Inicio}</p>
+                    <p><strong>Fin:</strong> {curso.Fin}</p>
+                    <p><strong>Horas:</strong> {curso.Horas}</p>
+                    <p><strong>CupoMax:</strong> {curso.CupoMax}</p>
+                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
+                    <p><strong>Linea:</strong> {curso.Linea}</p>
+                    <p><strong>Estado:</strong> {curso.Estado}</p>
+                    <p><strong>Modalidad:</strong> {curso.Modalidad}</p>
+                    <p><strong>Unidad:</strong> {curso.Unidad}</p>
+                    <p><strong>Profesor:</strong> {curso.Profesor}</p>
+                    <p><strong>SegundoPro:</strong> {curso.SegundoPro}</p>
+                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
+                    <p><strong>IdTipoCurso:</strong> {curso.IdTipoCurso}</p>
+                  </div>
+                )}
               </div>
             ))
           ) : (
@@ -125,11 +175,12 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* Modal de Edición con scroll */}
+      {/* EDICIÓN DE CURSO */}
       {editandoCurso && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
             <h2 className="text-lg font-bold">Editar Curso</h2>
+            
             {Object.keys(editandoCurso).map((key) => (
               key !== "id" && (
                 <div key={key} className="mt-2">
