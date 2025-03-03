@@ -1,5 +1,224 @@
+"use client";
+import { XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
+import { useEffect, useState } from "react";
 
-{/* MODAL EDICIÓN DE CURSO */}
+interface Curso {
+  id: number;                               
+  NombreCurso: string;                       
+  Valor: number;                             
+  Publico: number;                           
+  Periodo: string;                           
+  Inicio: string;                            
+  Fin: string;                               
+  Horas: number;                             
+  CupoMax: number;                           
+  Lugar: string;                             
+  LunesIni?: string;                          
+  LunesFin? : string;                         
+  MartesIni?  : string;                       
+  MartesFin? : string;                        
+  MiercolesIni?: string;                      
+  MiercolesFin? : string;                     
+  JuevesIni?: string;                         
+  JuevesFin?: string;                        
+  ViernesIni?: string;                       
+  ViernesFin?: string;                      
+  SabadoIni?: string;                       
+  SabadoFin?: string;                        
+  DomingoIni?: string;                        
+  DomingoFin? : string;                      
+  Linea: number;                             
+  Estado: number;                             
+  Modalidad: number;                          
+  Unidad: number;                             
+  Profesor: number;                           
+  SegundoPro : string;                       
+  Proexterno : number;                     
+  Descripcion: string; 
+  IdTipoCurso: number;
+}
+
+export default function CatalogoModal({ onClose }: { onClose: () => void }) {
+  const [cursos, setCursos] = useState<Curso[]>([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
+  const [mensajeExito, setMensajeExito] = useState("");
+
+  // OBTENER CURSOS DEL BACKEND
+  const fetchCursos = async () => {
+    try {
+      const response = await fetch("http://localhost:8090/api/cursos");
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      const data = await response.json();
+      setCursos(data);
+      setCursosFiltrados(data);
+    } catch (error) {
+      console.error("Error al obtener los cursos:", error);
+    }
+  };
+
+  // CARGAR CURSOS AL MONTAR EL COMPONENTE
+  useEffect(() => {
+    fetchCursos();
+  }, []);
+
+  // BUSCAR CURSOS POR NOMBRE
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+    setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
+  };
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(false);
+    }
+  };
+
+  // EXPANDIR DETALLES DEL CURSO
+  const handleVerMas = (id: number) => {
+    setExpandedCursoId(expandedCursoId === id ? null : id);
+  };
+
+  // INICIAR EDICIÓN DEL CURSO
+  const handleEditar = (curso: Curso) => {
+    setEditandoCurso({ ...curso });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (!editandoCurso) return;
+    const { name, value } = e.target;
+
+    setEditandoCurso((prev) => {
+      if (!prev) return null;
+      
+      const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"];
+
+      return {
+        ...prev,
+        [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
+      };
+    
+    });
+  };
+
+  // GUARDAR CAMBIOS AL EDITAR
+  const handleGuardarEdicion = async () => {
+    if (!editandoCurso) return;
+    console.log("Intentando guardar cambios...");
+    console.log("Datos enviados al backend:", JSON.stringify(editandoCurso, null, 2));
+
+    try {
+      const response = await fetch(`http://localhost:8090/api/cursos/${editandoCurso.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editandoCurso),
+      });
+
+      if (!response.ok) {
+        console.error("Error HTTP al actualizar:", response.status);
+        const errorText = await response.text();
+        console.error("Respuesta del servidor:", errorText)
+        return;
+      }
+
+      console.log("Curso actualizado con éxito");
+      
+      setMensajeExito("¡Curso actualizado con éxito!");
+
+      // Recargar la lista de cursos después de la actualización
+      await fetchCursos();
+
+      // Cerrar el modal de edición
+      setTimeout(()=> {
+        setMensajeExito("");
+        setEditandoCurso(null);
+      }, 3000);
+      
+    } catch (error) {
+      console.error("Error al guardar la edición:", error);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        
+        {/* BOTÓN CERRAR */}
+        <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" onClick={onClose}>
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+
+        {/* BARRA BUSQUEDA */}
+        <div className="flex items-center space-x-2 mb-4"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}>
+          <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out">
+            {isSearchActive ? <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />}
+          </button>
+          <input
+            type="text"
+            placeholder="Busque el nombre del curso"
+            value={busqueda}
+            onChange={handleBuscar}
+            className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+          />
+        </div>
+
+        {/* LISTA DE CURSOS */}
+        <div className="flex-1 overflow-y-auto max-h-[60vh] space-y-2">
+          {cursosFiltrados.length > 0 ? (
+            cursosFiltrados.map((curso) => (
+              <div key={curso.id} className="border-b py-2">
+                <div className="grid grid-cols-3 items-center">
+                  <span className="text-left">{curso.NombreCurso}</span>
+                  <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
+
+                  {/* BOTONES */}
+                  <div className="flex space-x-2">
+                    <button onClick={() => handleVerMas(curso.id)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
+                      {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+                    </button>
+                    <button onClick={() => handleEditar(curso)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
+                      <PencilSquareIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                  {expandedCursoId === curso.id && (
+                  
+
+
+                  <div className="p-8 px-4 py-2  space-x-2 border border-gray-300 bg-gray-50 rounded-lg  shadow-md mt-2">
+                     <h3 className="text-ig font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
+                    
+                    
+                    <p><strong>Id:</strong> {curso.id}</p>
+                    <p><strong>Valor:</strong> {curso.Valor}</p>
+                    <p><strong>Fin:</strong> {curso.Fin}</p>
+                    <p><strong>Publico:</strong> {curso.Publico}</p>
+                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
+                    <p><strong>Horas:</strong> {curso.Horas}</p>
+                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
+                    <p><strong>Profesor:</strong> {curso.Profesor}</p>
+                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
+                  </div>
+                )}
+              </div>
+                </div>
+             ))
+          ) : (
+            <p className="text-center py-4">No hay cursos disponibles.</p>
+          )}
+        </div>
+      </div>     
+      
+
+      {/* MODAL EDICIÓN DE CURSO */}
 {editandoCurso && (
   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div className="relative bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
@@ -14,7 +233,7 @@
 
       {/* MENSAJE DE ÉXITO */}
       {mensajeExito && (
-        <div className="bg-green-100 text-green-800 p-2 rounded text-center mb-4">
+        <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-green-100 text-green-800 p-2 rounded text-center mb-4">
           {mensajeExito}
         </div>
       )}
@@ -40,7 +259,10 @@
         <button onClick={handleGuardarEdicion} className="bg-[#990000] text-white px-4 py-2 rounded">Guardar</button>
         <button onClick={() => setEditandoCurso(null)} className="bg-gray-700 text-white px-4 py-2 rounded">Cancelar</button>
       </div>
-      
+            
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
+  );
+}
