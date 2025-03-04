@@ -1,13 +1,20 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { UsuarioService } from './usuario.service';
-import { RegistroDto } from './dto/registro.dto';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
 
-@Controller('usuario')
-export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService) {}
+@Injectable()
+export class UsuarioService {
+  constructor(private prisma: PrismaService) {}
 
-  @Post('registro')
-  async registrarUsuario(@Body() registroDto: RegistroDto) {
-    return this.usuarioService.registrarUsuario(registroDto.id_emp);
+  async registrarUsuario(id_emp: number) {
+    const usuario = await this.prisma.$queryRaw`
+      SELECT id_emp, nombre, publico, e_mail 
+      FROM gescur.emp_nomina 
+      WHERE id_emp = ${id_emp}`;
+
+    if (!usuario || usuario.length === 0) {
+      return { message: 'Usuario no encontrado', registrado: false };
+    }
+
+    return { message: 'Registro exitoso', registrado: true, usuario: usuario[0] };
   }
 }
