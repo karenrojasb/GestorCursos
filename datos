@@ -1,34 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+[Nest] 7592  - 04/03/2025, 4:34:22 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
+Invalid `prisma.$queryRaw()` invocation:
 
-@Injectable()
-export class UsuarioService {
-  constructor(private readonly prisma: PrismaService) {}
 
-  async obtenerUsuarios() {
-    return await this.prisma.$queryRaw<
-      Array<{ id_emp: number; nombre: string; e_mail: string; rol: string }>
-    >`
-      SELECT e.id_emp, e.nombre, e.e_mail, r.nombre AS rol
-      FROM gescur.emp_nomina e
-      INNER JOIN gescur.roles r ON e.publico = r.id
-    `;
-  }
-
-  async iniciarSesion(id_emp: number) {
-    const usuarios = await this.prisma.$queryRaw<
-      Array<{ id_emp: number; nombre: string; e_mail: string; rol: string }>
-    >`
-      SELECT e.id_emp, e.nombre, e.e_mail, r.nombre AS rol
-      FROM gescur.emp_nomina e
-      INNER JOIN gescur.roles r ON e.publico = r.id
-      WHERE e.id_emp = ${id_emp}
-    `;
-
-    if (!usuarios || usuarios.length === 0) {
-      throw new NotFoundException('Usuario no encontrado');
-    }
-
-    return usuarios[0]; // Retornar solo el primer resultado
+Raw query failed. Code: `207`. Message: `Invalid column name 'nombre'.`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async UsuarioService.iniciarSesion (C:\Users\desarrollador5\Documents\gestor_cursos\src\usuario\usuario.service.ts:19:22)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2010',
+  clientVersion: '6.3.1',
+  meta: {
+    code: '207',
+    message: "Invalid column name 'nombre'."
   }
 }
