@@ -1,23 +1,30 @@
-async iniciarSesion(id_emp: number) {
-  const usuario = await this.prisma.$queryRaw`
-    SELECT e.id_emp, e.nombre, e.e_mail, r.nombre AS rol
-    FROM gescur.emp_nomina e
-    INNER JOIN gescur.roles r ON e.publico = r.id
-    WHERE e.id_emp = ${id_emp}
-  `;
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
 
-  if (usuario.length === 0) {
-    throw new NotFoundException('Usuario no encontrado');
+@Injectable()
+export class UsuarioService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async obtenerUsuarios() {
+    return this.prisma.$queryRaw`
+      SELECT e.id_emp, e.nombre, e.e_mail, r.nombre AS rol
+      FROM gescur.emp_nomina e
+      INNER JOIN gescur.roles r ON e.publico = r.id
+    `;
   }
 
-  return usuario[0]; // Retornar solo el primer resultado
+  async iniciarSesion(id_emp: number) {
+    const usuario = await this.prisma.$queryRaw`
+      SELECT e.id_emp, e.nombre, e.e_mail, r.nombre AS rol
+      FROM gescur.emp_nomina e
+      INNER JOIN gescur.roles r ON e.publico = r.id
+      WHERE e.id_emp = ${id_emp}
+    `;
+
+    if (usuario.length === 0) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    return usuario[0]; // Retornar solo el primer resultado
+  }
 }
-
-
-
-
-@Post('login')
-async iniciarSesion(@Body('id_emp') id_emp: number) {
-  return this.usuarioService.iniciarSesion(id_emp);
-}
-
