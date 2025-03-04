@@ -1,19 +1,57 @@
-[Nest] 18860  - 04/03/2025, 4:43:02 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
-Invalid `prisma.$queryRaw()` invocation:
+"use client"; // Necesario para manejar estado en el frontend
 
+import { useState } from "react";
 
-Raw query failed. Code: `207`. Message: `Invalid column name 'nom_emp'.`
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async UsuarioService.iniciarSesion (C:\Users\desarrollador5\Documents\gestor_cursos\src\usuario\usuario.service.ts:9:21)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.3.1',
-  meta: {
-    code: '207',
-    message: "Invalid column name 'nom_emp'."
-  }
+export default function LoginPage() {
+  const [idEmp, setIdEmp] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(""); // Resetear error antes de intentar el login
+
+    try {
+      const response = await fetch("http://localhost:8090/api/usuario/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id_emp: idEmp }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error al iniciar sesión");
+      }
+
+      // Guardar usuario en localStorage o context (para persistencia)
+      localStorage.setItem("usuario", JSON.stringify(data));
+
+      // Redirigir a la página principal
+      window.location.href = "/";
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-2xl font-bold mb-4">Iniciar Sesión</h1>
+      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-80">
+        <label className="block mb-2">Identificación:</label>
+        <input
+          type="text"
+          value={idEmp}
+          onChange={(e) => setIdEmp(e.target.value)}
+          className="w-full p-2 border rounded mb-4"
+          placeholder="Ingrese su identificación"
+        />
+        {error && <p className="text-red-500">{error}</p>}
+        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
+          Iniciar Sesión
+        </button>
+      </form>
+    </div>
+  );
 }
