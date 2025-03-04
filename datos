@@ -1,19 +1,13 @@
-[Nest] 17764  - 04/03/2025, 3:01:23 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
-Invalid `prisma.$queryRaw()` invocation:
+import { Controller, Post, Body } from '@nestjs/common';
+import { UsuarioService } from './usuario.service';
+import { RegistroDto } from './dto/registro.dto';
 
+@Controller('usuario')
+export class UsuarioController {
+  constructor(private readonly usuarioService: UsuarioService) {}
 
-Raw query failed. Code: `4104`. Message: `The multi-part identifier "e.id_emp" could not be bound.`
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async UsuarioService.obtenerUsuarios (C:\Users\desarrollador5\Documents\gestor_cursos\src\usuario\usuario.service.ts:9:12)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.3.1',
-  meta: {
-    code: '4104',
-    message: 'The multi-part identifier "e.id_emp" could not be bound.'
+  @Post('registro')
+  async registrarUsuario(@Body() registroDto: RegistroDto) {
+    return this.usuarioService.registrarUsuario(registroDto.id_emp);
   }
 }
