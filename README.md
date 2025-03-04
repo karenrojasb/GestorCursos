@@ -195,7 +195,15 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
             className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
           />
         </div>
-
+        <table className="w-full border-collapse border border-white ">
+          <thead>
+            <tr className="border-spa text-gray-700 ">
+              <th className="py-2 px-4 border">Nombre del curso</th>
+              <th className="py-2 px-4 border">Fecha</th>
+              <th className="py-2 px-4 border">Acciones</th>
+            </tr>
+          </thead>
+        </table>
         {/* LISTA DE CURSOS */}
         <div className="flex-1 overflow-y-auto max-h-[60vh] space-y-2">
           {cursosFiltrados.length > 0 ? (
