@@ -1,10 +1,17 @@
-import { Module } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
-import { UsuarioController } from './usuario.controller';
-import { PrismaService } from 'src/prisma/prisma.service';
 
-@Module({
-  controllers: [UsuarioController],
-  providers: [UsuarioService, PrismaService],
-})
-export class UsuarioModule {}
+@Controller('usuarios')
+export class UsuarioController {
+  constructor(private readonly usuarioService: UsuarioService) {}
+
+  @Get()
+  obtenerUsuarios() {
+    return this.usuarioService.obtenerUsuarios();
+  }
+
+  @Get(':cedula')
+  obtenerUsuario(@Param('cedula') cedula: string) {
+    return this.usuarioService.obtenerUsuarioPorCedula(cedula);
+  }
+}
