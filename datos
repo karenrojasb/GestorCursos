@@ -1,20 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { Controller, Post, Body } from '@nestjs/common';
+import { UsuarioService } from './usuario.service';
+import { CreateUsuarioDto } from './dto/create-usuario.dto';
 
-@Injectable()
-export class UsuarioService {
-  constructor(private prisma: PrismaService) {}
+@Controller('usuario')
+export class UsuarioController {
+  constructor(private readonly usuarioService: UsuarioService) {}
 
-  async registrarUsuario(id_emp: string) { // id_emp ahora es string
-    const usuarios = await this.prisma.$queryRaw<any[]>`
-      SELECT id_emp, nombre, publico, e_mail 
-      FROM gescur.emp_nomina 
-      WHERE id_emp = TRIM(${id_emp})`; // Se usa TRIM para eliminar espacios
+  @Post('registro')
+  async registrarUsuario(@Body() createUsuarioDto: CreateUsuarioDto) {
+    const { id_emp } = createUsuarioDto;
 
-    if (!usuarios || usuarios.length === 0) {
-      return { message: 'Usuario no encontrado', registrado: false };
+    if (!id_emp) {
+      return { message: 'El id_emp es obligatorio', registrado: false };
     }
 
-    return { message: 'Registro exitoso', registrado: true, usuario: usuarios[0] };
+    return this.usuarioService.registrarUsuario(id_emp);
   }
 }
