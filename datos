@@ -1,8 +1,8 @@
-[Nest] 10696  - 04/03/2025, 2:48:44 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
+[Nest] 17764  - 04/03/2025, 3:01:23 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
 Invalid `prisma.$queryRaw()` invocation:
 
 
-Raw query failed. Code: `207`. Message: `Invalid column name 'nombre'.`
+Raw query failed. Code: `4104`. Message: `The multi-part identifier "e.id_emp" could not be bound.`
     at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
     at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
     at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
@@ -13,7 +13,7 @@ Raw query failed. Code: `207`. Message: `Invalid column name 'nombre'.`
   code: 'P2010',
   clientVersion: '6.3.1',
   meta: {
-    code: '207',
-    message: "Invalid column name 'nombre'."
+    code: '4104',
+    message: 'The multi-part identifier "e.id_emp" could not be bound.'
   }
 }
