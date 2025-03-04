@@ -1,19 +1,23 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { UsuarioService } from './usuario.service';
-import { CreateUsuarioDto } from './dto/create-usuario.dto';
+async iniciarSesion(id_emp: number) {
+  const usuario = await this.prisma.$queryRaw`
+    SELECT e.id_emp, e.nombre, e.e_mail, r.nombre AS rol
+    FROM gescur.emp_nomina e
+    INNER JOIN gescur.roles r ON e.publico = r.id
+    WHERE e.id_emp = ${id_emp}
+  `;
 
-@Controller('usuario')
-export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService) {}
-
-  @Post('registro')
-  async registrarUsuario(@Body() createUsuarioDto: CreateUsuarioDto) {
-    const { id_emp } = createUsuarioDto;
-
-    if (!id_emp) {
-      return { message: 'El id_emp es obligatorio', registrado: false };
-    }
-
-    return this.usuarioService.registrarUsuario(id_emp);
+  if (usuario.length === 0) {
+    throw new NotFoundException('Usuario no encontrado');
   }
+
+  return usuario[0]; // Retornar solo el primer resultado
 }
+
+
+
+
+@Post('login')
+async iniciarSesion(@Body('id_emp') id_emp: number) {
+  return this.usuarioService.iniciarSesion(id_emp);
+}
+
