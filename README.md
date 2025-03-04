@@ -102,8 +102,11 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       }
       setMensajeExito("Curso eliminado correctamente");
       setTimeout(() => setMensajeExito(""), 3000 );
+      setCursos(prevCursos => prevCursos.filter(cursos => cursos.id !== id));
+      setCursosFiltrados(prevCursos => prevCursos.filter(cursos => cursos.id !== id));
     } catch (error) {
       console.error("Error al guardar la edición", error);
+      alert("No se pudo eliminar el curso");
     }
   }; 
 
@@ -153,10 +156,10 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       
       setMensajeExito("¡Curso actualizado con éxito!");
 
-      // Recargar la lista de cursos después de la actualización
+      // RECARGAR DESPUES DE LA ACTUALIZACIÓN DEL CURSO
       await fetchCursos();
 
-      // Cerrar el modal de edición
+      // CERRAR MODAÑ DE EDICIÓN
       setTimeout(()=> {
         setMensajeExito("");
         setEditandoCurso(null);
@@ -180,6 +183,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         <div className="flex items-center space-x-2 mb-4"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}>
+          {/* BOTÓN PARA ACTIVAR BUSQUEDA */}
           <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out">
             {isSearchActive ? <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />}
           </button>
@@ -202,25 +206,33 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                   <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
 
                   {/* BOTONES */}
+                 
+                  {/* BOTÓN PARA VER MÁS */}
                   <div className="flex space-x-2">
-                    <button onClick={() => handleVerMas(curso.id)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
+                    <button onClick={() => handleVerMas(curso.id)} 
+                    className="bg-[#990000] text-white px-4 py-2 rounded transition-transform hover:scale-110 active:scale-95">
                       {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
                     </button>
-                    <button onClick={() => handleEditar(curso)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
+                   
+                    {/* BOTÓN PARA EDITAR */}
+                    <button onClick={() => handleEditar(curso)} 
+                    className="bg-[#990000] text-white p-2 rounded transition-transform hover:scale-110 active:scale-95">
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
-                    <button onClick={() => handleDeleteCourse(curso.id)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
+                    
+                    {/* BOTÓN PARA ELIMINAR */}
+                    <button onClick={() => handleDeleteCourse(curso.id)} 
+                    className="bg-[#990000] text-white p-2 rounded transition-transform hover:scale-110 active:scale-95">
                       <TrashIcon className="h-5 w-5"/>
                     </button>
                   </div>
+
+                  {/* CONTENIDO DE CURSO */}
                   {expandedCursoId === curso.id && (
                   
-
-
                   <div className="p-8 px-4 py-2  space-x-2 border border-gray-300 bg-gray-50 rounded-lg  shadow-md mt-2">
                      <h3 className="text-ig font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
-                    
-                    
+                                        
                     <p><strong>Id:</strong> {curso.id}</p>
                     <p><strong>Valor:</strong> {curso.Valor}</p>
                     <p><strong>Fin:</strong> {curso.Fin}</p>
