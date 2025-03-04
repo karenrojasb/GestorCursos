@@ -209,20 +209,25 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                  
                   {/* BOTÓN PARA VER MÁS */}
                   <div className="flex space-x-2">
-                    <button onClick={() => handleVerMas(curso.id)} 
+                    <button 
+                    onClick={() => handleVerMas(curso.id)} 
                     className="bg-[#990000] text-white px-4 py-2 rounded transition-transform hover:scale-110 active:scale-95">
                       {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
                     </button>
                    
                     {/* BOTÓN PARA EDITAR */}
-                    <button onClick={() => handleEditar(curso)} 
-                    className="bg-[#990000] text-white p-2 rounded transition-transform hover:scale-110 active:scale-95">
+                    <button 
+                    onClick={() => handleEditar(curso)} 
+                    className="bg-[#990000] text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
+                    title="Editar">
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
                     
                     {/* BOTÓN PARA ELIMINAR */}
-                    <button onClick={() => handleDeleteCourse(curso.id)} 
-                    className="bg-[#990000] text-white p-2 rounded transition-transform hover:scale-110 active:scale-95">
+                    <button 
+                    onClick={() => handleDeleteCourse(curso.id)} 
+                    className="bg-[#990000] text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
+                    title="Eliminar">                    
                       <TrashIcon className="h-5 w-5"/>
                     </button>
                   </div>
@@ -266,8 +271,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       </button>
 
       <h2 className="text-lg text-[#990000] font-bold mb-4">Editar Curso</h2>
-
-      {/* MENSAJE DE ÉXITO */}
+      {/* MENSAJE DE ÉXITO AL ACTUALIZAR EL CURSO*/}
       {mensajeExito && (
         <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-[#990000] text-white p-2 rounded text-center mb-4">
           {mensajeExito}
