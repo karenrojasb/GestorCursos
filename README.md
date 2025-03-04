@@ -1,4 +1,5 @@
 "use client";
+import { TrashIcon } from "@heroicons/react/16/solid";
 import { XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 
@@ -86,6 +87,26 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setExpandedCursoId(expandedCursoId === id ? null : id);
   };
 
+  // ELIMINAR CURSO
+  const handleDeleteCourse =async (id: number) => {
+    const confirmar = window.confirm("¿Estas seguro de que deseas eliminar este curso?");
+    if (!confirmar) return;
+
+    try {
+      const response = await fetch(`http://localhost:8090/api/cursos/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        console.error("Error al eliminar el curso:", response.status);
+        return 
+      }
+      setMensajeExito("Curso eliminado correctamente");
+      setTimeout(() => setMensajeExito(""), 3000 );
+    } catch (error) {
+      console.error("Error al guardar la edición", error);
+    }
+  }; 
+
   // INICIAR EDICIÓN DEL CURSO
   const handleEditar = (curso: Curso) => {
     setEditandoCurso({ ...curso });
@@ -107,7 +128,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     
     });
   };
-
+ 
   // GUARDAR CAMBIOS AL EDITAR
   const handleGuardarEdicion = async () => {
     if (!editandoCurso) return;
@@ -188,6 +209,9 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                     <button onClick={() => handleEditar(curso)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
+                    <button onClick={() => handleDeleteCourse(curso.id)} className="bg-[#990000] text-white px-4 py-1 rounded transition-transform hover:scale-110 active:scale-95">
+                      <TrashIcon className="h-5 w-5"/>
+                    </button>
                   </div>
                   {expandedCursoId === curso.id && (
                   
@@ -229,7 +253,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         <XMarkIcon className="w-6 h-6" />
       </button>
 
-      <h2 className="text-lg font-bold mb-4">Editar Curso</h2>
+      <h2 className="text-lg text-[#990000] font-bold mb-4">Editar Curso</h2>
 
       {/* MENSAJE DE ÉXITO */}
       {mensajeExito && (
@@ -242,7 +266,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       {Object.keys(editandoCurso).map((key) => (
         key !== "id" && (
           <div key={key} className="mt-2">
-            <label className="block text-sm font-medium">{key}</label>
+            <label className="block text-sm font-bold">{key}</label>
             <input
               type="text"
               name={key}
@@ -255,7 +279,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       ))}
 
       {/* BOTONES */}
-      <div className="mt-4 flex space-x-2">
+      <div className="mt-4 flex space-x-4 ">
         <button onClick={handleGuardarEdicion} className="bg-[#990000] text-white px-4 py-2 rounded">Guardar</button>
         <button onClick={() => setEditandoCurso(null)} className="bg-gray-700 text-white px-4 py-2 rounded">Cancelar</button>
       </div>
