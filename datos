@@ -26,16 +26,16 @@ export default function RootLayout({ children }: LayoutProps) {
       const response = await fetch("http://localhost:8090/api/usuarios/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_emp: id }), // Validando con la base de datos
+        body: JSON.stringify({ id_emp: id }), 
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "ID no válido.");
+      if (!response.ok || !data || !data.id_emp) {
+        throw new Error("ID no encontrado en la base de datos.");
       }
 
-      setUsuario(id); // Se guarda el usuario autenticado
+      setUsuario(data.id_emp); // Se guarda el usuario autenticado
       console.log("Inicio de sesión exitoso:", data);
     } catch (error: any) {
       setError(error.message);
