@@ -1,34 +1,47 @@
-PS C:\Users\desarrollador5\Documents\gestor_cursos_client> npm run build
+"use client"; // Necesario si usas estados o efectos en este archivo
 
-> gestor_cursos_client@0.1.0 build
-> next build
+import { ArrowLeftIcon } from "@heroicons/react/16/solid";
+import Image from "next/image";
+import { ReactNode } from "react";
+import "./globals.css";
 
-   ▲ Next.js 15.1.7
+interface LayoutProps {
+  children: ReactNode;
+}
 
-   Creating an optimized production build ...
- ✓ Compiled successfully
+export default function RootLayout({ children }: LayoutProps) {
+  return (
+    <html lang="es">
+      <body style={{ margin: 0, fontFamily: "Arial, sans-serif" }}>
+        <header className="w-full flex items-center justify-between px-6 py-4">
+          {/* LOGO */}
+          <Image 
+            src="/img/ecijg126.png" 
+            alt="Logo" 
+            width={80} 
+            height={80} 
+            className="transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+          />
 
-Failed to compile.
+          <div className="flex flex-col items-center space-x-1 ml-auto">
+            <span className="text-xl text-gray-700 font-medium">NOMBRE USUARIO</span>
+            {/* BOTÓN DE SALIDA */}
+            <button className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition">
+              <ArrowLeftIcon className="h-6 w-6" />
+              <span>SALIR</span>
+            </button>
+          </div>
+        </header>
 
-./app/components/catalogoadminmodal.tsx
-294:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+        <main style={{ padding: "0px" }}>{children}</main>
 
-./app/components/CursoModal.tsx
-6:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any 
-
-./app/components/mainbuttons.tsx
-22:11  Error: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-24:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./app/layout.tsx
-1:10  Error: 'ArrowLeftCircleIcon' is defined but never used.  @typescript-eslint/no-unused-vars
-22:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
-
-./app/page.tsx
-12:10  Error: 'textoMostrado' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-15:9  Error: 'index' is never reassigned. Use 'const' instead.  prefer-const
-
-./app/services/cursosService.ts
-1:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any 
-
-info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+        <footer style={{ marginTop: "10px", padding: "10px", textAlign: "center", backgroundColor: "white" }}>
+          <div className="bg-blue-800 absolute bottom-0 left-4 border border-blue-700 p-4 rounded-lg">
+            <Image src="/img/osiris2.png" alt="Logo OSIRIS" width={160} height={60} />
+          </div>
+          <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
+        </footer>
+      </body>
+    </html>
+  );
+}
