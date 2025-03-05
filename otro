@@ -1,19 +1,23 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    const usuario = localStorage.getItem("usuario");
-    
-    if (!usuario) {
-      router.push("/login"); // Enviar al login si no hay usuario
-    } else {
-      router.push("/dashboard"); // Enviar al dashboard si ya inició sesión
-    }
-  }, [router]);
+    if (isRedirecting) return; // Evita múltiples redirecciones
 
-  return null; // No mostramos nada mientras se redirige
+    setIsRedirecting(true);
+    const usuario = localStorage.getItem("usuario");
+
+    if (!usuario) {
+      router.replace("/login"); // Usa replace para evitar loops
+    } else {
+      router.replace("/dashboard"); // Usa replace para evitar loops
+    }
+  }, [router, isRedirecting]);
+
+  return null; // No mostramos nada mientras decide a dónde redirigir
 }
