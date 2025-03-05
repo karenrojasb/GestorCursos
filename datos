@@ -1,39 +1,45 @@
-import { ArrowLeftIcon } from "@heroicons/react/16/solid";
-import Image from "next/image";
-import { ReactNode } from "react";
-import "./styles/globals.css";
+"use client";
 
-interface LayoutProps {
-  children: ReactNode;
-}
+import { useRouter } from "next/navigation";
+import MainButtons from "./components/mainbuttons";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
-export default function RootLayout({ children }: LayoutProps) {
+export default function HomePage() {
+  const router = useRouter();
+  const esAdmin = true;
+  const mensaje = "Bienvenido a Gestión de Cursos";
+  const [textoMostrado, setTextoMostrado] = useState<string[]>([]);
+
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < mensaje.length) {
+        setTextoMostrado((prev) => [...prev, mensaje[index]]);
+        index++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <html lang="es">
-      <body style={{ margin: 0, fontFamily: "Arial, sans-serif" }}>
-        <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
-          {/* LOGO */}
-          <Image src="/img/ecijg126.png" alt="Logo" width={100} height={60} />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <h1 className="text-3xl font-bold text-[#990000] mb-6 flex space-x-1">
+        {textoMostrado.map((letra, index) => (
+          <motion.span
+            key={index}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.05, delay: index * 0.05 }}
+          >
+            {letra === " " ? "\u00A0" : letra}
+          </motion.span>
+        ))}
+      </h1>
 
-          {/* Nombre del usuario y botón de salida */}
-          <div className="flex flex-col items-center">
-            <span className="text-xl text-gray-700 font-medium">NOMBRE USUARIO</span>
-            <button className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition">
-              <ArrowLeftIcon className="h-6 w-6" />
-              SALIR
-            </button>
-          </div>
-        </header>
-
-        <main>{children}</main>
-
-        <footer className="mt-10 p-4 text-center bg-white">
-          <div className="bg-blue-800 border border-blue-700 p-4 rounded-lg">
-            <Image src="/img/osiris2.png" alt="Logo OSIRIS" width={160} height={60} />
-          </div>
-          <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
-        </footer>
-      </body>
-    </html>
+      <MainButtons onSelect={(section) => router.push(`/${section}`)} esAdmin={esAdmin} />
+    </div>
   );
 }
