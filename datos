@@ -1,63 +1,67 @@
-Layout:
-
-import { ArrowLeftCircleIcon, ArrowLeftIcon } from "@heroicons/react/16/solid";
+layout
+import { ArrowLeftIcon } from "@heroicons/react/16/solid";
 import Image from "next/image";
 import "./globals.css";
 import { ReactNode } from "react";
 
 interface LayoutProps {
-  children : ReactNode;
+  children: ReactNode;
 }
 
-export default function RootLayout ({children}: LayoutProps ){
+export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="es">
-      <body style={{
-        margin: 0,
-        fontFamily: "Arial, sans-serif"
-      }}>
+      <body
+        style={{
+          margin: 0,
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        <header className="w-full flex items-center justify-between px-6 py-4">
+          {/* LOGO */}
+          <img
+            src="/img/ecijg126.png"
+            alt="Logo"
+            className="h-20 transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+          />
 
-
-
-<header className="w-full flex items-center justify-between px-6 py-4  ">
-            {/*LOGO */}
-            <img src="/img/ecijg126.png" alt="Logo" className="h-20 transition-all 
-                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"></img>
-
-
-            <div className="flex flex-col items-center space-x-1 ml-auto">
-                <span className=" text-xl text-gray-700 font-medium ">NOMBRE USUARIO</span>
-                {/*BOTÓN DE SALIDA*/}
-                <button className="flex items-center space-x-2 border  border-[#990000] px-2 py-2 rounded hover:bg-[#990000]  hover:text-white transition">
-                <ArrowLeftIcon className="h-6 w-6"/>
-                    SALIR
-                </button>
-            </div>
-            
+          <div className="flex flex-col items-center ml-auto">
+            <span className="text-xl text-gray-700 font-medium">
+              NOMBRE USUARIO
+            </span>
+            {/* BOTÓN DE SALIDA */}
+            <button className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition">
+              <ArrowLeftIcon className="h-6 w-6" />
+              <span>SALIR</span>
+            </button>
+          </div>
         </header>
 
+        <main style={{ padding: "0px" }}>{children}</main>
 
-        <main style={{padding: "0px"}}>
-          {children}
-        </main>
-
-
-        <footer style={{
-          marginTop: "10px",
-          padding: "10px",
-          textAlign: "center",
-          backgroundColor: "white"
-        }}>
-          <div className="bg-blue-800 absolute bottom-0 left-4  border border-blue-700 p-4 rounded-lg c" >
-                    <Image  src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60}/>
-                </div>
-          <p>&copy: {new Date().getFullYear()} - Plataforma de gestion de cursos</p>
+        <footer
+          style={{
+            marginTop: "10px",
+            padding: "10px",
+            textAlign: "center",
+            backgroundColor: "white",
+          }}
+        >
+          <div className="bg-blue-800 absolute bottom-0 left-4 border border-blue-700 p-4 rounded-lg">
+            <Image
+              src="/img/osiris 2.png"
+              alt="Logo OSIRIS"
+              width={160}
+              height={60}
+            />
+          </div>
+          <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
         </footer>
       </body>
     </html>
   );
-
 }
+
 
 
 
@@ -69,41 +73,41 @@ import MainButtons from "./components/mainbuttons";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-
 export default function HomePage() {
-    
-  const router = useRouter(); 
-  const esAdmin = true; 
-  const mensaje = "Bienvenido a Gestión de Cursos"
+  const router = useRouter();
+  const esAdmin = true;
+  const mensaje = "Bienvenido a Gestión de Cursos";
   const [textoMostrado, setTextoMostrado] = useState<string[]>([]);
 
   useEffect(() => {
     let index = 0;
     const interval = setInterval(() => {
-      setTextoMostrado((prev) => [...prev, mensaje [index]]);
+      if (index < mensaje.length) {
+        setTextoMostrado((prev) => [...prev, mensaje[index]]);
+        index++;
+      } else {
+        clearInterval(interval);
+      }
     }, 50);
-    return() => clearInterval(interval);
-  },  []);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-3xl font-bold text-[#990000] mb-6 flex space-x-1">
-        {mensaje.split("").map((letra, index) => (
-        <motion.span
-        key={index}
-      initial={{opacity: 0, y: -10}}
-      animate={{opacity: 1, y: 0}}
-      transition={{duration: 0.05, delay: index * 0.05}}>
-        {letra === " " ? "\u00A0": letra}
-      </motion.span>
-    ) ) }
-        </h1>
-     
-      
-      
-      <MainButtons
-             onSelect={(section) => router.push(`/${section}`)} esAdmin={esAdmin} />
+        {textoMostrado.map((letra, index) => (
+          <motion.span
+            key={index}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.05, delay: index * 0.05 }}
+          >
+            {letra === " " ? "\u00A0" : letra}
+          </motion.span>
+        ))}
+      </h1>
 
+      <MainButtons onSelect={(section) => router.push(`/${section}`)} esAdmin={esAdmin} />
     </div>
   );
 }
