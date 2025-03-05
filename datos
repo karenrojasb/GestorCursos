@@ -1,40 +1,34 @@
- "use client";  // <---- Agregar esto en la primera línea
+PS C:\Users\desarrollador5\Documents\gestor_cursos_client> npm run build
 
-import { useRouter } from "next/navigation";
-import MainButtons from "./components/mainbuttons";
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+> gestor_cursos_client@0.1.0 build
+> next build
 
-export default function HomePage() {
-  const router = useRouter();
-  const esAdmin = true;
-  const mensaje = "Bienvenido a Gestión de Cursos";
-  const [textoMostrado, setTextoMostrado] = useState<string[]>([]);
+   ▲ Next.js 15.1.7
 
-  useEffect(() => {
-    let index = 0;
-    const interval = setInterval(() => {
-      setTextoMostrado((prev) => [...prev, mensaje[index]]);
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
+   Creating an optimized production build ...
+ ✓ Compiled successfully
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold text-[#990000] mb-6 flex space-x-1">
-        {mensaje.split("").map((letra, index) => (
-          <motion.span
-            key={index}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.05, delay: index * 0.05 }}
-          >
-            {letra === " " ? "\u00A0" : letra}
-          </motion.span>
-        ))}
-      </h1>
+Failed to compile.
 
-      <MainButtons onSelect={(section) => router.push(`/${section}`)} esAdmin={esAdmin} />
-    </div>
-  );
-}
+./app/components/catalogoadminmodal.tsx
+294:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/components/CursoModal.tsx
+6:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any 
+
+./app/components/mainbuttons.tsx
+22:11  Error: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+24:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/layout.tsx
+1:10  Error: 'ArrowLeftCircleIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+22:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/page.tsx
+12:10  Error: 'textoMostrado' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+15:9  Error: 'index' is never reassigned. Use 'const' instead.  prefer-const
+
+./app/services/cursosService.ts
+1:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any 
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
