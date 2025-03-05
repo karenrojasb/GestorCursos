@@ -1,1 +1,12 @@
-a
+"use client";
+import { motion } from "framer-motion";
+import MainButtons from "./components/mainbuttons";
+
+export default function HomePage() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen w-full">
+      {/* 📌 Los botones están en el centro */}
+      <MainButtons onSelect={() => {}} esAdmin={false} />
+    </div>
+  );
+}
