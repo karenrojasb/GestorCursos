@@ -1,58 +1,69 @@
-import { ArrowLeftCircleIcon, ArrowLeftIcon } from "@heroicons/react/16/solid";
+ "use client";
+import { ArrowLeftIcon } from "@heroicons/react/16/solid";
 import Image from "next/image";
-import "./globals.css";
-import { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 
 interface LayoutProps {
-  children : ReactNode;
+  children: ReactNode;
 }
 
-export default function RootLayout ({children}: LayoutProps ){
+export default function RootLayout({ children }: LayoutProps) {
+  const pathname = usePathname(); // Saber en qué ruta estamos
+  const router = useRouter();
+  const [usuario, setUsuario] = useState<string | null>(null);
+
+  useEffect(() => {
+    const usuarioGuardado = localStorage.getItem("usuario");
+    setUsuario(usuarioGuardado);
+
+    // Si el usuario no está autenticado y no está en /login, lo mandamos al login
+    if (!usuarioGuardado && pathname !== "/login") {
+      router.push("/login");
+    }
+  }, [pathname, router]);
+
+  const mostrarHeaderFooter = pathname !== "/login"; // Ocultar en login
+
   return (
     <html lang="es">
-      <body style={{
-        margin: 0,
-        fontFamily: "Arial, sans-serif"
-      }}>
-
-
-
-<header className="w-full flex items-center justify-between px-6 py-4  ">
-            {/*LOGO */}
-            <img src="/img/ecijg126.png" alt="Logo" className="h-20 transition-all 
-                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"></img>
-
-
+      <body className="bg-gray-100">
+        {mostrarHeaderFooter && (
+          <header className="w-full flex items-center justify-between px-6 py-4">
+            <img
+              src="/img/ecijg126.png"
+              alt="Logo"
+              className="h-20 transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+            />
             <div className="flex flex-col items-center space-x-1 ml-auto">
-                <span className=" text-xl text-gray-700 font-medium ">NOMBRE USUARIO</span>
-                {/*BOTÓN DE SALIDA*/}
-                <button className="flex items-center space-x-2 border  border-[#990000] px-2 py-2 rounded hover:bg-[#990000]  hover:text-white transition">
-                <ArrowLeftIcon className="h-6 w-6"/>
-                    SALIR
-                </button>
+              <span className="text-xl text-gray-700 font-medium">
+                {usuario || "NOMBRE USUARIO"}
+              </span>
+              <button
+                className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition"
+                onClick={() => {
+                  localStorage.removeItem("usuario");
+                  router.push("/login");
+                }}
+              >
+                <ArrowLeftIcon className="h-6 w-6" />
+                SALIR
+              </button>
             </div>
-            
-        </header>
+          </header>
+        )}
 
+        <main>{children}</main>
 
-        <main style={{padding: "0px"}}>
-          {children}
-        </main>
-
-
-        <footer style={{
-          marginTop: "10px",
-          padding: "10px",
-          textAlign: "center",
-          backgroundColor: "white"
-        }}>
-          <div className="bg-blue-800 absolute bottom-0 left-4  border border-blue-700 p-4 rounded-lg c" >
-                    <Image  src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60}/>
-                </div>
-          <p>&copy: {new Date().getFullYear()} - Plataforma de gestion de cursos</p>
-        </footer>
+        {mostrarHeaderFooter && (
+          <footer className="mt-10 p-4 text-center bg-white">
+            <div className="bg-blue-800 absolute bottom-0 left-4 border border-blue-700 p-4 rounded-lg">
+              <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
+            </div>
+            <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
+          </footer>
+        )}
       </body>
     </html>
   );
-
 }
