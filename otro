@@ -1,141 +1,28 @@
 "use client";
-
-import { useState } from "react";
-import CatalogoModal from "./catalogomodal";
-import { BookOpenIcon, DocumentCheckIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { ChartBarIcon, PencilSquareIcon } from "@heroicons/react/16/solid";
-import { motion } from "framer-motion";
-import CatalogoAdminModal from "./catalogoadminmodal";
-import CursoModal from "./CursoModal";
 import { useRouter } from "next/navigation";
+import MainButtons from "./components/mainbuttons";
+import { motion } from "framer-motion";
 
-interface MainButtonsProps {
-  onSelect: (section: string) => void;
-  publico: number;
-}
-
-export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
-  const [showCatalogo, setShowCatalogo] = useState(false);
-  const [showGestorModal, setShowGestorModal] = useState(false);
-  const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
-  const [showCursoModal, setShowCursoModal] = useState(false);
-
-  const handleSaveCurso = async (data: any) => {
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) throw new Error("Error al guardar el curso");
-
-      alert("Curso guardado con éxito");
-      setShowCursoModal(false);
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Hubo un error al guardar el curso");
-    }
-  };
+export default function HomePage() {
+  const router = useRouter();
+  const mensaje = "Bienvenido a Gestión de Cursos";
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full">
-      <div className="w-full max-w-md flex flex-col space-y-4 items-center">
-        
-        {/* BOTÓN CATÁLOGO */}
-        <button
-          onClick={() => setShowCatalogo(true)}
-          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
-                     text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
-        >
-          <BookOpenIcon className="h-6 w-6 text-white" />
-          Catálogo
-        </button>
-        {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <h1 className="text-3xl font-bold text-[#990000] mb-6 flex space-x-1">
+        {mensaje.split("").map((letra, index) => (
+          <motion.span
+            key={index}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.05, delay: index * 0.05 }}
+          >
+            {letra === " " ? "\u00A0" : letra}
+          </motion.span>
+        ))}
+      </h1>
 
-        {/* BOTÓN CERTIFICADOS */}
-        <button
-          onClick={() => onSelect("/catalogomodal")}
-          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
-                     text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
-        >
-          <DocumentCheckIcon className="h-6 w-6 text-white" />
-          Certificados
-        </button>
-
-        {/* BOTONES SOLO PARA ADMINISTRADORES */}
-        {publico === 1 && (
-          <>
-            {/* BOTÓN GESTOR DE CURSOS */}
-            <button
-              onClick={() => setShowGestorModal(true)}
-              className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
-                         text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            >
-              <PencilIcon className="h-6 w-6 text-white" />
-              Gestor de Cursos
-            </button>
-
-            {/* MODAL GESTOR DE CURSOS */}
-            {showGestorModal && (
-              <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                <div className="relative flex flex-col items-center gap-3 w-full max-w-3xl bg-white 
-                                py-6 px-8 rounded-lg shadow-md">
-                  {/* BOTÓN CERRAR */}
-                  <button
-                    onClick={() => setShowGestorModal(false)}
-                    className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-                  >
-                    <XMarkIcon className="h-6 w-6" />
-                  </button>
-
-                  {/* TÍTULO */}
-                  <h2 className="text-3xl font-bold text-[#990000] text-center">Gestor de Cursos</h2>
-
-                  <div className="w-full flex flex-col items-center justify-center space-y-3 text-center">
-                    {/* BOTÓN CREAR CURSO */}
-                    <motion.button
-                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowCursoModal(true)}
-                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
-                    >
-                      <PencilSquareIcon className="h-6 w-6 text-white" />
-                      Crear Curso
-                    </motion.button>
-
-                    {/* BOTÓN CATÁLOGO ADMIN */}
-                    <motion.button
-                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowCatalogoAdmin(true)}
-                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
-                    >
-                      <BookOpenIcon className="h-6 w-6 text-white" />
-                      Catálogo
-                    </motion.button>
-
-                    {/* BOTÓN REPORTES */}
-                    <motion.button
-                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => onSelect("gestor-crear-editar")}
-                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
-                    >
-                      <ChartBarIcon className="h-6 w-6 text-white" />
-                      Reportes
-                    </motion.button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* MODALES ADMIN */}
-            {showCatalogoAdmin && <CatalogoAdminModal onClose={() => setShowCatalogoAdmin(false)} />}
-            {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} onSave={handleSaveCurso} />}
-          </>
-        )}
-      </div>
+    
     </div>
   );
 }
