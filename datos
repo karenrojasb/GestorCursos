@@ -1,3 +1,52 @@
-Missing required html tags
-The following tags are missing in the Root Layout: <html>, <body>.
-Read more at https://nextjs.org/docs/messages/missing-root-layout-tags
+"use client"; // Necesario si usas estados o efectos en este archivo
+
+import { ArrowLeftIcon } from "@heroicons/react/16/solid";
+import Image from "next/image";
+import { ReactNode } from "react";
+import "./globals.css";
+
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function RootLayout({ children }: LayoutProps) {
+  return (
+    <html lang="es">
+      <head>
+        <title>Gestión de Cursos</title>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body style={{ margin: 0, fontFamily: "Arial, sans-serif" }}>
+        <header className="w-full flex items-center justify-between px-6 py-4">
+          {/* LOGO */}
+          <Image 
+            src="/img/ecijg126.png" 
+            alt="Logo" 
+            width={80} 
+            height={80} 
+            className="transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+          />
+
+          <div className="flex flex-col items-center space-x-1 ml-auto">
+            <span className="text-xl text-gray-700 font-medium">NOMBRE USUARIO</span>
+            {/* BOTÓN DE SALIDA */}
+            <button className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition">
+              <ArrowLeftIcon className="h-6 w-6" />
+              <span>SALIR</span>
+            </button>
+          </div>
+        </header>
+
+        <main style={{ padding: "0px" }}>{children}</main>
+
+        <footer style={{ marginTop: "10px", padding: "10px", textAlign: "center", backgroundColor: "white" }}>
+          <div className="bg-blue-800 absolute bottom-0 left-4 border border-blue-700 p-4 rounded-lg">
+            <Image src="/img/osiris2.png" alt="Logo OSIRIS" width={160} height={60} />
+          </div>
+          <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
+        </footer>
+      </body>
+    </html>
+  );
+}
