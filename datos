@@ -1,77 +1,55 @@
 "use client";
-import { ArrowLeftIcon } from "@heroicons/react/16/solid";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
 
-interface LayoutProps {
-  children: ReactNode;
-}
+import { useRouter } from "next/navigation";
+import MainButtons from "../components/mainbuttons";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
-export default function RootLayout({ children }: LayoutProps) {
-  const pathname = usePathname();
+export default function HomePage() {
   const router = useRouter();
+  const mensaje = "Bienvenido a Gestión de Cursos";
+  const [textoMostrado, setTextoMostrado] = useState<string[]>([]);
   const [usuario, setUsuario] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Para evitar renderizado prematuro
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Accede a localStorage solo en el cliente
-      const usuarioGuardado = localStorage.getItem("usuario");
-      setUsuario(usuarioGuardado);
-      
-      // Si el usuario no está autenticado y no está en /login, redirigirlo
-      if (!usuarioGuardado && pathname !== "/login") {
-        router.replace("/login");
-      }
+    const usuarioGuardado = localStorage.getItem("usuario");
+    setUsuario(usuarioGuardado);
+
+    if (!usuarioGuardado) {
+      router.push("/login");
     }
-    setLoading(false);
-  }, [pathname, router]);
+  }, [router]);
 
-  // Evita mostrar el contenido mientras carga
-  if (loading) return null;
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setTextoMostrado((prev) => [...prev, mensaje[index]]);
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
 
-  const mostrarHeaderFooter = pathname !== "/login";
+  // Si el usuario aún no está definido, no renderizamos la página (evitamos parpadeo)
+  if (!usuario) {
+    return null;
+  }
 
   return (
-    <html lang="es">
-      <body className="bg-gray-100">
-        {mostrarHeaderFooter && (
-          <header className="w-full flex items-center justify-between px-6 py-4">
-            <img
-              src="/img/ecijg126.png"
-              alt="Logo"
-              className="h-20 transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-            />
-            <div className="flex flex-col items-center space-x-1 ml-auto">
-              <span className="text-xl text-gray-700 font-medium">
-                {usuario || "NOMBRE USUARIO"}
-              </span>
-              <button
-                className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition"
-                onClick={() => {
-                  localStorage.removeItem("usuario");
-                  router.replace("/login"); // replace evita agregar al historial
-                }}
-              >
-                <ArrowLeftIcon className="h-6 w-6" />
-                SALIR
-              </button>
-            </div>
-          </header>
-        )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <h1 className="text-3xl font-bold text-[#990000] mb-6 flex space-x-1">
+        {mensaje.split("").map((letra, index) => (
+          <motion.span
+            key={index}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.05, delay: index * 0.05 }}
+          >
+            {letra === " " ? "\u00A0" : letra}
+          </motion.span>
+        ))}
+      </h1>
 
-        <main>{children}</main>
-
-        {mostrarHeaderFooter && (
-          <footer className="mt-10 p-4 text-center bg-white">
-            <div className="bg-blue-800 absolute bottom-0 left-4 border border-blue-700 p-4 rounded-lg">
-              <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
-            </div>
-            <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
-          </footer>
-        )}
-      </body>
-    </html>
+      {/* Solo mostramos los botones si hay usuario autenticado */}
+      {usuario && <MainButtons onSelect={(section) => router.push(`/${section}`)} esAdmin={true} />}
+    </div>
   );
 }
