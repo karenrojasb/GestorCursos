@@ -13,11 +13,19 @@ export default function Home() {
     const usuario = localStorage.getItem("usuario");
 
     if (!usuario) {
-      router.replace("/login"); // Usa replace para evitar loops
+      router.replace("/login"); // Redirigir a login si no hay usuario
     } else {
-      router.replace("/dashboard"); // Usa replace para evitar loops
+      router.replace("/dashboard"); // Redirigir a dashboard si el usuario está autenticado
     }
   }, [router, isRedirecting]);
 
-  return null; // No mostramos nada mientras decide a dónde redirigir
+  return (
+    <html lang="es">
+      <body>
+        <div className="flex items-center justify-center min-h-screen">
+          <p>Redirigiendo...</p>
+        </div>
+      </body>
+    </html>
+  );
 }
