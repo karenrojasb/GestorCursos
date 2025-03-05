@@ -13,7 +13,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8090/api/usuarios/login", {
+      const response = await fetch("http://localhost:8090/api/usuario/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_emp }), // Usamos id_emp en la solicitud
