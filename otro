@@ -9,7 +9,9 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold text-[#990000] mb-6 flex space-x-1">
+      
+      {/* Mensaje de bienvenida */}
+      <h1 className="text-3xl font-bold text-[#990000] mt-10 mb-6">
         {mensaje.split("").map((letra, index) => (
           <motion.span
             key={index}
@@ -22,7 +24,8 @@ export default function HomePage() {
         ))}
       </h1>
 
-    
+      {/* Botones */}
+      <MainButtons onSelect={(section) => router.push(section)} publico={1} />
     </div>
   );
 }
