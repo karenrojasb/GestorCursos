@@ -1,56 +1,31 @@
 "use client";
-import { useState } from "react";
-import CatalogoModal from "./catalogomodal";
-import { BookOpenIcon, DocumentCheckIcon, PencilIcon } from "@heroicons/react/24/solid";
-import CatalogoAdminModal from "./catalogoadminmodal";
+import { useRouter } from "next/navigation";
+import MainButtons from "./components/mainbuttons";
+import { motion } from "framer-motion";
 
-interface MainButtonsProps {
-  onSelect: (section: string) => void;
-  esAdmin: boolean;
-}
-
-export default function MainButtons({ onSelect, esAdmin }: MainButtonsProps) {
-  const [showCatalogo, setShowCatalogo] = useState(false);
-  const [showGestorModal, setShowGestorModal] = useState(false);
-  const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
+export default function HomePage() {
+  const router = useRouter();
+  const mensaje = "Bienvenido a Gestión de Cursos";
 
   return (
-    <div className="flex flex-col items-center space-y-4 w-full max-w-md">
-      {/* BOTÓN CATÁLOGO */}
-      <button
-        onClick={() => setShowCatalogo(true)}
-        className="flex items-center justify-center gap-3 w-full bg-[#990000] 
-        text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
-      >
-        <BookOpenIcon className="h-6 w-6 text-white" />
-        Catálogo
-      </button>
-      {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
-
-      {/* BOTÓN DE CERTIFICADOS */}
-      <button
-        onClick={() => onSelect("/certificados")}
-        className="flex items-center justify-center gap-3 w-full bg-[#990000] 
-        text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
-      >
-        <DocumentCheckIcon className="h-6 w-6 text-white" />
-        Certificados
-      </button>
-
-      {/* BOTONES SOLO PARA ADMINISTRADORES */}
-      {esAdmin && (
-        <>
-          <button
-            onClick={() => setShowGestorModal(true)}
-            className="flex items-center justify-center gap-3 w-full bg-[#990000] 
-            text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      
+      {/* Mensaje de bienvenida */}
+      <h1 className="text-3xl font-bold text-[#990000] mt-10 mb-6">
+        {mensaje.split("").map((letra, index) => (
+          <motion.span
+            key={index}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.05, delay: index * 0.05 }}
           >
-            <PencilIcon className="h-6 w-6 text-white" />
-            Gestor de Cursos
-          </button>
-          {showGestorModal && <CatalogoAdminModal onClose={() => setShowGestorModal(false)} />}
-        </>
-      )}
+            {letra === " " ? "\u00A0" : letra}
+          </motion.span>
+        ))}
+      </h1>
+
+      {/* Botones */}
+      <MainButtons onSelect={(section) => router.push(section)} publico={1} />
     </div>
   );
 }
