@@ -1,65 +1,66 @@
-"use client"; // Necesario para usar hooks en App Router
+"use client";
+import { ReactNode, useState } from "react";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeftIcon } from "@heroicons/react/16/solid";
-import Image from "next/image";
-import "./globals.css";
+interface LayoutProps {
+  children: ReactNode;
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export default function RootLayout({ children }: LayoutProps) {
+  const [usuario, setUsuario] = useState<string | null>(null);
+  const [id, setId] = useState("");
 
-  useEffect(() => {
-    const auth = localStorage.getItem("isAuthenticated");
-    if (auth === "true") {
-      setIsAuthenticated(true);
-    } else {
-      router.push("/login");
+  const iniciarSesion = () => {
+    if (id.trim() !== "") {
+      setUsuario(id); // Aquí podrías validar con una API en lugar de solo guardar el ID
     }
-  }, []);
+  };
 
-  if (!isAuthenticated) return null; // Evita mostrar contenido antes de la verificación
+  if (!usuario) {
+    return (
+      <html lang="es">
+        <body className="flex items-center justify-center h-screen bg-gray-200">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Iniciar Sesión</h2>
+            <input
+              type="text"
+              placeholder="Ingrese su ID"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              className="border p-2 w-full mb-3"
+            />
+            <button
+              onClick={iniciarSesion}
+              className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+            >
+              Entrar
+            </button>
+          </div>
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="es">
-      <head>
-        <title>Gestor de Cursos</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-      <body style={{ margin: 0, fontFamily: "Arial, sans-serif" }}>
-        <header className="w-full flex items-center justify-between px-6 py-4">
-          {/* LOGO */}
+      <body>
+        <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow">
           <img
             src="/img/ecijg126.png"
             alt="Logo"
             className="h-20 transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95"
           />
-
           <div className="flex flex-col items-center space-x-1 ml-auto">
-            <span className="text-xl text-gray-700 font-medium">NOMBRE USUARIO</span>
-            {/* BOTÓN DE SALIDA */}
+            <span className="text-xl text-gray-700 font-medium">{usuario}</span>
             <button
-              className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition"
-              onClick={() => {
-                localStorage.removeItem("isAuthenticated");
-                router.push("/login");
-              }}
+              className="flex items-center space-x-2 border border-red-600 px-2 py-2 rounded hover:bg-red-600 hover:text-white transition"
+              onClick={() => setUsuario(null)}
             >
-              <ArrowLeftIcon className="h-6 w-6" />
-              SALIR
+              Cerrar Sesión
             </button>
           </div>
         </header>
 
         <main>{children}</main>
-
-        <footer className="mt-10 p-4 text-center bg-white">
-          <div className="bg-blue-800 absolute bottom-0 left-4 border border-blue-700 p-4 rounded-lg">
-            <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
-          </div>
-          <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
-        </footer>
       </body>
     </html>
   );
