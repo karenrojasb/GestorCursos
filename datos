@@ -1,33 +1,59 @@
-PS C:\Users\desarrollador5\Documents\gestor_cursos_client> npm run start
+PS C:\Users\desarrollador5\Documents\gestor_cursos_client> npm run build
 
-> gestor_cursos_client@0.1.0 start
-> next start
-
-   ▲ Next.js 15.1.7
-   - Local:        http://localhost:3000
-   - Network:      http://10.10.1.190:3000
-
- ✓ Starting...
-[Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id]
-PS C:\Users\desarrollador5\Documents\gestor_cursos_client> npm run start
-
-> gestor_cursos_client@0.1.0 start
-> next start
+> gestor_cursos_client@0.1.0 build
+> next build
 
    ▲ Next.js 15.1.7
-   - Local:        http://localhost:3000
-   - Network:      http://10.10.1.190:3000
 
- ✓ Starting...
-[Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id]
-PS C:\Users\desarrollador5\Documents\gestor_cursos_client> npm run start
+   Creating an optimized production build ...
+Failed to compile.
 
-> gestor_cursos_client@0.1.0 start
-> next start
+./app/page.tsx
+Error:   x You're importing a component that needs `useRouter`. This React hook only works in a client component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  |
+  |  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  |
+  |
+   ,-[C:\Users\desarrollador5\Documents\gestor_cursos_client\app\page.tsx:1:1]
+ 1 | import { useRouter } from "next/navigation";
+   :          ^^^^^^^^^
+ 2 | import MainButtons from "./components/mainbuttons";
+ 3 | import { motion } from "framer-motion";
+ 4 | import { useEffect, useState } from "react";
+   `----
+  x You're importing a component that needs `useEffect`. This React hook only works in a client component. To fix, mark the file (or its parent) with the `"use client"` directive.   
+  |
+  |  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  |
+  |
+   ,-[C:\Users\desarrollador5\Documents\gestor_cursos_client\app\page.tsx:4:1]
+ 1 | import { useRouter } from "next/navigation";
+ 2 | import MainButtons from "./components/mainbuttons";
+ 3 | import { motion } from "framer-motion";
+ 4 | import { useEffect, useState } from "react";
+   :          ^^^^^^^^^
+ 5 |
+ 6 |
+ 7 | export default function HomePage() {
+   `----
+  x You're importing a component that needs `useState`. This React hook only works in a client component. To fix, mark the file (or its parent) with the `"use client"` directive.    
+  |
+  |  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  |
+  |
+   ,-[C:\Users\desarrollador5\Documents\gestor_cursos_client\app\page.tsx:4:1]
+ 1 | import { useRouter } from "next/navigation";
+ 2 | import MainButtons from "./components/mainbuttons";
+ 3 | import { motion } from "framer-motion";
+ 4 | import { useEffect, useState } from "react";
+   :                     ^^^^^^^^
+ 5 |
+ 6 |
+ 7 | export default function HomePage() {
+   `----
 
-   ▲ Next.js 15.1.7
-   - Local:        http://localhost:3000
-   - Network:      http://10.10.1.190:3000
+Import trace for requested module:
+./app/page.tsx
 
- ✓ Starting...
-[Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id]
+
+> Build failed because of webpack errors
