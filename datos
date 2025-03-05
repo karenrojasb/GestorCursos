@@ -1,57 +1,58 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { ArrowLeftCircleIcon, ArrowLeftIcon } from "@heroicons/react/16/solid";
+import Image from "next/image";
+import "./globals.css";
+import { ReactNode } from "react";
 
-export default function LoginPage() {
-  const [idEmp, setIdEmp] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
+interface LayoutProps {
+  children : ReactNode;
+}
 
-  useEffect(() => {
-    const usuario = localStorage.getItem("usuario");
-    if (usuario) {
-      router.push("/dashboard"); // Redirige si ya está autenticado
-    }
-  }, [router]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    try {
-      const response = await fetch("http://localhost:8090/api/usuario/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_emp: idEmp }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Error al iniciar sesión");
-
-      localStorage.setItem("usuario", JSON.stringify(data));
-      router.push("/dashboard"); // Redirige a la página principal después del login
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
+export default function RootLayout ({children}: LayoutProps ){
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-2xl font-bold mb-4">Iniciar Sesión</h1>
-      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-80">
-        <label className="block mb-2">Identificación:</label>
-        <input
-          type="text"
-          value={idEmp}
-          onChange={(e) => setIdEmp(e.target.value)}
-          className="w-full p-2 border rounded mb-4"
-          placeholder="Ingrese su identificación"
-        />
-        {error && <p className="text-red-500">{error}</p>}
-        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
-          Iniciar Sesión
-        </button>
-      </form>
-    </div>
+    <html lang="es">
+      <body style={{
+        margin: 0,
+        fontFamily: "Arial, sans-serif"
+      }}>
+
+
+
+<header className="w-full flex items-center justify-between px-6 py-4  ">
+            {/*LOGO */}
+            <img src="/img/ecijg126.png" alt="Logo" className="h-20 transition-all 
+                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"></img>
+
+
+            <div className="flex flex-col items-center space-x-1 ml-auto">
+                <span className=" text-xl text-gray-700 font-medium ">NOMBRE USUARIO</span>
+                {/*BOTÓN DE SALIDA*/}
+                <button className="flex items-center space-x-2 border  border-[#990000] px-2 py-2 rounded hover:bg-[#990000]  hover:text-white transition">
+                <ArrowLeftIcon className="h-6 w-6"/>
+                    SALIR
+                </button>
+            </div>
+            
+        </header>
+
+
+        <main style={{padding: "0px"}}>
+          {children}
+        </main>
+
+
+        <footer style={{
+          marginTop: "10px",
+          padding: "10px",
+          textAlign: "center",
+          backgroundColor: "white"
+        }}>
+          <div className="bg-blue-800 absolute bottom-0 left-4  border border-blue-700 p-4 rounded-lg c" >
+                    <Image  src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60}/>
+                </div>
+          <p>&copy: {new Date().getFullYear()} - Plataforma de gestion de cursos</p>
+        </footer>
+      </body>
+    </html>
   );
+
 }
