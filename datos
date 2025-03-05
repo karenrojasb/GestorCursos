@@ -64,17 +64,14 @@ export default function RootLayout ({children}: LayoutProps ){
 
 
 Page.tsx
-"use client";
-
-import { redirect, useRouter } from "next/navigation";
-import MainButtons from "../components/mainbuttons";
+import { useRouter } from "next/navigation";
+import MainButtons from "./components/mainbuttons";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 
 export default function HomePage() {
-  redirect("/login");
-  
+    
   const router = useRouter(); 
   const esAdmin = true; 
   const mensaje = "Bienvenido a Gestión de Cursos"
