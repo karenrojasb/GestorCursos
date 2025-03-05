@@ -1,4 +1,5 @@
 "use client";
+
 import { ReactNode, useState } from "react";
 import Image from "next/image";
 import "./globals.css";
@@ -8,39 +9,34 @@ interface LayoutProps {
 }
 
 export default function RootLayout({ children }: LayoutProps) {
-  const [usuario, setUsuario] = useState<string | null>(null);
-  const [id, setId] = useState("");
+  const [usuario, setUsuario] = useState<{ nombre: string; publico: number } | null>(null);
+  const [id_emp, setIdEmp] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const iniciarSesion = async () => {
-    if (id.trim() === "") {
-      setError("Por favor, ingrese un ID válido.");
+    setError("");
+
+    if (id_emp.trim() === "") {
+      setError("Ingrese su ID.");
       return;
     }
-
-    setLoading(true);
-    setError("");
 
     try {
       const response = await fetch("http://localhost:8090/api/usuarios/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_emp: id }), 
+        body: JSON.stringify({ id_emp }),
       });
 
       const data = await response.json();
 
-      if (!response.ok || !data || !data.nombre) {
-        throw new Error("ID no encontrado en la base de datos.");
+      if (!response.ok) {
+        throw new Error(data.message || "ID no encontrado en la base de datos.");
       }
 
-      setUsuario(data.nombre); // Guardamos el nombre del usuario
-      console.log("Inicio de sesión exitoso:", data);
+      setUsuario({ nombre: data.nombre, publico: data.publico });
     } catch (error: any) {
       setError(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -53,16 +49,15 @@ export default function RootLayout({ children }: LayoutProps) {
             <input
               type="text"
               placeholder="Ingrese su ID"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
+              value={id_emp}
+              onChange={(e) => setIdEmp(e.target.value)}
               className="border p-2 w-full mb-3 rounded"
             />
             <button
               onClick={iniciarSesion}
               className="bg-[#990000] text-white px-4 py-2 rounded w-full hover:bg-red-700 transition"
-              disabled={loading}
             >
-              {loading ? "Verificando..." : "Entrar"}
+              Entrar
             </button>
             {error && <p className="text-red-600 mt-2">{error}</p>}
           </div>
@@ -84,7 +79,7 @@ export default function RootLayout({ children }: LayoutProps) {
 
           {/* Usuario y botón de salida */}
           <div className="flex flex-col items-center ml-auto">
-            <span className="text-xl text-gray-700 font-medium">{usuario}</span>
+            <span className="text-xl text-gray-700 font-medium">{usuario.nombre}</span>
             <button
               className="flex items-center space-x-2 border border-red-600 px-3 py-2 rounded hover:bg-red-600 hover:text-white transition"
               onClick={() => setUsuario(null)}
@@ -94,7 +89,21 @@ export default function RootLayout({ children }: LayoutProps) {
           </div>
         </header>
 
-        <main className="p-4">{children}</main>
+        {/* Botones según el tipo de usuario */}
+        <main className="p-4 flex flex-col items-center space-y-4">
+          {usuario.publico === 1 ? (
+            <>
+              <button className="bg-blue-600 text-white px-6 py-3 rounded shadow-md hover:bg-blue-700 transition">Gestor de Cursos</button>
+              <button className="bg-green-600 text-white px-6 py-3 rounded shadow-md hover:bg-green-700 transition">Catálogo de Cursos</button>
+              <button className="bg-purple-600 text-white px-6 py-3 rounded shadow-md hover:bg-purple-700 transition">Certificados</button>
+            </>
+          ) : (
+            <>
+              <button className="bg-green-600 text-white px-6 py-3 rounded shadow-md hover:bg-green-700 transition">Catálogo de Cursos</button>
+              <button className="bg-purple-600 text-white px-6 py-3 rounded shadow-md hover:bg-purple-700 transition">Certificados</button>
+            </>
+          )}
+        </main>
 
         {/* Footer */}
         <footer className="bg-white text-center py-4 mt-6 shadow-inner relative">
