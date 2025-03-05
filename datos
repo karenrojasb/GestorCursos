@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import { ArrowLeftIcon } from "@heroicons/react/16/solid";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -9,21 +9,29 @@ interface LayoutProps {
 }
 
 export default function RootLayout({ children }: LayoutProps) {
-  const pathname = usePathname(); // Saber en qué ruta estamos
+  const pathname = usePathname();
   const router = useRouter();
   const [usuario, setUsuario] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // Para evitar renderizado prematuro
 
   useEffect(() => {
-    const usuarioGuardado = localStorage.getItem("usuario");
-    setUsuario(usuarioGuardado);
-
-    // Si el usuario no está autenticado y no está en /login, lo mandamos al login
-    if (!usuarioGuardado && pathname !== "/login") {
-      router.push("/login");
+    if (typeof window !== "undefined") {
+      // Accede a localStorage solo en el cliente
+      const usuarioGuardado = localStorage.getItem("usuario");
+      setUsuario(usuarioGuardado);
+      
+      // Si el usuario no está autenticado y no está en /login, redirigirlo
+      if (!usuarioGuardado && pathname !== "/login") {
+        router.replace("/login");
+      }
     }
+    setLoading(false);
   }, [pathname, router]);
 
-  const mostrarHeaderFooter = pathname !== "/login"; // Ocultar en login
+  // Evita mostrar el contenido mientras carga
+  if (loading) return null;
+
+  const mostrarHeaderFooter = pathname !== "/login";
 
   return (
     <html lang="es">
@@ -43,7 +51,7 @@ export default function RootLayout({ children }: LayoutProps) {
                 className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition"
                 onClick={() => {
                   localStorage.removeItem("usuario");
-                  router.push("/login");
+                  router.replace("/login"); // replace evita agregar al historial
                 }}
               >
                 <ArrowLeftIcon className="h-6 w-6" />
