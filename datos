@@ -10,10 +10,37 @@ interface LayoutProps {
 export default function RootLayout({ children }: LayoutProps) {
   const [usuario, setUsuario] = useState<string | null>(null);
   const [id, setId] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const iniciarSesion = () => {
-    if (id.trim() !== "") {
-      setUsuario(id); // Simulación de login, puedes reemplazar con una API
+  const iniciarSesion = async () => {
+    if (id.trim() === "") {
+      setError("Por favor, ingrese un ID válido.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:8090/api/usuarios/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_emp: id }), // Validando con la base de datos
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "ID no válido.");
+      }
+
+      setUsuario(id); // Se guarda el usuario autenticado
+      console.log("Inicio de sesión exitoso:", data);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,9 +60,11 @@ export default function RootLayout({ children }: LayoutProps) {
             <button
               onClick={iniciarSesion}
               className="bg-[#990000] text-white px-4 py-2 rounded w-full hover:bg-red-700 transition"
+              disabled={loading}
             >
-              Entrar
+              {loading ? "Verificando..." : "Entrar"}
             </button>
+            {error && <p className="text-red-600 mt-2">{error}</p>}
           </div>
         </body>
       </html>
