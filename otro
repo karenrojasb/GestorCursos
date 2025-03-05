@@ -41,19 +41,19 @@ export default function RootLayout({ children }: LayoutProps) {
   if (!usuario) {
     return (
       <html lang="es">
-        <body className="flex items-center justify-center h-screen bg-gray-200">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Iniciar Sesión</h2>
+        <body className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-800 to-black text-white">
+          <div className="bg-gray-900 p-8 rounded-lg shadow-lg w-96 text-center">
+            <h2 className="text-2xl font-bold mb-4">Iniciar Sesión</h2>
             <input
               type="text"
               placeholder="Ingrese su ID"
               value={id}
               onChange={(e) => setId(e.target.value)}
-              className="border p-2 w-full mb-3 rounded"
+              className="border border-gray-500 p-2 w-full mb-3 rounded bg-gray-800 text-white"
             />
             <button
               onClick={iniciarSesion}
-              className="bg-[#990000] text-white px-4 py-2 rounded w-full hover:bg-red-700 transition"
+              className="w-full bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition"
             >
               Entrar
             </button>
@@ -66,17 +66,17 @@ export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="es">
       <body className="bg-gray-100 min-h-screen flex flex-col">
-        <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+        {/* Encabezado con logo y botón de cerrar sesión */}
+        <header className="w-full flex items-center justify-between px-6 py-4 bg-gray-900 text-white shadow-md">
           <img
             src="/img/ecijg126.png"
             alt="Logo"
             className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
           />
-
           <div className="flex flex-col items-center ml-auto">
-            <span className="text-xl text-gray-700 font-medium">{nombre}</span>
+            <span className="text-xl font-medium">{nombre}</span>
             <button
-              className="flex items-center space-x-2 border border-red-600 px-3 py-2 rounded hover:bg-red-600 hover:text-white transition"
+              className="border border-red-500 px-3 py-2 rounded hover:bg-red-600 hover:text-white transition"
               onClick={() => setUsuario(null)}
             >
               Cerrar Sesión
@@ -84,7 +84,8 @@ export default function RootLayout({ children }: LayoutProps) {
           </div>
         </header>
 
-        <main className="flex flex-col items-center justify-center flex-1 p-4">
+        {/* Contenido principal */}
+        <main className="flex flex-col items-center justify-center flex-1 p-6">
           <motion.h1
             className="text-3xl font-bold text-[#990000] mb-6 text-center"
             initial={{ opacity: 0, y: -10 }}
@@ -94,17 +95,18 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
-          {/* PASAR esAdmin BASADO EN `publico` */}
+          {/* Pasar esAdmin basado en `publico` */}
           <MainButtons onSelect={() => {}} esAdmin={!!publico && publico === 1} />
 
           {children}
         </main>
 
-        <footer className="bg-white text-center py-4 mt-6 shadow-inner relative">
+        {/* Pie de página */}
+        <footer className="bg-gray-900 text-white text-center py-4 mt-6 shadow-inner relative">
           <div className="absolute bottom-4 left-4 bg-blue-800 border border-blue-700 p-4 rounded-lg">
             <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
           </div>
-          <p className="text-gray-700">&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
+          <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
         </footer>
       </body>
     </html>
