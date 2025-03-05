@@ -1,4 +1,4 @@
-"use client";
+"use client"; // Necesario para usar hooks como useState y useRouter
 
 import { useRouter } from "next/navigation";
 import MainButtons from "./components/mainbuttons";
@@ -14,12 +14,9 @@ export default function HomePage() {
   useEffect(() => {
     let index = 0;
     const interval = setInterval(() => {
-      if (index < mensaje.length) {
-        setTextoMostrado((prev) => [...prev, mensaje[index]]);
-        index++;
-      } else {
-        clearInterval(interval);
-      }
+      setTextoMostrado((prev) => [...prev, mensaje[index]]);
+      index++;
+      if (index === mensaje.length) clearInterval(interval);
     }, 50);
     return () => clearInterval(interval);
   }, []);
@@ -27,7 +24,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-3xl font-bold text-[#990000] mb-6 flex space-x-1">
-        {textoMostrado.map((letra, index) => (
+        {mensaje.split("").map((letra, index) => (
           <motion.span
             key={index}
             initial={{ opacity: 0, y: -10 }}
