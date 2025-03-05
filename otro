@@ -1,65 +1,144 @@
 "use client";
-import { ArrowLeftIcon } from "@heroicons/react/16/solid";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
 
-interface LayoutProps {
-  children: ReactNode;
+import { useState } from "react";
+import CatalogoModal from "./catalogomodal";
+import { BookOpenIcon, DocumentCheckIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { ChartBarIcon, PencilSquareIcon } from "@heroicons/react/16/solid";
+import { motion } from "framer-motion";
+import CatalogoAdminModal from "./catalogoadminmodal";
+import CursoModal from "./CursoModal";
+import { useRouter } from "next/navigation";
+
+interface MainButtonsProps {
+  onSelect: (section: string) => void;
+  publico: number; // Se recibe el valor de "publico" desde el layout
 }
 
-export default function RootLayout({ children }: LayoutProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [usuario, setUsuario] = useState<string | null>(null);
+export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
+  const [showCatalogo, setShowCatalogo] = useState(false);
+  const [showGestorModal, setShowGestorModal] = useState(false);
+  const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
+  const [showCursoModal, setShowCursoModal] = useState(false);
 
-  useEffect(() => {
-    const usuarioGuardado = localStorage.getItem("usuario");
-    setUsuario(usuarioGuardado);
+  const router = useRouter;
 
-    if (!usuarioGuardado && pathname !== "/login") {
-      router.replace("/login");
+  const handleSaveCurso = async (data: any) => {
+    console.log("Enviando datos:", data);
+
+    try {
+      const response = await fetch("http://localhost:8090/api/cursos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al guardar el curso");
+      }
+
+      alert("Curso guardado con éxito");
+      setShowCursoModal(false);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Hubo un error al guardar el curso");
     }
-  }, [pathname, router]);
-
-  const mostrarHeaderFooter = pathname !== "/login";
+  };
 
   return (
-    <div className="bg-gray-100 min-h-screen flex flex-col">
-      {mostrarHeaderFooter && (
-        <header className="w-full flex items-center justify-between px-6 py-4">
-          <img
-            src="/img/ecijg126.png"
-            alt="Logo"
-            className="h-20 transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-          />
-          <div className="flex flex-col items-center space-x-1 ml-auto">
-            <span className="text-xl text-gray-700 font-medium">
-              {usuario || "NOMBRE USUARIO"}
-            </span>
-            <button
-              className="flex items-center space-x-2 border border-[#990000] px-2 py-2 rounded hover:bg-[#990000] hover:text-white transition"
-              onClick={() => {
-                localStorage.removeItem("usuario");
-                router.push("/login");
-              }}
-            >
-              <ArrowLeftIcon className="h-6 w-6" />
-              SALIR
-            </button>
-          </div>
-        </header>
-      )}
+    <div className="flex flex-col space-y-4 w-full max-w-md">
+      {/* BOTÓN CATÁLOGO */}
+      <button
+        onClick={() => setShowCatalogo(true)}
+        className="flex items-center justify-center gap-3 w-full bg-[#990000] 
+                   text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
+      >
+        <BookOpenIcon className="h-6 w-6 text-white" />
+        Catálogo
+      </button>
+      {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
 
-      <main className="flex-grow">{children}</main>
+      {/* BOTÓN DE CERTIFICADOS */}
+      <button
+        onClick={() => onSelect("/catalogomodal")}
+        className="flex items-center justify-center gap-3 w-full bg-[#990000] 
+                   text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
+      >
+        <DocumentCheckIcon className="h-6 w-6 text-white" />
+        Certificados
+      </button>
 
-      {mostrarHeaderFooter && (
-        <footer className="mt-10 p-4 text-center bg-white">
-          <div className="bg-blue-800 absolute bottom-0 left-4 border border-blue-700 p-4 rounded-lg">
-            <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
-          </div>
-          <p>&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
-        </footer>
+      {/* BOTONES SOLO PARA ADMINISTRADORES */}
+      {publico === 1 && (
+        <>
+          {/* BOTÓN GESTOR DE CURSOS */}
+          <button
+            onClick={() => setShowGestorModal(true)}
+            className="flex items-center justify-center gap-3 w-full bg-[#990000] 
+                       text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
+          >
+            <PencilIcon className="h-6 w-6 text-white" />
+            Gestor de Cursos
+          </button>
+
+          {showGestorModal && (
+            <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+              <div className="relative flex flex-col items-center justify-center gap-3 w-full max-w-3xl bg-white 
+                              text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                {/* BOTÓN DE CERRAR */}
+                <button
+                  onClick={() => setShowGestorModal(false)}
+                  className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+
+                {/* TÍTULO */}
+                <h2 className="text-4xl font-extrabold text-[#990000] text-center">Gestor de Cursos</h2>
+
+                <div className="w-full flex flex-col items-center justify-center space-y-3 text-center">
+                  {/* BOTÓN CREAR CURSO */}
+                  <motion.button
+                    whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowCursoModal(true)}
+                    className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
+                  >
+                    <PencilSquareIcon className="h-6 w-6 text-white" />
+                    Crear Curso
+                  </motion.button>
+
+                  {/* BOTÓN CATÁLOGO ADMIN */}
+                  <motion.button
+                    whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowCatalogoAdmin(true)}
+                    className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
+                  >
+                    <BookOpenIcon className="h-6 w-6 text-white" />
+                    Catálogo
+                  </motion.button>
+
+                  {/* BOTÓN REPORTES */}
+                  <motion.button
+                    whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => onSelect("gestor-crear-editar")}
+                    className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
+                  >
+                    <ChartBarIcon className="h-6 w-6 text-white" />
+                    Reportes
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODALES */}
+          {showCatalogoAdmin && <CatalogoAdminModal onClose={() => setShowCatalogoAdmin(false)} />}
+          {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} onSave={handleSaveCurso} />}
+        </>
       )}
     </div>
   );
