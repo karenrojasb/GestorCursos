@@ -1,10 +1,34 @@
-const usuario = await prisma.usuario.findUnique({
-  where: { id_emp },
-  select: { nombre: true, publico: true },
-});
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
-if (!usuario) {
-  throw new Error("Usuario no encontrado.");
+@Injectable()
+export class UsuarioService {
+  constructor(private prisma: PrismaService) {}
+
+  async iniciarSesion(id_emp: string) {
+    const usuario = await this.prisma.$queryRaw<any[]>`
+      SELECT id_emp,  nombre, publico, e_mail 
+      FROM gescur.emp_nomina 
+      WHERE id_emp = TRIM(${id_emp})`;
+
+    if (usuario.length > 0) {
+      return usuario[0]; // Devuelve el primer usuario encontrado
+    } else {
+      return { mensaje: 'Usuario no encontrado' };
+    }
+  }
 }
 
-return { nombre: usuario.nombre, publico: usuario.publico };
+
+import { Controller, Post, Body } from '@nestjs/common';
+import { UsuarioService } from './usuario.service';
+
+@Controller('usuario')
+export class UsuarioController {
+  constructor(private readonly usuarioService: UsuarioService) {}
+
+  @Post('login')
+  async login(@Body() body: { id_emp: string }) {
+    return this.usuarioService.iniciarSesion(body.id_emp);
+  }
+}
