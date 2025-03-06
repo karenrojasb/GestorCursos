@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -12,9 +11,10 @@ import { PencilSquareIcon } from "@heroicons/react/16/solid";
 interface MainButtonsProps {
   onSelect: (section: string) => void;
   publico: number;
+  esAdmin: boolean; // Nuevo campo para validar administradores
 }
 
-export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
+export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsProps) {
   const [showCatalogo, setShowCatalogo] = useState(false);
   const [showGestorModal, setShowGestorModal] = useState(false);
   const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
@@ -64,8 +64,8 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
           Certificados
         </button>
 
-        {/* BOTÓN GESTOR DE CURSOS (SOLO PARA ADMINISTRADORES - PUBLICO 3) */}
-        {publico === 3 && (
+        {/* BOTÓN GESTOR DE CURSOS (SOLO PARA ADMINISTRADORES) */}
+        {esAdmin && (
           <>
             <button
               onClick={() => setShowGestorModal(true)}
