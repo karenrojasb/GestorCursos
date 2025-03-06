@@ -103,8 +103,8 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
-          {/* PASAMOS EL ROL AL COMPONENTE DE BOTONES */}
-          <MainButtons publico={usuario.publico} onSelect={console.log} />
+          {/* PASAMOS EL VALOR DE `publico` AL COMPONENTE DE BOTONES */}
+          <MainButtons publico={usuario.publico} onSelect={() => {}} />
 
           {children}
         </main>
