@@ -12,8 +12,8 @@ interface LayoutProps {
 // Definimos la estructura del usuario
 interface Usuario {
   nombre: string;
-  publico: number; // 1 = Profesor, 2 = Finanzas
-  esAdmin: boolean; // Se define según la tabla gescur.rol_usuario
+  publico: number | null; // 1 = Profesor, 2 = Finanzas
+  esAdmin: boolean | null; // Se define según la tabla gescur.rol_usuario
 }
 
 export default function RootLayout({ children }: LayoutProps) {
@@ -44,11 +44,23 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error(data.message || "El documento no es correcto.");
       }
 
+      // Verificación de si el usuario existe en las tablas
+      if (data.publico === null || data.publico === undefined) {
+        throw new Error("No tiene permisos para ingresar al sistema.");
+      }
+
+      // Verificamos si es un usuario válido (profesor, finanzas o administrador)
+      const esUsuarioValido = data.publico === 1 || data.publico === 2 || data.esAdmin;
+
+      if (!esUsuarioValido) {
+        throw new Error("No tiene permisos para ingresar al sistema.");
+      }
+
       // Definimos el usuario con su rol
       setUsuario({
         nombre: data.nombre,
         publico: data.publico, // 1 = Profesor, 2 = Finanzas
-        esAdmin: data.esAdmin, // Este valor debe venir del backend
+        esAdmin: data.esAdmin, // El backend debe enviar este valor
       });
     } catch (error: any) {
       setError(error.message);
