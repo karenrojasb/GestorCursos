@@ -82,7 +82,7 @@ export default function RootLayout({ children }: LayoutProps) {
           <div className="flex flex-col items-center ml-auto">
             <span className="text-xl text-gray-700 font-medium">{usuario.nombre}</span>
             <button
-              className="flex items-center space-x-2 border border-red-600 px-3 py-2 rounded hover:bg-red-600 hover:text-white transition"
+              className="flex items-center space-x-2 border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
               onClick={() => setUsuario(null)}
             >
               Cerrar Sesión
