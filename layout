@@ -1,9 +1,8 @@
-
 "use client";
 import { ReactNode, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import MainButtonsProps from "./components/mainbuttons";
+import MainButtons from "./components/mainbuttons"; // CORRECCIÓN: Importa el componente correcto
 import "./globals.css";
 
 interface LayoutProps {
@@ -103,7 +102,7 @@ export default function RootLayout({ children }: LayoutProps) {
           </motion.h1>
 
           {/* PASAMOS EL ROL AL COMPONENTE DE BOTONES */}
-          <MainButtonsProps publico={usuario.publico} onSelect={() => {}} />
+          <MainButtons publico={usuario.publico} onSelect={() => {}} />
 
           {children}
         </main>
