@@ -2,15 +2,21 @@
 import { ReactNode, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import MainButtons from "./components/mainbuttons"; 
+import MainButtons from "./components/mainbuttons";
 import "./globals.css";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
+interface Usuario {
+  nombre: string;
+  publico: number;
+  isAdmin: boolean;
+}
+
 export default function RootLayout({ children }: LayoutProps) {
-  const [usuario, setUsuario] = useState<{ nombre: string; publico: number } | null>(null);
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [id_emp, setIdEmp] = useState("");
   const [error, setError] = useState("");
 
@@ -35,7 +41,11 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error(data.message || "El documento no es correcto.");
       }
 
-      setUsuario({ nombre: data.nombre, publico: data.publico });
+      setUsuario({
+        nombre: data.nombre,
+        publico: data.publico,
+        isAdmin: data.isAdmin, // Ahora almacenamos si es administrador
+      });
     } catch (error: any) {
       setError(error.message);
     }
@@ -66,10 +76,6 @@ export default function RootLayout({ children }: LayoutProps) {
       </html>
     );
   }
-
-  // Determinar si es profesor o administrativo según el nuevo criterio
-  const esProfesor = usuario.publico === 1;
-  const esAdministrativo = usuario.publico === 2;
 
   return (
     <html lang="es">
@@ -105,7 +111,7 @@ export default function RootLayout({ children }: LayoutProps) {
           </motion.h1>
 
           {/* BOTONES PRINCIPALES */}
-          <MainButtons publico={usuario.publico} onSelect={() => {}} />
+          <MainButtons publico={usuario.publico} isAdmin={usuario.isAdmin} onSelect={() => {}} />
 
           {/* CONTENIDO DINÁMICO */}
           {children}
