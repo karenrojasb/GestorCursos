@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import CatalogoModal from "./catalogomodal";
 import CatalogoAdminModal from "./catalogoadminmodal";
@@ -23,6 +23,11 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
   const [showGestorModal, setShowGestorModal] = useState(false);
   const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
   const [showCursoModal, setShowCursoModal] = useState(false);
+
+  // Verifica que el valor de `publico` se recibe correctamente
+  useEffect(() => {
+    console.log("Valor de publico:", publico);
+  }, [publico]);
 
   // Función para guardar un curso en la API
   const handleSaveCurso = async (data: any) => {
@@ -48,38 +53,44 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
       <div className="w-full max-w-md flex flex-col space-y-4 items-center">
         
         {/* BOTÓN CATÁLOGO */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowCatalogo(true)}
           className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
-                     text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                     text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
         >
           <BookOpenIcon className="h-6 w-6 text-white" />
           Catálogo
-        </button>
+        </motion.button>
         {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
 
         {/* BOTÓN CERTIFICADOS */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => onSelect("catalogomodal")}
           className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
-                     text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                     text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
         >
           <DocumentCheckIcon className="h-6 w-6 text-white" />
           Certificados
-        </button>
+        </motion.button>
 
-        {/* BOTONES SOLO PARA ADMINISTRATIVOS DEL SISTEMA */}
+        {/* BOTONES SOLO PARA ADMINISTRADORES (publico === 3) */}
         {publico === 3 && (
           <>
             {/* BOTÓN GESTOR DE CURSOS */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setShowGestorModal(true)}
               className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
-                         text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                         text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
             >
               <PencilIcon className="h-6 w-6 text-white" />
               Gestor de Cursos
-            </button>
+            </motion.button>
 
             {/* MODAL GESTOR DE CURSOS */}
             {showGestorModal && (
@@ -103,7 +114,7 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
                       whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowCursoModal(true)}
-                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
                     >
                       <PencilSquareIcon className="h-6 w-6 text-white" />
                       Crear Curso
@@ -114,24 +125,11 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
                       whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowCatalogoAdmin(true)}
-                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
                     >
                       <BookOpenIcon className="h-6 w-6 text-white" />
                       Catálogo
                     </motion.button>
-
-                    {/* BOTÓN REPORTES (OCULTO POR AHORA) */}
-                    {/* 
-                    <motion.button
-                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => onSelect("gestor-crear-editar")}
-                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
-                    >
-                      <ChartBarIcon className="h-6 w-6 text-white" />
-                      Reportes
-                    </motion.button>
-                    */}
                   </div>
                 </div>
               </div>
