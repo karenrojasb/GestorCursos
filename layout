@@ -1,12 +1,13 @@
-"use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+"use client";
+import { ReactNode, useState } from "react";
 import Image from "next/image";
-import MainButtons from "./MainButtons";
+import { motion } from "framer-motion";
+import MainButtonsProps from "./components/mainbuttons";
+import "./globals.css";
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function RootLayout({ children }: LayoutProps) {
@@ -31,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps) {
       });
 
       const data = await response.json();
-      console.log("Datos recibidos del backend:", data);
+      console.log("Datos recibidos del backend:", data); // <-- Verifica qué devuelve
 
       if (!response.ok) {
         throw new Error(data.message || "El documento no es correcto.");
@@ -39,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps) {
 
       setUsuario({ nombre: data.nombre, publico: data.publico });
     } catch (error: any) {
-      setError(error.message || "Error al iniciar sesión.");
+      setError(error.message);
     }
   };
 
@@ -75,11 +76,9 @@ export default function RootLayout({ children }: LayoutProps) {
     <html lang="es">
       <body className="bg-gray-100 flex flex-col min-h-screen">
         <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
-          <Image
+          <img
             src="/img/ecijg126.png"
             alt="Logo"
-            width={100}
-            height={80}
             className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
           />
           <div className="flex flex-col items-center ml-auto">
@@ -103,8 +102,8 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
-          {/* PASAMOS EL VALOR DE `publico` AL COMPONENTE DE BOTONES */}
-          <MainButtons publico={usuario.publico} onSelect={() => {}} />
+          {/* PASAMOS EL ROL AL COMPONENTE DE BOTONES */}
+          <MainButtonsProps publico={usuario.publico} onSelect={() => {}} />
 
           {children}
         </main>
