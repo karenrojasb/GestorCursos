@@ -16,18 +16,20 @@ import { PencilSquareIcon } from "@heroicons/react/16/solid";
 interface MainButtonsProps {
   onSelect: (section: string) => void;
   publico: number;
+  esAdmin: boolean; // Agregamos esAdmin
 }
 
-export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
+export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsProps) {
   const [showCatalogo, setShowCatalogo] = useState(false);
   const [showGestorModal, setShowGestorModal] = useState(false);
   const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
   const [showCursoModal, setShowCursoModal] = useState(false);
 
-  // Verifica que el valor de `publico` se recibe correctamente
+  // Verifica que los valores de `publico` y `esAdmin` se reciben correctamente
   useEffect(() => {
     console.log("Valor de publico:", publico);
-  }, [publico]);
+    console.log("Valor de esAdmin:", esAdmin);
+  }, [publico, esAdmin]);
 
   // Función para guardar un curso en la API
   const handleSaveCurso = async (data: any) => {
@@ -77,8 +79,8 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
           Certificados
         </motion.button>
 
-        {/* BOTONES SOLO PARA ADMINISTRADORES (publico === 3) */}
-        {publico === 3 && (
+        {/* BOTONES SOLO PARA ADMINISTRADORES */}
+        {esAdmin && (
           <>
             {/* BOTÓN GESTOR DE CURSOS */}
             <motion.button
