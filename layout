@@ -80,7 +80,7 @@ export default function RootLayout({ children }: LayoutProps) {
           <div className="flex flex-col items-center ml-auto">
             <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
             <button
-              className="border border-[#990000] px-3 py-2 rounded hover:bg- hover:text-white transition"
+              className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
               onClick={() => setUsuario(null)}
             >
               Cerrar Sesión
@@ -88,8 +88,8 @@ export default function RootLayout({ children }: LayoutProps) {
           </div>
         </header>
 
-        
-        <main className="flex flex-col items-center justify-center flex-1 p-6">
+        {/* CONTENIDO PRINCIPAL */}
+        <main className="flex flex-col items-center justify-center flex-grow p-6">
           {/* MENSAJE CON ANIMACIÓN */}
           <motion.h1
             className="text-3xl font-bold text-[#990000] mb-6 text-center"
@@ -100,16 +100,16 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
-          {/* BOTONES PRINCIALES */}
+          {/* BOTONES PRINCIPALES */}
           <MainButtons publico={usuario.publico} onSelect={() => {}} />
 
-          {/* CONTENIDO DE LA PÁGINA */}
+          {/* CONTENIDO DINÁMICO */}
           {children}
         </main>
 
-        {/* PIE */}
-        <footer className="bg-white  text-center py-4 mt-1 shadow-inner relative">
-          <div className="absolute  left-4 bg-blue-800 border border-blue-700 p-4 rounded-lg">
+        {/* PIE DE PÁGINA */}
+        <footer className="bg-white text-center py-4 shadow-inner w-full">
+          <div className="absolute bottom-4 left-4 bg-blue-800 border border-blue-700 p-4 rounded-lg">
             <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
           </div>
           <p className="text-gray-700">&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
