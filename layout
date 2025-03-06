@@ -12,11 +12,11 @@ interface LayoutProps {
 interface Usuario {
   nombre: string;
   publico: number;
+  isAdmin: boolean;
 }
 
 export default function RootLayout({ children }: LayoutProps) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [id_emp, setIdEmp] = useState("");
   const [error, setError] = useState("");
 
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps) {
     }
 
     try {
-      // Primera petición para obtener los datos del usuario
+      // Realizar la primera solicitud para obtener datos del usuario
       const responseUsuario = await fetch("http://localhost:8090/api/usuario/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -42,27 +42,27 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error(dataUsuario.message || "El documento no es correcto.");
       }
 
-      // Actualizar el estado del usuario
-      setUsuario({
-        nombre: dataUsuario.nombre,
-        publico: dataUsuario.publico,
-      });
-
-      // Segunda petición para verificar si el usuario es administrador del sistema
-      const responseAdmin = await fetch("http://localhost:8090/api/usuario/esAdmin", {
+      // Realizar la segunda solicitud para verificar si el usuario es administrador del sistema
+      const responseRol = await fetch("http://localhost:8090/api/usuario/rol", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_emp }),
       });
 
-      const dataAdmin = await responseAdmin.json();
+      const dataRol = await responseRol.json();
 
-      if (!responseAdmin.ok) {
-        throw new Error(dataAdmin.message || "Error al verificar rol de administrador.");
+      if (!responseRol.ok) {
+        throw new Error(dataRol.message || "No se pudo verificar el rol del usuario.");
       }
 
-      // Actualizar el estado de isAdmin basado en la respuesta
-      setIsAdmin(dataAdmin.esAdmin);
+      // Determinar si el usuario es administrador del sistema
+      const isAdmin = dataRol.id_rol === 1;
+
+      setUsuario({
+        nombre: dataUsuario.nombre,
+        publico: dataUsuario.publico,
+        isAdmin: isAdmin,
+      });
     } catch (error: any) {
       setError(error.message);
     }
@@ -128,7 +128,7 @@ export default function RootLayout({ children }: LayoutProps) {
           </motion.h1>
 
           {/* BOTONES PRINCIPALES */}
-          <MainButtons publico={usuario.publico} isAdmin={isAdmin} onSelect={() => {}} />
+          <MainButtons publico={usuario.publico} isAdmin={usuario.isAdmin} onSelect={() => {}} />
 
           {/* CONTENIDO DINÁMICO */}
           {children}
