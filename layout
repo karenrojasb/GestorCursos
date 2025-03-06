@@ -12,11 +12,11 @@ interface LayoutProps {
 interface Usuario {
   nombre: string;
   publico: number;
-  isAdmin: boolean;
 }
 
 export default function RootLayout({ children }: LayoutProps) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [id_emp, setIdEmp] = useState("");
   const [error, setError] = useState("");
 
@@ -29,23 +29,40 @@ export default function RootLayout({ children }: LayoutProps) {
     }
 
     try {
-      const response = await fetch("http://localhost:8090/api/usuario/login", {
+      // Primera petición para obtener los datos del usuario
+      const responseUsuario = await fetch("http://localhost:8090/api/usuario/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_emp }),
       });
 
-      const data = await response.json();
+      const dataUsuario = await responseUsuario.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "El documento no es correcto.");
+      if (!responseUsuario.ok) {
+        throw new Error(dataUsuario.message || "El documento no es correcto.");
       }
 
+      // Actualizar el estado del usuario
       setUsuario({
-        nombre: data.nombre,
-        publico: data.publico,
-        isAdmin: data.isAdmin, // Ahora almacenamos si es administrador
+        nombre: dataUsuario.nombre,
+        publico: dataUsuario.publico,
       });
+
+      // Segunda petición para verificar si el usuario es administrador del sistema
+      const responseAdmin = await fetch("http://localhost:8090/api/usuario/esAdmin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_emp }),
+      });
+
+      const dataAdmin = await responseAdmin.json();
+
+      if (!responseAdmin.ok) {
+        throw new Error(dataAdmin.message || "Error al verificar rol de administrador.");
+      }
+
+      // Actualizar el estado de isAdmin basado en la respuesta
+      setIsAdmin(dataAdmin.esAdmin);
     } catch (error: any) {
       setError(error.message);
     }
@@ -111,7 +128,7 @@ export default function RootLayout({ children }: LayoutProps) {
           </motion.h1>
 
           {/* BOTONES PRINCIPALES */}
-          <MainButtons publico={usuario.publico} isAdmin={usuario.isAdmin} onSelect={() => {}} />
+          <MainButtons publico={usuario.publico} isAdmin={isAdmin} onSelect={() => {}} />
 
           {/* CONTENIDO DINÁMICO */}
           {children}
