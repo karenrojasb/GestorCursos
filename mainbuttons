@@ -7,7 +7,6 @@ import { ChartBarIcon, PencilSquareIcon } from "@heroicons/react/16/solid";
 import { motion } from "framer-motion";
 import CatalogoAdminModal from "./catalogoadminmodal";
 import CursoModal from "./CursoModal";
-import { useRouter } from "next/navigation";
 
 interface MainButtonsProps {
   onSelect: (section: string) => void;
@@ -63,8 +62,8 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
           Certificados
         </button>
 
-        {/* BOTONES SOLO PARA ADMINISTRADORES */}
-        {publico === 1 && (
+        {/* BOTONES SOLO PARA ADMINISTRATIVOS DEL SISTEMA */}
+        {publico === 3 && (
           <>
             {/* BOTÓN GESTOR DE CURSOS */}
             <button
