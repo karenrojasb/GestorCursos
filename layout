@@ -72,10 +72,12 @@ export default function RootLayout({ children }: LayoutProps) {
       <body className="bg-gray-100 flex flex-col min-h-screen">
         {/* ENCABEZADO */}
         <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
-          <img
+          <Image
             src="/img/ecijg126.png"
             alt="Logo"
-            className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
+            width={80}
+            height={80}
+            className="transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
           />
           <div className="flex flex-col items-center ml-auto">
             <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
@@ -102,7 +104,7 @@ export default function RootLayout({ children }: LayoutProps) {
           {/* BOTONES PRINCIPALES */}
           <MainButtons publico={usuario.publico} onSelect={() => {}} />
 
-          {/* CONTENIDO DE LA PÁGINA */}
+          {/* CONTENIDO DINÁMICO */}
           {children}
         </main>
 
