@@ -1,3 +1,38 @@
+
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+@Injectable()
+export class UsuarioService {
+  constructor(private prisma: PrismaService) {}
+
+  async iniciarSesion(id_emp: string) {
+    // Consulta en emp_nomina
+    const usuario = await this.prisma.$queryRaw<any[]>`
+      SELECT id_emp, nombre, publico, e_mail 
+      FROM gescur.emp_nomina 
+      WHERE id_emp = TRIM(${id_emp})`;
+
+    if (usuario.length === 0) {
+      return { mensaje: 'Usuario no encontrado' };
+    }
+
+    // Extraemos el email del usuario encontrado
+    const { e_mail } = usuario[0];
+
+    // Verificamos si el usuario es administrador en gescur.rol_usuario
+    const esAdmin = await this.prisma.$queryRaw<any[]>`
+      SELECT 1 FROM gescur.rol_usuario WHERE usuario = ${e_mail}`;
+
+    return {
+      ...usuario[0],
+      esAdmin: esAdmin.length > 0, // Si encuentra un registro, es administrador
+    };
+  }
+}
+
+
+
 import { Controller, Post, Body } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
 
