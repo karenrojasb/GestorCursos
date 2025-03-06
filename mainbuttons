@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import CatalogoModal from "./catalogomodal";
-import { BookOpenIcon, DocumentCheckIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { ChartBarIcon, PencilSquareIcon } from "@heroicons/react/16/solid";
 import { motion } from "framer-motion";
+import CatalogoModal from "./catalogomodal";
 import CatalogoAdminModal from "./catalogoadminmodal";
 import CursoModal from "./CursoModal";
+import {
+  BookOpenIcon,
+  DocumentCheckIcon,
+  PencilIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
+import { PencilSquareIcon } from "@heroicons/react/16/solid";
 
 interface MainButtonsProps {
   onSelect: (section: string) => void;
@@ -19,6 +24,7 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
   const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
   const [showCursoModal, setShowCursoModal] = useState(false);
 
+  // Función para guardar un curso en la API
   const handleSaveCurso = async (data: any) => {
     try {
       const response = await fetch("http://localhost:8090/api/cursos", {
@@ -54,7 +60,7 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
 
         {/* BOTÓN CERTIFICADOS */}
         <button
-          onClick={() => onSelect("/catalogomodal")}
+          onClick={() => onSelect("catalogomodal")}
           className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
                      text-white py-3 rounded-lg shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
         >
@@ -114,7 +120,8 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
                       Catálogo
                     </motion.button>
 
-                    {/* BOTÓN REPORTES */}
+                    {/* BOTÓN REPORTES (OCULTO POR AHORA) */}
+                    {/* 
                     <motion.button
                       whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
                       whileTap={{ scale: 0.95 }}
@@ -124,6 +131,7 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
                       <ChartBarIcon className="h-6 w-6 text-white" />
                       Reportes
                     </motion.button>
+                    */}
                   </div>
                 </div>
               </div>
