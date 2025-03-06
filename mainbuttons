@@ -5,16 +5,20 @@ import { motion } from "framer-motion";
 import CatalogoModal from "./catalogomodal";
 import CatalogoAdminModal from "./catalogoadminmodal";
 import CursoModal from "./CursoModal";
-import { BookOpenIcon, DocumentCheckIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+  BookOpenIcon,
+  DocumentCheckIcon,
+  PencilIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
 import { PencilSquareIcon } from "@heroicons/react/16/solid";
 
 interface MainButtonsProps {
   onSelect: (section: string) => void;
   publico: number;
-  esAdmin: boolean; // Nuevo campo para validar administradores
 }
 
-export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsProps) {
+export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
   const [showCatalogo, setShowCatalogo] = useState(false);
   const [showGestorModal, setShowGestorModal] = useState(false);
   const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
@@ -43,7 +47,7 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
     <div className="flex flex-col items-center justify-center min-h-screen w-full">
       <div className="w-full max-w-md flex flex-col space-y-4 items-center">
         
-        {/* BOTÓN CATÁLOGO (VISIBLE PARA TODOS) */}
+        {/* BOTÓN CATÁLOGO */}
         <button
           onClick={() => setShowCatalogo(true)}
           className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
@@ -54,7 +58,7 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
         </button>
         {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
 
-        {/* BOTÓN CERTIFICADOS (VISIBLE PARA TODOS) */}
+        {/* BOTÓN CERTIFICADOS */}
         <button
           onClick={() => onSelect("catalogomodal")}
           className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
@@ -64,9 +68,10 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
           Certificados
         </button>
 
-        {/* BOTÓN GESTOR DE CURSOS (SOLO PARA ADMINISTRADORES) */}
-        {esAdmin && (
+        {/* BOTONES SOLO PARA ADMINISTRATIVOS DEL SISTEMA */}
+        {publico === 3 && (
           <>
+            {/* BOTÓN GESTOR DE CURSOS */}
             <button
               onClick={() => setShowGestorModal(true)}
               className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
@@ -114,6 +119,19 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
                       <BookOpenIcon className="h-6 w-6 text-white" />
                       Catálogo
                     </motion.button>
+
+                    {/* BOTÓN REPORTES (OCULTO POR AHORA) */}
+                    {/* 
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => onSelect("gestor-crear-editar")}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
+                    >
+                      <ChartBarIcon className="h-6 w-6 text-white" />
+                      Reportes
+                    </motion.button>
+                    */}
                   </div>
                 </div>
               </div>
