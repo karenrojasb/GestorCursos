@@ -2,21 +2,15 @@
 import { ReactNode, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import MainButtons from "./components/mainbuttons";
+import MainButtons from "./components/mainbuttons"; 
 import "./globals.css";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-interface Usuario {
-  nombre: string;
-  publico: number;
-  isAdmin: boolean;
-}
-
 export default function RootLayout({ children }: LayoutProps) {
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [usuario, setUsuario] = useState<{ nombre: string; publico: number } | null>(null);
   const [id_emp, setIdEmp] = useState("");
   const [error, setError] = useState("");
 
@@ -29,40 +23,19 @@ export default function RootLayout({ children }: LayoutProps) {
     }
 
     try {
-      // Realizar la primera solicitud para obtener datos del usuario
-      const responseUsuario = await fetch("http://localhost:8090/api/usuario/login", {
+      const response = await fetch("http://localhost:8090/api/usuario/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_emp }),
       });
 
-      const dataUsuario = await responseUsuario.json();
+      const data = await response.json();
 
-      if (!responseUsuario.ok) {
-        throw new Error(dataUsuario.message || "El documento no es correcto.");
+      if (!response.ok) {
+        throw new Error(data.message || "El documento no es correcto.");
       }
 
-      // Realizar la segunda solicitud para verificar si el usuario es administrador del sistema
-      const responseRol = await fetch("http://localhost:8090/api/usuario/rol", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_emp }),
-      });
-
-      const dataRol = await responseRol.json();
-
-      if (!responseRol.ok) {
-        throw new Error(dataRol.message || "No se pudo verificar el rol del usuario.");
-      }
-
-      // Determinar si el usuario es administrador del sistema
-      const isAdmin = dataRol.id_rol === 1;
-
-      setUsuario({
-        nombre: dataUsuario.nombre,
-        publico: dataUsuario.publico,
-        isAdmin: isAdmin,
-      });
+      setUsuario({ nombre: data.nombre, publico: data.publico });
     } catch (error: any) {
       setError(error.message);
     }
@@ -97,7 +70,7 @@ export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="es">
       <body className="bg-gray-100 flex flex-col min-h-screen">
-        {/* ENCABEZADO */}
+        {/* ENCABEZADO, LOGO Y CERRAR SESION */}
         <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
           <img
             src="/img/ecijg126.png"
@@ -107,7 +80,7 @@ export default function RootLayout({ children }: LayoutProps) {
           <div className="flex flex-col items-center ml-auto">
             <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
             <button
-              className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
+              className="border border-[#990000] px-3 py-2 rounded hover:bg- hover:text-white transition"
               onClick={() => setUsuario(null)}
             >
               Cerrar Sesión
@@ -115,9 +88,9 @@ export default function RootLayout({ children }: LayoutProps) {
           </div>
         </header>
 
-        {/* CONTENIDO PRINCIPAL */}
+        
         <main className="flex flex-col items-center justify-center flex-1 p-6">
-          {/* MENSAJE DE BIENVENIDA */}
+          {/* MENSAJE CON ANIMACIÓN */}
           <motion.h1
             className="text-3xl font-bold text-[#990000] mb-6 text-center"
             initial={{ opacity: 0, y: -10 }}
@@ -127,21 +100,19 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
-          {/* BOTONES PRINCIPALES */}
-          <MainButtons publico={usuario.publico} isAdmin={usuario.isAdmin} onSelect={() => {}} />
+          {/* BOTONES PRINCIALES */}
+          <MainButtons publico={usuario.publico} onSelect={() => {}} />
 
-          {/* CONTENIDO DINÁMICO */}
+          {/* CONTENIDO DE LA PÁGINA */}
           {children}
         </main>
 
-        {/* PIE DE PÁGINA */}
-        <footer className="bg-white text-center py-4 shadow-inner mt-auto">
-          <div className="absolute left-4 bg-blue-800 border border-blue-700 p-4 rounded-lg">
+        {/* PIE */}
+        <footer className="bg-white  text-center py-4 mt-1 shadow-inner relative">
+          <div className="absolute  left-4 bg-blue-800 border border-blue-700 p-4 rounded-lg">
             <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
           </div>
-          <p className="text-gray-700">
-            &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
-          </p>
+          <p className="text-gray-700">&copy; {new Date().getFullYear()} - Plataforma de gestión de cursos</p>
         </footer>
       </body>
     </html>
