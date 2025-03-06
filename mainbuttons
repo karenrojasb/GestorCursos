@@ -1,30 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { Controller, Post, Body } from '@nestjs/common';
+import { UsuarioService } from './usuario.service';
 
-@Injectable()
-export class UsuarioService {
-  constructor(private prisma: PrismaService) {}
+@Controller('usuario')
+export class UsuarioController {
+  constructor(private readonly usuarioService: UsuarioService) {}
 
-  async validarUsuario(id_emp: string) {
-    const usuario = await this.prisma.emp_nomina.findUnique({
-      where: { id_emp },
-      select: { id_emp: true, nombre: true, publico: true, email: true },
-    });
-
-    if (!usuario) {
-      throw new Error('El usuario no existe');
-    }
-
-    // Verificar si el usuario es administrador en gescur.rol_usuario
-    const esAdmin = await this.prisma.rol_usuario.findFirst({
-      where: { usuario: usuario.email, id_rol: 1 }, // Busca el email en la tabla rol_usuario
-    });
-
-    return {
-      id_emp: usuario.id_emp,
-      nombre: usuario.nombre,
-      publico: usuario.publico, // 1 = profesor, 2 = administrativo
-      esAdministrador: !!esAdmin, // true si está en rol_usuario con id_rol = 1
-    };
+  @Post('login')
+  async login(@Body() body: { id_emp: string }) {
+    return this.usuarioService.validarUsuario(body.id_emp);
   }
 }
