@@ -5,12 +5,7 @@ import { motion } from "framer-motion";
 import CatalogoModal from "./catalogomodal";
 import CatalogoAdminModal from "./catalogoadminmodal";
 import CursoModal from "./CursoModal";
-import {
-  BookOpenIcon,
-  DocumentCheckIcon,
-  PencilIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/solid";
+import { BookOpenIcon, DocumentCheckIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { PencilSquareIcon } from "@heroicons/react/16/solid";
 
 interface MainButtonsProps {
@@ -47,7 +42,7 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
     <div className="flex flex-col items-center justify-center min-h-screen w-full">
       <div className="w-full max-w-md flex flex-col space-y-4 items-center">
         
-        {/* BOTÓN CATÁLOGO */}
+        {/* BOTÓN CATÁLOGO (VISIBLE PARA TODOS) */}
         <button
           onClick={() => setShowCatalogo(true)}
           className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
@@ -58,7 +53,7 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
         </button>
         {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
 
-        {/* BOTÓN CERTIFICADOS */}
+        {/* BOTÓN CERTIFICADOS (VISIBLE PARA TODOS) */}
         <button
           onClick={() => onSelect("catalogomodal")}
           className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
@@ -68,10 +63,9 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
           Certificados
         </button>
 
-        {/* BOTONES SOLO PARA ADMINISTRATIVOS DEL SISTEMA */}
+        {/* BOTÓN GESTOR DE CURSOS (SOLO PARA ADMINISTRADORES - PUBLICO 3) */}
         {publico === 3 && (
           <>
-            {/* BOTÓN GESTOR DE CURSOS */}
             <button
               onClick={() => setShowGestorModal(true)}
               className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
@@ -119,19 +113,6 @@ export default function MainButtons({ onSelect, publico }: MainButtonsProps) {
                       <BookOpenIcon className="h-6 w-6 text-white" />
                       Catálogo
                     </motion.button>
-
-                    {/* BOTÓN REPORTES (OCULTO POR AHORA) */}
-                    {/* 
-                    <motion.button
-                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => onSelect("gestor-crear-editar")}
-                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg justify-center"
-                    >
-                      <ChartBarIcon className="h-6 w-6 text-white" />
-                      Reportes
-                    </motion.button>
-                    */}
                   </div>
                 </div>
               </div>
