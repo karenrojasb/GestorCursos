@@ -37,13 +37,10 @@ export class InscripcionesController {
 }
 
 
-
-
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
 import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class InscripcionesService {
@@ -52,16 +49,29 @@ export class InscripcionesService {
   //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
   async createInscripcion(data: CreateInscripcioneDto) {
     console.log('Datos recibidos para crear inscripción:', data);
-    const nuevaInscripcion = await this.prisma.inscripciones.create({ data });
-    console.log('Inscripción creada exitosamente:', nuevaInscripcion);
-    return nuevaInscripcion;
+
+    try {
+      const nuevaInscripcion = await this.prisma.inscripciones.create({
+        data: {
+          idCur: data.idCur,
+          docInscr: data.docInscr,
+          fechaInscripcion: new Date(), // SE REGISTRA AUTOMÁTICAMENTE LA FECHA
+        },
+      });
+
+      console.log('Inscripción creada exitosamente:', nuevaInscripcion);
+      return nuevaInscripcion;
+    } catch (error) {
+      console.error('Error al crear inscripción:', error);
+      throw new Error('No se pudo registrar la inscripción.');
+    }
   }
 
   //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
   async getInscripciones() {
     return this.prisma.inscripciones.findMany({
       include: {
-        Cursos: { select: { NombreCurso: true } }, // OBTIENE EL NOMBRE DEL CURSO DESDE gescur.Cursos
+        Cursos: { select: { nombre_curso: true } }, // RELACIÓN CON LA TABLA Cursos
       },
     });
   }
@@ -93,5 +103,8 @@ export class InscripcionesService {
     }
   }
 }
+
+
+
 
 
