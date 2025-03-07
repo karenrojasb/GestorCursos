@@ -1,92 +1,109 @@
-import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
+import { InscripcionesService } from './inscripciones.service';
+import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
+import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
 
-interface InscripcionesModalProps {
-  onClose: () => void;
+@Controller('inscripciones')
+export class InscripcionesController {
+  constructor(private readonly inscripcionesService: InscripcionesService) {}
+  
+  //  MÉTODO PARA CREAR UN NUEVO CURSO
+  @Post()
+  async createEnrodell (@Body() CreateInscripcioneDto:CreateInscripcioneDto){
+    return this.inscripcionesService.createEnrodell(CreateInscripcioneDto);
+  }
+  
+
+  //MÉTODO OBTENER UN CURSO
+  @Get()
+  async getEnrodell() {
+    return this.inscripcionesService.getEnrodell();
+  }
+  
+
+  //MÉTODO ACTUALIZAR UN CURSO POR ID
+  @Put(':id')
+  async updateEnrodell(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
+    const updateEnrodell = await this.inscripcionesService.updateEnrodell(Number(id), updateInscripcioneDto)
+       if (!updateEnrodell) {
+         throw new NotFoundException(`The id #${id} not found`);
+     }
+     return updateEnrodell;
+  }
+
+
+  //MÉTODO PARA ELIMINAR UN CURSO POR ID
+  @Delete (':id' )
+  async deleteEnrodell(@Param('id') id: string){
+    return this.inscripcionesService.deleteEnrodell(Number(id));
+  } 
 }
 
-export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
-  const [inscripciones, setInscripciones] = useState([]);
-  const [cursos, setCursos] = useState<{ id: number; nombre_curso: string }[]>([]);
 
-  useEffect(() => {
-    const fetchInscripciones = async () => {
-      try {
-        const response = await fetch("http://localhost:8090/api/inscripciones");
-        if (!response.ok) throw new Error("Error al obtener inscripciones");
-        const data = await response.json();
-        setInscripciones(data);
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
+import { Injectable, ValidationPipe } from '@nestjs/common';
+import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
+import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from 'src/app.module';
 
-    const fetchCursos = async () => {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos");
-        if (!response.ok) throw new Error("Error al obtener cursos");
-        const data = await response.json();
-        setCursos(data);
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
+@Injectable()
+export class InscripcionesService {
 
-    fetchInscripciones();
-    fetchCursos();
-  }, []);
+   
+   constructor(private readonly prisma: PrismaService) {}
+ 
+  //  MÉTODO PARA CREAR UN NUEVO CURSO
+ 
+   async createEnrodell(data: CreateInscripcioneDto) {
+     //ENTRADA LOG
+     console.log('Data received to create:', data);
+     const nuevoInscrito = await this.prisma.inscripciones.create({ data, });
+     //RESULTADO LOG
+     console.log('Enrodell created successfully:', nuevoInscrito);
+     return nuevoInscrito;
+   }
 
-  // Función para obtener el nombre del curso según idCur
-  const obtenerNombreCurso = (idCur: number) => {
-    const curso = cursos.find((c) => c.id === idCur);
-    return curso ? curso.nombre_curso : "Desconocido";
-  };
+ 
+ 
+   //MÉTODO OBTENER UN CURSO
+   async getEnrodell() {
+     return this.prisma.inscripciones.findMany();
+   }
+ 
+    
+   //MÉTODO ACTUALIZAR UN CURSO POR ID
+   async updateEnrodell (id: number, data: Prisma.InscripcionesCreateInput){
+     console.log ('id received:', id);
+     console.log('data received:', data);
+ 
+     try {
+       const updateEnrodell = await this.prisma.inscripciones.update({
+         where: {id},
+         data,
+       });
+       console.log ('update enrodell:', updateEnrodell);
+       return updateEnrodell;
+     }
+     catch (error){
+       console.error ('error when updating enrodell:', error);
+       throw new error('the enrodell was not updated');
+     }
+    
+   }
+   
+ 
+   //MÉTODO PARA ELIMINAR UN CURSO POR ID
+   async deleteEnrodell(id: number) {
+     return this.prisma.inscripciones.delete({ where: { id } });
+   }
+ 
+ 
+ }
 
-  return (
-    <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-6 px-8 rounded-lg shadow-md">
-        
-        {/* BOTÓN CERRAR */}
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-
-        {/* TÍTULO */}
-        <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
-
-        {/* LISTA DE INSCRIPCIONES CON SCROLL */}
-        <div className="w-full max-h-80 overflow-auto border border-gray-300 rounded-md shadow-sm">
-          {inscripciones.length > 0 ? (
-            <table className="w-full border-collapse border border-gray-300">
-              <thead className="bg-gray-200 text-gray-700">
-                <tr>
-                  <th className="border p-2">ID</th>
-                  <th className="border p-2">Curso</th>
-                  <th className="border p-2">Doc. Inscrito</th>
-                  <th className="border p-2">Estado</th>
-                  <th className="border p-2">Fecha Registro</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inscripciones.map((inscripcion: any) => (
-                  <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
-                    <td className="border p-2">{inscripcion.id}</td>
-                    <td className="border p-2">{obtenerNombreCurso(inscripcion.idCur)}</td>
-                    <td className="border p-2">{inscripcion.docInscr}</td>
-                    <td className="border p-2">{inscripcion.est}</td>
-                    <td className="border p-2">{new Date(inscripcion.fecreg).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+function getEnrodell() {
+  throw new Error('Function not implemented.');
 }
+ 
+
