@@ -1,36 +1,13 @@
-Console Error
-
-In HTML, whitespace text nodes cannot be a child of <tr>. Make sure you don't have any extra whitespace between tags on each line of your source code.
-This will cause a hydration error.
-
-  ...
-    <ClientSegmentRoot Component={function RootLayout} slots={{...}} params={{}}>
-      <RootLayout params={Promise}>
-        <html lang="es">
-          <body className="bg-gray-10...">
-            <header>
-            <main className="flex flex-...">
-              <motion.h1>
-              <MainButtons publico={2} esAdmin={true} onSelect={function onSelect}>
-                <div className="flex flex-...">
-                  <div className="w-full max...">
-                    <motion.button>
-                    <motion.button>
-                    <motion.button>
-                    <div>
-                    <InscripcionesModal onClose={function onClose}>
-                      <div className="p-6 rounde...">
-                        <div className="relative f...">
-                          <button>
-                          <h2>
-                          <div className="w-full max...">
-                            <table className="w-full bor...">
-                              <thead className="bg-gray-20...">
->                               <tr>
-                                  <th>
-                                  <th>
->                                 {" "}
-                                  ...
-                              ...
-              ...
-            ...
+<tbody>
+  {inscripciones.map((inscripcion: any) => (
+    <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
+      <td className="border p-2">{inscripcion.id}</td>
+      <td className="border p-2">
+        {inscripcion.curso?.nombre_curso ? inscripcion.curso.nombre_curso : "Desconocido"}
+      </td>
+      <td className="border p-2">{inscripcion.docInscr}</td>
+      <td className="border p-2">{inscripcion.est}</td>
+      <td className="border p-2">{new Date(inscripcion.fecreg).toLocaleDateString()}</td>
+    </tr>
+  ))}
+</tbody>
