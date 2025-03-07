@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, createContext } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import MainButtonsProps from "./components/mainbuttons";
@@ -10,18 +10,20 @@ interface LayoutProps {
 }
 
 interface Usuario {
-  id: string; // Agregado para que el ID esté disponible
+  id: string;
   nombre: string;
   publico: number; // 1 = Profesor, 2 = Finanzas
   esAdmin: boolean; // true si es administrador
 }
+
+// Contexto para compartir el usuario en toda la aplicación
+export const UsuarioContext = createContext<{ usuario: Usuario | null }>({ usuario: null });
 
 export default function RootLayout({ children }: LayoutProps) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [id_emp, setIdEmp] = useState("");
   const [error, setError] = useState("");
 
-  // Cargar usuario desde localStorage
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem("usuario");
     if (usuarioGuardado) {
@@ -29,7 +31,6 @@ export default function RootLayout({ children }: LayoutProps) {
     }
   }, []);
 
-  // FUNCIÓN PARA INICIAR SESIÓN Y OBTENER DATOS DEL USUARIO
   const iniciarSesion = async () => {
     setError("");
 
@@ -46,7 +47,6 @@ export default function RootLayout({ children }: LayoutProps) {
       });
 
       const data = await response.json();
-      console.log("Datos recibidos del backend:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "El documento no es correcto.");
@@ -61,23 +61,18 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      const usuarioData = {
-        id: id_emp, // Guardamos el ID del usuario
+      const usuarioData: Usuario = {
+        id: id_emp,
         nombre: data.nombre,
         publico: data.publico,
         esAdmin: Boolean(data.esAdmin),
       };
 
-      localStorage.setItem("usuario", JSON.stringify(usuarioData)); // Guardar en localStorage
       setUsuario(usuarioData);
+      localStorage.setItem("usuario", JSON.stringify(usuarioData));
     } catch (error: any) {
       setError(error.message);
     }
-  };
-
-  const cerrarSesion = () => {
-    localStorage.removeItem("usuario");
-    setUsuario(null);
   };
 
   if (!usuario) {
@@ -107,115 +102,54 @@ export default function RootLayout({ children }: LayoutProps) {
   }
 
   return (
-    <html lang="es">
-      <body className="bg-gray-100 flex flex-col min-h-screen">
-        <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
-          <img
-            src="/img/ecijg126.png"
-            alt="Logo"
-            className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
-          />
-          <div className="flex flex-col items-center ml-auto">
-            <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
-            <button
-              className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
-              onClick={cerrarSesion}
+    <UsuarioContext.Provider value={{ usuario }}>
+      <html lang="es">
+        <body className="bg-gray-100 flex flex-col min-h-screen">
+          <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+            <img
+              src="/img/ecijg126.png"
+              alt="Logo"
+              className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
+            />
+            <div className="flex flex-col items-center ml-auto">
+              <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
+              <button
+                className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
+                onClick={() => {
+                  setUsuario(null);
+                  localStorage.removeItem("usuario");
+                }}
+              >
+                Cerrar Sesión
+              </button>
+            </div>
+          </header>
+
+          <main className="flex flex-col items-center justify-center flex-1 p-6">
+            <motion.h1
+              className="text-3xl font-bold text-[#990000] mb-6 text-center"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              Cerrar Sesión
-            </button>
-          </div>
-        </header>
+              Bienvenido a Gestión de Cursos
+            </motion.h1>
 
-        <main className="flex flex-col items-center justify-center flex-1 p-6">
-          <motion.h1
-            className="text-3xl font-bold text-[#990000] mb-6 text-center"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            Bienvenido a Gestión de Cursos
-          </motion.h1>
+            <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
 
-          <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
+            {children}
+          </main>
 
-          {children}
-        </main>
-
-        <footer className="bg-white text-center py-4 shadow-inner w-full">
-          <div className="flex items-center justify-between px-6">
-            <p className="text-gray-700">
-              &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
-            </p>
-            <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
-          </div>
-        </footer>
-      </body>
-    </html>
+          <footer className="bg-white text-center py-4 shadow-inner w-full">
+            <div className="flex items-center justify-between px-6">
+              <p className="text-gray-700">
+                &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
+              </p>
+              <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
+            </div>
+          </footer>
+        </body>
+      </html>
+    </UsuarioContext.Provider>
   );
 }
-
-
-
-
-
-import React, { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
-
-interface CursoModalProps {
-  idCur: number;
-  onClose: () => void;
-  onSave: (data: { idCur: number; docInscr: string }) => void;
-  onInscripcionExitosa: () => void;
-}
-
-export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitosa }: CursoModalProps) {
-  const [docInscr, setDocInscr] = useState<string>("");
-  const [cargando, setCargando] = useState(false);
-  const [mensaje, setMensaje] = useState("");
-  const [inscrito, setInscrito] = useState(false);
-
-  useEffect(() => {
-    const usuarioGuardado = localStorage.getItem("usuario");
-    if (usuarioGuardado) {
-      const usuario = JSON.parse(usuarioGuardado);
-      setDocInscr(usuario.id); // Usamos el ID guardado en localStorage
-    }
-  }, []);
-
-  const handleInscribir = async () => {
-    setCargando(true);
-    setMensaje("");
-
-    try {
-      const response = await fetch("http://localhost:8090/api/inscripciones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idCur, docInscr }),
-      });
-
-      if (!response.ok) throw new Error("Error al inscribir usuario.");
-
-      setMensaje("Inscripción realizada con éxito.");
-      setInscrito(true);
-      onInscripcionExitosa();
-      onSave({ idCur, docInscr });
-    } catch (error) {
-      setMensaje("Hubo un problema al inscribir.");
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-xl font-bold text-[#990000] mb-4">Inscribir Usuario</h2>
-        <button onClick={handleInscribir} className="bg-[#990000] text-white px-4 py-2 rounded">
-          Inscribir
-        </button>
-        <button onClick={onClose} className="ml-3 text-gray-500">Cerrar</button>
-      </div>
-    </div>
-  );
-}
-
