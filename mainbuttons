@@ -3,10 +3,13 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface Inscripcion {
   id: number;
+  idCur?: number; // Ajuste para tomar el ID del curso correctamente
   Curso?: {
+    id: number;
     NombreCurso: string;
   };
-  curso?: { // Agregado para manejar datos en minúsculas si es necesario
+  curso?: {
+    id: number;
     NombreCurso: string;
   };
   docInscr: string;
@@ -30,12 +33,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         const data: Inscripcion[] = await response.json();
         console.log("📌 Datos recibidos en el frontend:", data); // 👀 Verifica la estructura de los datos
 
-        // Verifica que los datos tengan la estructura esperada antes de actualizar el estado
-        if (Array.isArray(data)) {
-          setInscripciones(data);
-        } else {
-          console.error("❌ Estructura inesperada en los datos recibidos:", data);
-        }
+        setInscripciones(data);
       } catch (error) {
         console.error("❌ Error al obtener inscripciones:", error);
       }
@@ -66,6 +64,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
               <thead className="bg-gray-200 text-gray-700">
                 <tr>
                   <th className="border p-2">ID</th>
+                  <th className="border p-2">ID Curso</th> {/* ID del curso corregido */}
                   <th className="border p-2">Nombre del Curso</th>
                   <th className="border p-2">Doc. Inscrito</th>
                   <th className="border p-2">Estado</th>
@@ -76,6 +75,9 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                 {inscripciones.map((inscripcion) => (
                   <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
                     <td className="border p-2">{inscripcion.id}</td>
+                    <td className="border p-2">
+                      {inscripcion.idCur || inscripcion.Curso?.id || inscripcion.curso?.id || "N/A"}
+                    </td>
                     <td className="border p-2">
                       {inscripcion.Curso?.NombreCurso || inscripcion.curso?.NombreCurso || "Desconocido"}
                     </td>
