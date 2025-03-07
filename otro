@@ -1,38 +1,73 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
-import { CursosService } from './cursos.service';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCursoDto } from './dto/create-curso.dto';
-import { UpdateCursoDto } from './dto/update-curso.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
-@Controller('cursos')
-export class CursosController {
-  constructor(private readonly cursosService: CursosService) {}
+@Injectable()
+export class CursosService {
+  constructor(private readonly prisma: PrismaService) {}
 
   // CREAR CURSO
-  @Post()
-  async createCourses(@Body() data: CreateCursoDto) {
-    console.log("Recibiendo datos:", data);
-    return this.cursosService.createCourses(data);
+  async createCourses(data: CreateCursoDto) {
+    console.log("Data recibida:", data);
+    
+    try {
+      const nuevoCurso = await this.prisma.cursos.create({ data });
+      return nuevoCurso;      
+    } catch (error) {
+      console.error("Error al crear el curso:", error);
+      throw new BadRequestException("Error al crear el curso, verifica los datos enviados.");
+    }
   }
 
   // OBTENER TODOS LOS CURSOS
-  @Get() 
   async getCourses() {
-    return this.cursosService.getCourses();
+    return this.prisma.cursos.findMany();
+  }
+
+  // OBTENER CURSO POR ID
+  async getCourseId(id: number) {
+    const curso = await this.prisma.cursos.findUnique({
+      where: { id },
+    });
+    if (!curso) {
+      throw new NotFoundException(`El curso con ID #${id} no fue encontrado.`);
+    }
+    return curso;
   }
 
   // ACTUALIZAR CURSO POR ID
-  @Put(':id')
-  async updateCourse(@Param('id') id: string, @Body() updateCursoDto: UpdateCursoDto) {
-    const updateCourse = await this.cursosService.UpdateCourse(Number(id), updateCursoDto);
-    if (!updateCourse) {
-      throw new NotFoundException(`El curso con ID #${id} no fue encontrado`);
+  async UpdateCourse(id: number, data: Prisma.CursosUpdateInput) {
+    console.log('ID recibido:', id);
+    console.log('Datos recibidos:', data);
+
+    // Verificar si el curso existe antes de actualizar
+    const cursoExistente = await this.getCourseId(id);
+    if (!cursoExistente) {
+      throw new NotFoundException(`El curso con ID #${id} no existe.`);
     }
-    return updateCourse;
+
+    try {
+      const updateCourse = await this.prisma.cursos.update({
+        where: { id },
+        data,
+      });
+      console.log('Curso actualizado:', updateCourse);
+      return updateCourse;
+    } catch (error) {
+      console.error('Error al actualizar el curso:', error);
+      throw new BadRequestException('No se pudo actualizar el curso.');
+    }
   }
 
   // ELIMINAR CURSO POR ID
-  @Delete(':id')
-  async deleteCourse(@Param('id') id: string) {
-    return this.cursosService.deleteCourse(Number(id));
-  }  
+  async deleteCourse(id: number) {
+    // Verificar si el curso existe antes de eliminarlo
+    const cursoExistente = await this.getCourseId(id);
+    if (!cursoExistente) {
+      throw new NotFoundException(`El curso con ID #${id} no existe.`);
+    }
+
+    return this.prisma.cursos.delete({ where: { id } });
+  }
 }
