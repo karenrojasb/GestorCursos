@@ -1,47 +1,199 @@
+import React, { useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-
-@Injectable()
-export class UsuarioService {
-  constructor(private prisma: PrismaService) {}
-
-  async iniciarSesion(id_emp: string) {
-    // Consulta en emp_nomina
-    const usuario = await this.prisma.$queryRaw<any[]>`
-      SELECT id_emp, nombre, publico, e_mail 
-      FROM gescur.emp_nomina 
-      WHERE id_emp = TRIM(${id_emp})`;
-
-    if (usuario.length === 0) {
-      return { mensaje: 'Usuario no encontrado' };
-    }
-
-    // Extraemos el email del usuario encontrado
-    const { e_mail } = usuario[0];
-
-    // Verificamos si el usuario es administrador en gescur.rol_usuario
-    const esAdmin = await this.prisma.$queryRaw<any[]>`
-      SELECT 1 FROM gescur.rol_usuario WHERE usuario = ${e_mail}`;
-
-    return {
-      ...usuario[0],
-      esAdmin: esAdmin.length > 0, // Si encuentra un registro, es administrador
-    };
-  }
+interface CursoModalProps {
+  onSave: (data: any) => void;
+  onClose: () => void;
 }
 
+export default function CursoModal({ onClose, onSave }: CursoModalProps) {
+  const [curso, setCurso] = useState({
+    NombreCurso: "",
+    Valor: 0,
+    Publico: "1", 
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
+    Horas: 0,
+    CupoMax: "",
+    Lugar: "",
+    Linea: "",
+    Estado: "",
+    Modalidad: "",
+    Unidad: "",
+    Profesor: "",
+    SegundoPro: "",
+    Proexterno: "",
+    Descripcion: "",
+    IdTipoCurso: "",
+    // Horarios
+    LunesIni: "",
+    LunesFin: "",
+    MartesIni: "",
+    MartesFin: "",
+    MiercolesIni: "",
+    MiercolesFin: "",
+    JuevesIni: "",
+    JuevesFin: "",
+    ViernesIni: "",
+    ViernesFin: "",
+    SabadoIni: "",
+    SabadoFin: "",
+    DomingoIni: "",
+    DomingoFin: "",
+  });
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setCurso({ ...curso, [e.target.name]: e.target.value });
+  };
 
-import { Controller, Post, Body } from '@nestjs/common';
-import { UsuarioService } from './usuario.service';
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      ...curso,
+      Valor: Number(curso.Valor),
+      Publico: Number(curso.Publico),
+      Horas: Number(curso.Horas) || 0,
+      CupoMax: Number(curso.CupoMax),
+      Linea: Number(curso.Linea),
+      Estado: Number(curso.Estado),
+      Modalidad: Number(curso.Modalidad),
+      Unidad: Number(curso.Unidad),
+      Profesor: Number(curso.Profesor),
+      IdTipoCurso: Number(curso.IdTipoCurso),
+    });
+  };
 
-@Controller('usuario')
-export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService) {}
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl flex flex-col max-h-[80vh] overflow-y-auto">
+        {/* Botón de cerrar */}
+        <button
+          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+          onClick={onClose}
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
 
-  @Post('login')
-  async login(@Body() body: { id_emp: string }) {
-    return this.usuarioService.iniciarSesion(body.id_emp);
-  }
+        <h2 className="text-xl font-bold mb-6 text-center text-[#990000]">
+          Crear Curso
+        </h2>
+
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Campos de texto y números */}
+          {[
+            { label: "Nombre del Curso", name: "NombreCurso", type: "text" },
+            { label: "Valor", name: "Valor", type: "number" },
+            { label: "Periodo", name: "Periodo", type: "text" },
+            { label: "Fecha de Inicio", name: "Inicio", type: "date" },
+            { label: "Fecha de Fin", name: "Fin", type: "date" },
+            { label: "Horas", name: "Horas", type: "number" },
+            { label: "Cupo Máximo", name: "CupoMax", type: "number" },
+            { label: "Lugar", name: "Lugar", type: "text" },
+            { label: "Línea", name: "Linea", type: "number" },
+            { label: "Estado", name: "Estado", type: "number" },
+            { label: "Modalidad", name: "Modalidad", type: "number" },
+            { label: "Unidad", name: "Unidad", type: "number" },
+            { label: "Profesor Principal", name: "Profesor", type: "number" },
+            { label: "Segundo Profesor", name: "SegundoPro", type: "number" },
+            { label: "Profesor Externo", name: "Proexterno", type: "number" },
+            { label: "Descripción", name: "Descripcion", type: "text" },
+            { label: "ID Tipo de Curso", name: "IdTipoCurso", type: "number" },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block font-semibold">{field.label}:</label>
+              <input
+                type={field.type}
+                name={field.name}
+                value={(curso as any)[field.name]}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+          ))}
+
+          {/* Campo "Público" como un desplegable */}
+          <div>
+            <label className="block font-semibold">Público:</label>
+            <select
+              name="Publico"
+              value={curso.Publico}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              required
+            >
+              
+              <option value="1">Profesor</option>
+              <option value="2">Administrativo</option>
+            </select>
+          </div>
+
+          {/* Tabla de horarios */}
+          <h3 className="text-lg font-semibold mt-4">Horario del curso</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border border-gray-300 p-2">Día</th>
+                  <th className="border border-gray-300 p-2">Hora Inicio</th>
+                  <th className="border border-gray-300 p-2">Hora Fin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  "Lunes",
+                  "Martes",
+                  "Miercoles",
+                  "Jueves",
+                  "Viernes",
+                  "Sabado",
+                  "Domingo",
+                ].map((dia) => (
+                  <tr key={dia}>
+                    <td className="border border-gray-300 p-2">{dia}</td>
+                    <td className="border border-gray-300 p-2">
+                      <input
+                        type="time"
+                        name={`${dia}Ini`}
+                        value={(curso as any)[`${dia}Ini`]}
+                        onChange={handleChange}
+                        className="w-full p-1 border rounded"
+                      />
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      <input
+                        type="time"
+                        name={`${dia}Fin`}
+                        value={(curso as any)[`${dia}Fin`]}
+                        onChange={handleChange}
+                        className="w-full p-1 border rounded"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Botón para guardar */}
+          <button
+            type="submit"
+            className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
+          >
+            Guardar
+          </button>
+
+          {/* Botón para cancelar */}
+          <button
+            onClick={onClose}
+            className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
+          >
+            Cancelar
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }
