@@ -1,73 +1,70 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateCursoDto } from './dto/create-curso.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
-@Injectable()
-export class CursosService {
-  constructor(private readonly prisma: PrismaService) {}
+interface InscripcionesModalProps {
+  onClose: () => void;
+}
 
-  // CREAR CURSO
-  async createCourses(data: CreateCursoDto) {
-    console.log("Data recibida:", data);
-    
-    try {
-      const nuevoCurso = await this.prisma.cursos.create({ data });
-      return nuevoCurso;      
-    } catch (error) {
-      console.error("Error al crear el curso:", error);
-      throw new BadRequestException("Error al crear el curso, verifica los datos enviados.");
-    }
-  }
+export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
+  const [inscripciones, setInscripciones] = useState([]);
 
-  // OBTENER TODOS LOS CURSOS
-  async getCourses() {
-    return this.prisma.cursos.findMany();
-  }
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      try {
+        const response = await fetch("http://localhost:8090/api/inscripciones"); // Ajusta la URL según tu backend
+        if (!response.ok) throw new Error("Error al obtener inscripciones");
+        const data = await response.json();
+        setInscripciones(data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
 
-  // OBTENER CURSO POR ID
-  async getCourseId(id: number) {
-    const curso = await this.prisma.cursos.findUnique({
-      where: { id },
-    });
-    if (!curso) {
-      throw new NotFoundException(`El curso con ID #${id} no fue encontrado.`);
-    }
-    return curso;
-  }
+    fetchInscripciones();
+  }, []);
 
-  // ACTUALIZAR CURSO POR ID
-  async UpdateCourse(id: number, data: Prisma.CursosUpdateInput) {
-    console.log('ID recibido:', id);
-    console.log('Datos recibidos:', data);
+  return (
+    <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative flex flex-col items-center gap-3 w-full max-w-3xl bg-white 
+                      py-6 px-8 rounded-lg shadow-md">
+        
+        {/* BOTÓN CERRAR */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
 
-    // Verificar si el curso existe antes de actualizar
-    const cursoExistente = await this.getCourseId(id);
-    if (!cursoExistente) {
-      throw new NotFoundException(`El curso con ID #${id} no existe.`);
-    }
+        {/* TÍTULO */}
+        <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
 
-    try {
-      const updateCourse = await this.prisma.cursos.update({
-        where: { id },
-        data,
-      });
-      console.log('Curso actualizado:', updateCourse);
-      return updateCourse;
-    } catch (error) {
-      console.error('Error al actualizar el curso:', error);
-      throw new BadRequestException('No se pudo actualizar el curso.');
-    }
-  }
-
-  // ELIMINAR CURSO POR ID
-  async deleteCourse(id: number) {
-    // Verificar si el curso existe antes de eliminarlo
-    const cursoExistente = await this.getCourseId(id);
-    if (!cursoExistente) {
-      throw new NotFoundException(`El curso con ID #${id} no existe.`);
-    }
-
-    return this.prisma.cursos.delete({ where: { id } });
-  }
+        {/* LISTA DE INSCRIPCIONES */}
+        <div className="w-full">
+          {inscripciones.length > 0 ? (
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border p-2">ID</th>
+                  <th className="border p-2">Nombre</th>
+                  <th className="border p-2">Curso</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inscripciones.map((inscripcion: any) => (
+                  <tr key={inscripcion.id} className="text-center">
+                    <td className="border p-2">{inscripcion.id}</td>
+                    <td className="border p-2">{inscripcion.nombre}</td>
+                    <td className="border p-2">{inscripcion.curso}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-500">No hay inscripciones registradas.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
