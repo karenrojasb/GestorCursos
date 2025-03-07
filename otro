@@ -1,32 +1,67 @@
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import React from "react";
+
+interface Inscripcion {
+  id: number;
+  idCur?: number;
+  Cursos?: {
+    id: number;
+    NombreCurso: string;
+  };
+  cursos?: {
+    id: number;
+    NombreCurso: string;
+  };
+  docInscr: string;
+  est: number;
+  fecreg: string;
+}
 
 interface InscripcionesModalProps {
   onClose: () => void;
 }
 
 export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
-  const [inscripciones, setInscripciones] = useState([]);
+  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [expandedCourses, setExpandedCourses] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     const fetchInscripciones = async () => {
       try {
-        const response = await fetch("http://localhost:8090/api/inscripciones"); // Ajusta la URL según tu backend
+        const response = await fetch("http://localhost:8090/api/inscripciones");
         if (!response.ok) throw new Error("Error al obtener inscripciones");
-        const data = await response.json();
+
+        const data: Inscripcion[] = await response.json();
+        console.log("Datos recibidos en el frontend:", data);
+
         setInscripciones(data);
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error al obtener inscripciones:", error);
       }
     };
 
     fetchInscripciones();
   }, []);
 
+  // Agrupar inscripciones por idCur
+  const groupedInscripciones = inscripciones.reduce((acc, inscripcion) => {
+    const cursoId = inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.cursos?.id || 0;
+    if (!acc[cursoId]) {
+      acc[cursoId] = [];
+    }
+    acc[cursoId].push(inscripcion);
+    return acc;
+  }, {} as { [key: number]: Inscripcion[] });
+
+  // Alternar expansión de curso
+  const toggleExpand = (cursoId: number) => {
+    setExpandedCourses((prev) => ({ ...prev, [cursoId]: !prev[cursoId] }));
+  };
+
   return (
     <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative flex flex-col items-center gap-3 w-full max-w-3xl bg-white 
-                      py-6 px-8 rounded-lg shadow-md">
+      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-8 px-10 rounded-lg shadow-md border-4 border-[#990000] min-h-[800px]">
         
         {/* BOTÓN CERRAR */}
         <button
@@ -39,29 +74,63 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         {/* TÍTULO */}
         <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
 
-        {/* LISTA DE INSCRIPCIONES */}
-        <div className="w-full">
-          {inscripciones.length > 0 ? (
+        {/* LISTA DE INSCRIPCIONES CON SCROLL */}
+        <div className="w-full max-h-[600px] overflow-auto border border-gray-300 rounded-md shadow-sm">
+          {Object.entries(groupedInscripciones).length > 0 ? (
             <table className="w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="border p-2">ID</th>
-                  <th className="border p-2">Nombre</th>
-                  <th className="border p-2">Curso</th>
+              <thead className="bg-[#990000] text-white">
+                <tr>
+                  <th className="border border-gray-300 p-3">ID Curso</th>
+                  <th className="border border-gray-300 p-3">Nombre del Curso</th>
+                  <th className="border border-gray-300 p-3">Fecha Registro</th>
+                  <th className="border border-gray-300 p-3">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {inscripciones.map((inscripcion: any) => (
-                  <tr key={inscripcion.id} className="text-center">
-                    <td className="border p-2">{inscripcion.id}</td>
-                    <td className="border p-2">{inscripcion.nombre}</td>
-                    <td className="border p-2">{inscripcion.curso}</td>
-                  </tr>
-                ))}
+                {Object.entries(groupedInscripciones).map(([cursoId, inscripciones], index) => {
+                  const curso = inscripciones[0]; // Primer registro del curso para mostrar en la tabla
+                  return (
+                    <React.Fragment key={cursoId}>
+                      {/* FILA PRINCIPAL DEL CURSO */}
+                      <tr className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
+                        <td className="border border-gray-300 p-3">{cursoId}</td>
+                        <td className="border border-gray-300 p-3">{curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}</td>
+                        <td className="border border-gray-300 p-3">{new Date(curso.fecreg).toLocaleDateString()}</td>
+                        <td className="border border-gray-300 p-3">
+                          <button
+                            onClick={() => toggleExpand(Number(cursoId))}
+                            className="bg-[#990000] text-white px-4 py-1 rounded-md hover:bg-red-700 transition"
+                          >
+                            {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* FILAS EXPANDIDAS CON INSCRITOS */}
+                      {expandedCourses[Number(cursoId)] && (
+                        <tr>
+                          <td colSpan={4}>
+                            <div className="p-4 bg-gray-50 border border-gray-300 rounded-md shadow-md mt-2">
+                              <h3 className="text-lg font-semibold text-[#990000]">Inscritos:</h3>
+                              <ul className="list-disc pl-5 mt-2 space-y-2">
+                                {inscripciones.map((inscripcion) => (
+                                  <li key={inscripcion.id} className="text-gray-700">
+                                    <strong>Documento:</strong> {inscripcion.docInscr} | 
+                                    <strong> Estado:</strong> {inscripcion.est}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           ) : (
-            <p className="text-gray-500">No hay inscripciones registradas.</p>
+            <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
           )}
         </div>
       </div>
