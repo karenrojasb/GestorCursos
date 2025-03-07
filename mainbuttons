@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import MainButtonsProps from "./components/mainbuttons";
@@ -10,6 +10,7 @@ interface LayoutProps {
 }
 
 interface Usuario {
+  id: string; // Agregado para que el ID esté disponible
   nombre: string;
   publico: number; // 1 = Profesor, 2 = Finanzas
   esAdmin: boolean; // true si es administrador
@@ -19,6 +20,14 @@ export default function RootLayout({ children }: LayoutProps) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [id_emp, setIdEmp] = useState("");
   const [error, setError] = useState("");
+
+  // Cargar usuario desde localStorage
+  useEffect(() => {
+    const usuarioGuardado = localStorage.getItem("usuario");
+    if (usuarioGuardado) {
+      setUsuario(JSON.parse(usuarioGuardado));
+    }
+  }, []);
 
   // FUNCIÓN PARA INICIAR SESIÓN Y OBTENER DATOS DEL USUARIO
   const iniciarSesion = async () => {
@@ -37,35 +46,40 @@ export default function RootLayout({ children }: LayoutProps) {
       });
 
       const data = await response.json();
-      console.log("Datos recibidos del backend:", data); // <-- Verifica qué devuelve
+      console.log("Datos recibidos del backend:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "El documento no es correcto.");
       }
 
-      // Verificación de si el usuario está en las tablas
       if (data.publico === null || data.publico === undefined) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      // Verificamos si el usuario tiene un rol permitido
       const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
       if (!esUsuarioValido) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      // Definimos el usuario con su rol
-      setUsuario({
+      const usuarioData = {
+        id: id_emp, // Guardamos el ID del usuario
         nombre: data.nombre,
-        publico: data.publico, // 1 = Profesor, 2 = Finanzas
-        esAdmin: Boolean(data.esAdmin), // Convertimos null en false
-      });
+        publico: data.publico,
+        esAdmin: Boolean(data.esAdmin),
+      };
+
+      localStorage.setItem("usuario", JSON.stringify(usuarioData)); // Guardar en localStorage
+      setUsuario(usuarioData);
     } catch (error: any) {
       setError(error.message);
     }
   };
 
-  // RENDERIZA EL FORMULARIO DE LOGIN SI NO HAY USUARIO
+  const cerrarSesion = () => {
+    localStorage.removeItem("usuario");
+    setUsuario(null);
+  };
+
   if (!usuario) {
     return (
       <html lang="es">
@@ -92,7 +106,6 @@ export default function RootLayout({ children }: LayoutProps) {
     );
   }
 
-  // SI EL USUARIO YA ESTÁ AUTENTICADO, MUESTRA LA INTERFAZ PRINCIPAL
   return (
     <html lang="es">
       <body className="bg-gray-100 flex flex-col min-h-screen">
@@ -106,7 +119,7 @@ export default function RootLayout({ children }: LayoutProps) {
             <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
             <button
               className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
-              onClick={() => setUsuario(null)}
+              onClick={cerrarSesion}
             >
               Cerrar Sesión
             </button>
@@ -123,7 +136,6 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
-          {/* PASAMOS LOS ROLES AL COMPONENTE DE BOTONES */}
           <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
 
           {children}
@@ -143,49 +155,34 @@ export default function RootLayout({ children }: LayoutProps) {
 }
 
 
+
+
+
 import React, { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface CursoModalProps {
-  idCur: number; // ID del curso al que se inscribe
+  idCur: number;
   onClose: () => void;
   onSave: (data: { idCur: number; docInscr: string }) => void;
   onInscripcionExitosa: () => void;
 }
 
 export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitosa }: CursoModalProps) {
-  const [docInscr, setDocInscr] = useState(""); // Documento del usuario
+  const [docInscr, setDocInscr] = useState<string>("");
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState("");
-  const [inscrito, setInscrito] = useState(false); // Estado para saber si está inscrito
+  const [inscrito, setInscrito] = useState(false);
 
-  // Obtener ID del usuario desde el login
   useEffect(() => {
-    const usuarioLogueado = localStorage.getItem("usuario"); // Asumiendo que se guarda en localStorage
-    if (usuarioLogueado) {
-      const usuario = JSON.parse(usuarioLogueado);
-      setDocInscr(usuario.id); // Asumimos que el campo correcto es `id`
+    const usuarioGuardado = localStorage.getItem("usuario");
+    if (usuarioGuardado) {
+      const usuario = JSON.parse(usuarioGuardado);
+      setDocInscr(usuario.id); // Usamos el ID guardado en localStorage
     }
   }, []);
 
-  // Verificar si el usuario ya está inscrito en el curso
-  useEffect(() => {
-    const verificarInscripcion = async () => {
-      if (!docInscr) return; // No verificar si no hay usuario logueado
-      try {
-        const response = await fetch(`http://localhost:8090/api/inscripciones/${idCur}/${docInscr}`);
-        setInscrito(response.ok); // Si responde OK, está inscrito
-      } catch (error) {
-        console.error("Error al verificar inscripción:", error);
-      }
-    };
-
-    verificarInscripcion();
-  }, [idCur, docInscr]);
-
-  // Inscribirse al curso
-  const handleInscribir = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleInscribir = async () => {
     setCargando(true);
     setMensaje("");
 
@@ -199,7 +196,7 @@ export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitos
       if (!response.ok) throw new Error("Error al inscribir usuario.");
 
       setMensaje("Inscripción realizada con éxito.");
-      setInscrito(true); // Marcar como inscrito
+      setInscrito(true);
       onInscripcionExitosa();
       onSave({ idCur, docInscr });
     } catch (error) {
@@ -209,79 +206,16 @@ export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitos
     }
   };
 
-  // Cancelar inscripción
-  const handleCancelarInscripcion = async () => {
-    setCargando(true);
-    setMensaje("");
-
-    try {
-      const response = await fetch(`http://localhost:8090/api/inscripciones/${idCur}/${docInscr}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Error al cancelar la inscripción.");
-
-      setMensaje("Inscripción cancelada.");
-      setInscrito(false); // Marcar como no inscrito
-      onInscripcionExitosa();
-    } catch (error) {
-      setMensaje("Hubo un problema al cancelar la inscripción.");
-    } finally {
-      setCargando(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col">
-        
-        {/* Botón de cerrar */}
-        <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
-          onClick={onClose}
-        >
-          <XMarkIcon className="w-6 h-6" />
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-xl font-bold text-[#990000] mb-4">Inscribir Usuario</h2>
+        <button onClick={handleInscribir} className="bg-[#990000] text-white px-4 py-2 rounded">
+          Inscribir
         </button>
-
-        <h2 className="text-xl font-bold mb-4 text-center text-[#990000]">
-          {inscrito ? "Cancelar Inscripción" : "Inscribir Usuario"}
-        </h2>
-
-        {/* Mensaje de error o éxito */}
-        {mensaje && (
-          <p className={`text-center text-sm font-semibold ${mensaje.includes("éxito") ? "text-green-600" : "text-red-600"}`}>
-            {mensaje}
-          </p>
-        )}
-
-        {/* Botón de inscripción o cancelación */}
-        {inscrito ? (
-          <button
-            type="button"
-            onClick={handleCancelarInscripcion}
-            className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
-            disabled={cargando}
-          >
-            {cargando ? "Cancelando..." : "Cancelar Inscripción"}
-          </button>
-        ) : (
-          <button
-            onClick={handleInscribir}
-            className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
-            disabled={cargando}
-          >
-            {cargando ? "Inscribiendo..." : "Inscribir"}
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
-        >
-          Cerrar
-        </button>
+        <button onClick={onClose} className="ml-3 text-gray-500">Cerrar</button>
       </div>
     </div>
   );
 }
+
