@@ -9,12 +9,12 @@ interface CursoModalProps {
 export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [curso, setCurso] = useState({
     NombreCurso: "",
-    Valor: 0,
-    Publico: "1", 
+    Valor: "",
+    Publico: "1", // Se mantiene como string en el frontend
     Periodo: "",
     Inicio: "",
     Fin: "",
-    Horas: 0,
+    Horas: "",
     CupoMax: "",
     Lugar: "",
     Linea: "",
@@ -49,18 +49,20 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Convertir valores numéricos antes de enviarlos al backend
     onSave({
       ...curso,
-      Valor: Number(curso.Valor),
-      Publico: Number(curso.Publico),
+      Valor: Number(curso.Valor) || 0,
+      Publico: Number(curso.Publico), // Se envía como número al backend
       Horas: Number(curso.Horas) || 0,
-      CupoMax: Number(curso.CupoMax),
-      Linea: Number(curso.Linea),
-      Estado: Number(curso.Estado),
-      Modalidad: Number(curso.Modalidad),
-      Unidad: Number(curso.Unidad),
-      Profesor: Number(curso.Profesor),
-      IdTipoCurso: Number(curso.IdTipoCurso),
+      CupoMax: Number(curso.CupoMax) || 0,
+      Linea: Number(curso.Linea) || 0,
+      Estado: Number(curso.Estado) || 0,
+      Modalidad: Number(curso.Modalidad) || 0,
+      Unidad: Number(curso.Unidad) || 0,
+      Profesor: Number(curso.Profesor) || 0,
+      IdTipoCurso: Number(curso.IdTipoCurso) || 0,
     });
   };
 
@@ -124,7 +126,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
               className="w-full p-2 border rounded"
               required
             >
-              
               <option value="1">Profesor</option>
               <option value="2">Administrativo</option>
             </select>
