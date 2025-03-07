@@ -38,7 +38,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         console.log("Datos recibidos en el frontend:", data);
 
         setInscripciones(data);
-        setInscripcionesFiltradas(data); // Inicialmente todas las inscripciones
+        setInscripcionesFiltradas(data);
       } catch (error) {
         console.error("Error al obtener inscripciones:", error);
       }
@@ -57,9 +57,9 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
       const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
 
       return (
-        inscripcion.idCur?.toString().includes(texto) || // Buscar por ID Curso
-        cursoNombre.toLowerCase().includes(texto) || // Buscar por Nombre Curso
-        fechaRegistro.includes(texto) // Buscar por Fecha Registro
+        inscripcion.idCur?.toString().includes(texto) ||
+        cursoNombre.toLowerCase().includes(texto) ||
+        fechaRegistro.includes(texto)
       );
     });
 
@@ -96,15 +96,15 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         {/* TÍTULO */}
         <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
 
-        {/* BARRA DE BÚSQUEDA */}
-        <div className="flex items-center w-full mb-4 relative">
-          <MagnifyingGlassIcon className="absolute left-3 h-5 w-5 text-gray-500" />
+        {/* BARRA DE BÚSQUEDA ANIMADA */}
+        <div className="relative w-full flex items-center mb-4 transition-all duration-300">
+          <MagnifyingGlassIcon className="absolute left-3 h-5 w-5 text-gray-500 transition-all duration-300 transform scale-100" />
           <input
             type="text"
             placeholder="Buscar por ID, Nombre o Fecha"
             value={busqueda}
             onChange={handleBuscar}
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#990000] shadow-sm"
+            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-[#990000] focus:border-[#990000] transition-all duration-300"
           />
         </div>
 
@@ -122,10 +122,9 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
               </thead>
               <tbody>
                 {Object.entries(groupedInscripciones).map(([cursoId, inscripciones], index) => {
-                  const curso = inscripciones[0]; // Primer registro del curso para mostrar en la tabla
+                  const curso = inscripciones[0];
                   return (
                     <React.Fragment key={cursoId}>
-                      {/* FILA PRINCIPAL DEL CURSO */}
                       <tr className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
                         <td className="border border-gray-300 p-3">{cursoId}</td>
                         <td className="border border-gray-300 p-3">{curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}</td>
@@ -140,7 +139,6 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                         </td>
                       </tr>
 
-                      {/* FILAS EXPANDIDAS CON INSCRITOS */}
                       {expandedCourses[Number(cursoId)] && (
                         <tr>
                           <td colSpan={4}>
