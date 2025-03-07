@@ -10,7 +10,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [curso, setCurso] = useState({
     NombreCurso: "",
     Valor: 0,
-    Publico: 0, // Se actualizará según el select
+    Publico: 0,
     Periodo: "",
     Inicio: "",
     Fin: "",
@@ -26,33 +26,41 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     Proexterno: "",
     Descripcion: "",
     IdTipoCurso: "",
+    // Horarios
+    LunesIni: "",
+    LunesFin: "",
+    MartesIni: "",
+    MartesFin: "",
+    MiercolesIni: "",
+    MiercolesFin: "",
+    JuevesIni: "",
+    JuevesFin: "",
+    ViernesIni: "",
+    ViernesFin: "",
+    SabadoIni: "",
+    SabadoFin: "",
+    DomingoIni: "",
+    DomingoFin: "",
   });
 
   // Manejar cambios en los inputs
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurso({ ...curso, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      NombreCurso: curso.NombreCurso,
+      ...curso,
       Valor: Number(curso.Valor),
       Publico: Number(curso.Publico),
-      Periodo: curso.Periodo,
-      Inicio: curso.Inicio,
-      Fin: curso.Fin,
       Horas: Number(curso.Horas) || 0,
       CupoMax: Number(curso.CupoMax),
-      Lugar: curso.Lugar,
       Linea: Number(curso.Linea),
       Estado: Number(curso.Estado),
       Modalidad: Number(curso.Modalidad),
       Unidad: Number(curso.Unidad),
       Profesor: Number(curso.Profesor),
-      SegundoPro: Number(curso.SegundoPro),
-      Proexterno: curso.Proexterno,
-      Descripcion: curso.Descripcion,
       IdTipoCurso: Number(curso.IdTipoCurso),
     });
   };
@@ -68,17 +76,21 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
           <XMarkIcon className="w-6 h-6" />
         </button>
 
-        <h2 className="text-xl font-bold mb-6 text-center text-[#990000]">Crear Curso</h2>
+        <h2 className="text-xl font-bold mb-6 text-center text-[#990000]">
+          Crear Curso
+        </h2>
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-gray-700 font-medium">Nombre del curso: </label>
+          <label className="block text-gray-700 font-medium">
+            Nombre del curso:
+          </label>
           <input
             type="text"
             name="NombreCurso"
             value={curso.NombreCurso}
             onChange={handleChange}
-            className="w-full p-2 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-[#990000] transition"
+            className="w-full p-2 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-[#990000] transitions"
             required
           />
 
@@ -92,61 +104,54 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             required
           />
 
-          {/* Menú desplegable para Público */}
-          <label className="block font-semibold">Público:</label>
-          <select
-            name="Publico"
-            value={curso.Publico}
-            onChange={handleChange}
-            className="w-full p-2 border rounded bg-white"
-            required
-          >
-            <option value={0}>Todos</option>
-            <option value={1}>Profesores</option>
-            <option value={2}>Finanzas</option>
-          </select>
+          {/* Tabla de horarios */}
+          <h3 className="text-lg font-semibold mt-4">Horario del curso</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border border-gray-300 p-2">Día</th>
+                  <th className="border border-gray-300 p-2">Hora Inicio</th>
+                  <th className="border border-gray-300 p-2">Hora Fin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  "Lunes",
+                  "Martes",
+                  "Miércoles",
+                  "Jueves",
+                  "Viernes",
+                  "Sábado",
+                  "Domingo",
+                ].map((dia) => (
+                  <tr key={dia}>
+                    <td className="border border-gray-300 p-2">{dia}</td>
+                    <td className="border border-gray-300 p-2">
+                      <input
+                        type="time"
+                        name={`${dia}Ini`}
+                        value={(curso as any)[`${dia}Ini`]}
+                        onChange={handleChange}
+                        className="w-full p-1 border rounded"
+                      />
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      <input
+                        type="time"
+                        name={`${dia}Fin`}
+                        value={(curso as any)[`${dia}Fin`]}
+                        onChange={handleChange}
+                        className="w-full p-1 border rounded"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <label className="block font-semibold">Periodo: </label>
-          <input
-            type="text"
-            name="Periodo"
-            value={curso.Periodo}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Inicio: </label>
-          <input
-            type="date"
-            name="Inicio"
-            value={curso.Inicio}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Fin: </label>
-          <input
-            type="date"
-            name="Fin"
-            value={curso.Fin}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Horas: </label>
-          <input
-            type="number"
-            name="Horas"
-            value={curso.Horas}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Cupo Máximo: </label>
+          <label className="block font-semibold">Cupo Máx: </label>
           <input
             type="number"
             name="CupoMax"
@@ -166,6 +171,16 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             required
           />
 
+          <label className="block font-semibold">Profesor: </label>
+          <input
+            type="number"
+            name="Profesor"
+            value={curso.Profesor}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            required
+          />
+
           <label className="block font-semibold">Descripción: </label>
           <input
             type="text"
@@ -176,7 +191,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             required
           />
 
-          <label className="block font-semibold">ID Tipo de Curso: </label>
+          <label className="block font-semibold">ID Tipo de curso</label>
           <input
             type="number"
             name="IdTipoCurso"
@@ -186,7 +201,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             required
           />
 
-          {/* BOTÓN PARA GUARDAR */}
+          {/* BOTÓN PARA SUBIR EL ARCHIVO */}
           <button
             type="submit"
             className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
