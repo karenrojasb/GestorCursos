@@ -25,7 +25,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
 
   return (
     <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative flex flex-col items-center gap-3 w-full max-w-3xl bg-white 
+      <div className="relative flex flex-col items-center gap-4 w-full max-w-3xl bg-white 
                       py-6 px-8 rounded-lg shadow-md">
         
         {/* BOTÓN CERRAR */}
@@ -39,12 +39,12 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         {/* TÍTULO */}
         <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
 
-        {/* LISTA DE INSCRIPCIONES */}
-        <div className="max-h-64 overflow-auto border border-gray-300 rounded-md">
+        {/* LISTA DE INSCRIPCIONES CON SCROLL */}
+        <div className="w-full max-h-80 overflow-auto border border-gray-300 rounded-md shadow-sm">
           {inscripciones.length > 0 ? (
             <table className="w-full border-collapse border border-gray-300">
               <thead className="bg-gray-200 text-gray-700">
-                <tr className="bg-gray-200">
+                <tr>
                   <th className="border p-2">ID</th>
                   <th className="border p-2">Nombre</th>
                   <th className="border p-2">Curso</th>
@@ -52,7 +52,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
               </thead>
               <tbody>
                 {inscripciones.map((inscripcion: any) => (
-                  <tr key={inscripcion.id} className="text-center">
+                  <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
                     <td className="border p-2">{inscripcion.id}</td>
                     <td className="border p-2">{inscripcion.nombre}</td>
                     <td className="border p-2">{inscripcion.curso}</td>
@@ -61,11 +61,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
               </tbody>
             </table>
           ) : (
-            <tr>
-            <td>
-            <p className="text-gray-500">No hay inscripciones registradas.</p>
-            </td>
-            </tr>
+            <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
           )}
         </div>
       </div>
