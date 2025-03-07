@@ -10,7 +10,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [curso, setCurso] = useState({
     NombreCurso: "",
     Valor: 0,
-    Publico: 0,
+    Publico: "1", // Por defecto "Profesor"
     Periodo: "",
     Inicio: "",
     Fin: "",
@@ -43,8 +43,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     DomingoFin: "",
   });
 
-  // Manejar cambios en los inputs
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setCurso({ ...curso, [e.target.name]: e.target.value });
   };
 
@@ -53,7 +52,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     onSave({
       ...curso,
       Valor: Number(curso.Valor),
-      Publico: Number(curso.Publico),
+      Publico: Number(curso.Publico), // Convertir a número
       Horas: Number(curso.Horas) || 0,
       CupoMax: Number(curso.CupoMax),
       Linea: Number(curso.Linea),
@@ -82,10 +81,10 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Campos de texto y números */}
           {[
             { label: "Nombre del Curso", name: "NombreCurso", type: "text" },
             { label: "Valor", name: "Valor", type: "number" },
-            { label: "Público", name: "Publico", type: "number" },
             { label: "Periodo", name: "Periodo", type: "text" },
             { label: "Fecha de Inicio", name: "Inicio", type: "date" },
             { label: "Fecha de Fin", name: "Fin", type: "date" },
@@ -114,6 +113,21 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
               />
             </div>
           ))}
+
+          {/* Campo "Público" como un desplegable */}
+          <div>
+            <label className="block font-semibold">Público:</label>
+            <select
+              name="Publico"
+              value={curso.Publico}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="1">Profesor</option>
+              <option value="2">Administrativo</option>
+            </select>
+          </div>
 
           {/* Tabla de horarios */}
           <h3 className="text-lg font-semibold mt-4">Horario del curso</h3>
