@@ -6,6 +6,9 @@ interface Inscripcion {
   Curso?: {
     NombreCurso: string;
   };
+  curso?: { // Agregado para manejar datos en minúsculas si es necesario
+    NombreCurso: string;
+  };
   docInscr: string;
   est: string;
   fecreg: string;
@@ -21,12 +24,20 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
   useEffect(() => {
     const fetchInscripciones = async () => {
       try {
-        const response = await fetch("http://localhost:8090/api/inscripciones"); // Ajusta la URL según tu backend
+        const response = await fetch("http://localhost:8090/api/inscripciones");
         if (!response.ok) throw new Error("Error al obtener inscripciones");
+
         const data: Inscripcion[] = await response.json();
-        setInscripciones(data);
+        console.log("📌 Datos recibidos en el frontend:", data); // 👀 Verifica la estructura de los datos
+
+        // Verifica que los datos tengan la estructura esperada antes de actualizar el estado
+        if (Array.isArray(data)) {
+          setInscripciones(data);
+        } else {
+          console.error("❌ Estructura inesperada en los datos recibidos:", data);
+        }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("❌ Error al obtener inscripciones:", error);
       }
     };
 
@@ -66,7 +77,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                   <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
                     <td className="border p-2">{inscripcion.id}</td>
                     <td className="border p-2">
-                      {inscripcion.Curso?.NombreCurso || "Desconocido"}
+                      {inscripcion.Curso?.NombreCurso || inscripcion.curso?.NombreCurso || "Desconocido"}
                     </td>
                     <td className="border p-2">{inscripcion.docInscr}</td>
                     <td className="border p-2">{inscripcion.est}</td>
