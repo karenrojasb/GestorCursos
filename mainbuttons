@@ -163,7 +163,11 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
 
       {/* MODALES INDEPENDIENTES */}
       {showCatalogoAdmin && <CatalogoAdminModal onClose={() => setShowCatalogoAdmin(false)} />}
-      {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} onSave={handleSaveCurso} />}
+      {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} idCur={0} onSave={function (): void {
+        throw new Error("Function not implemented.");
+      } } onInscripcionExitosa={function (): void {
+        throw new Error("Function not implemented.");
+      } } />}
       {showInscritosModal && <InscritosModal onClose={() => setShowInscritosModal(false)} />}
     </div>
   );
