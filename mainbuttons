@@ -7,103 +7,90 @@ import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
 export class InscripcionesController {
   constructor(private readonly inscripcionesService: InscripcionesService) {}
   
-  //  MÉTODO PARA CREAR UN NUEVO CURSO
+  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
   @Post()
-  async createEnrodell (@Body() CreateInscripcioneDto:CreateInscripcioneDto){
-    return this.inscripcionesService.createEnrodell(CreateInscripcioneDto);
+  async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
+    return this.inscripcionesService.createInscripcion(createInscripcioneDto);
   }
-  
 
-  //MÉTODO OBTENER UN CURSO
+  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
   @Get()
-  async getEnrodell() {
-    return this.inscripcionesService.getEnrodell();
+  async getInscripciones() {
+    return this.inscripcionesService.getInscripciones();
   }
-  
 
-  //MÉTODO ACTUALIZAR UN CURSO POR ID
+  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
   @Put(':id')
-  async updateEnrodell(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
-    const updateEnrodell = await this.inscripcionesService.updateEnrodell(Number(id), updateInscripcioneDto)
-       if (!updateEnrodell) {
-         throw new NotFoundException(`The id #${id} not found`);
-     }
-     return updateEnrodell;
+  async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
+    const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
+    if (!updatedInscripcion) {
+      throw new NotFoundException(`La inscripción con ID #${id} no fue encontrada`);
+    }
+    return updatedInscripcion;
   }
 
-
-  //MÉTODO PARA ELIMINAR UN CURSO POR ID
-  @Delete (':id' )
-  async deleteEnrodell(@Param('id') id: string){
-    return this.inscripcionesService.deleteEnrodell(Number(id));
-  } 
+  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
+  @Delete(':id')
+  async deleteInscripcion(@Param('id') id: string) {
+    return this.inscripcionesService.deleteInscripcion(Number(id));
+  }
 }
 
 
-import { Injectable, ValidationPipe } from '@nestjs/common';
+
+
+
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
 import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from 'src/app.module';
 
 @Injectable()
 export class InscripcionesService {
+  constructor(private readonly prisma: PrismaService) {}
 
-   
-   constructor(private readonly prisma: PrismaService) {}
- 
-  //  MÉTODO PARA CREAR UN NUEVO CURSO
- 
-   async createEnrodell(data: CreateInscripcioneDto) {
-     //ENTRADA LOG
-     console.log('Data received to create:', data);
-     const nuevoInscrito = await this.prisma.inscripciones.create({ data, });
-     //RESULTADO LOG
-     console.log('Enrodell created successfully:', nuevoInscrito);
-     return nuevoInscrito;
-   }
+  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
+  async createInscripcion(data: CreateInscripcioneDto) {
+    console.log('Datos recibidos para crear inscripción:', data);
+    const nuevaInscripcion = await this.prisma.inscripciones.create({ data });
+    console.log('Inscripción creada exitosamente:', nuevaInscripcion);
+    return nuevaInscripcion;
+  }
 
- 
- 
-   //MÉTODO OBTENER UN CURSO
-   async getEnrodell() {
-     return this.prisma.inscripciones.findMany();
-   }
- 
-    
-   //MÉTODO ACTUALIZAR UN CURSO POR ID
-   async updateEnrodell (id: number, data: Prisma.InscripcionesCreateInput){
-     console.log ('id received:', id);
-     console.log('data received:', data);
- 
-     try {
-       const updateEnrodell = await this.prisma.inscripciones.update({
-         where: {id},
-         data,
-       });
-       console.log ('update enrodell:', updateEnrodell);
-       return updateEnrodell;
-     }
-     catch (error){
-       console.error ('error when updating enrodell:', error);
-       throw new error('the enrodell was not updated');
-     }
-    
-   }
-   
- 
-   //MÉTODO PARA ELIMINAR UN CURSO POR ID
-   async deleteEnrodell(id: number) {
-     return this.prisma.inscripciones.delete({ where: { id } });
-   }
- 
- 
- }
+  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
+  async getInscripciones() {
+    return this.prisma.inscripciones.findMany({
+      include: {
+        curso: { select: { nombre_curso: true } }, // OBTIENE EL NOMBRE DEL CURSO DESDE gescur.Cursos
+      },
+    });
+  }
 
-function getEnrodell() {
-  throw new Error('Function not implemented.');
+  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
+  async updateInscripcion(id: number, data: UpdateInscripcioneDto) {
+    console.log('ID recibido para actualizar:', id);
+    console.log('Datos recibidos:', data);
+
+    try {
+      const updatedInscripcion = await this.prisma.inscripciones.update({
+        where: { id },
+        data,
+      });
+      console.log('Inscripción actualizada:', updatedInscripcion);
+      return updatedInscripcion;
+    } catch (error) {
+      console.error('Error al actualizar inscripción:', error);
+      throw new NotFoundException(`No se pudo actualizar la inscripción con ID #${id}`);
+    }
+  }
+
+  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
+  async deleteInscripcion(id: number) {
+    try {
+      return await this.prisma.inscripciones.delete({ where: { id } });
+    } catch (error) {
+      throw new NotFoundException(`No se encontró la inscripción con ID #${id} para eliminar`);
+    }
+  }
 }
- 
-
