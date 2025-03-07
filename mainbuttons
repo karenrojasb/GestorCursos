@@ -4,11 +4,11 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 interface Inscripcion {
   id: number;
   idCur?: number; // Ajuste para tomar el ID del curso correctamente
-  Curso?: {
+  Cursos?: {
     id: number;
     NombreCurso: string;
   };
-  curso?: {
+  cursos?: {
     id: number;
     NombreCurso: string;
   };
@@ -76,10 +76,10 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                   <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
                     <td className="border p-2">{inscripcion.id}</td>
                     <td className="border p-2">
-                      {inscripcion.idCur || inscripcion.Curso?.id || inscripcion.curso?.id || "N/A"}
+                      {inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.cursos?.id || "N/A"}
                     </td>
                     <td className="border p-2">
-                      {inscripcion.Curso?.NombreCurso || inscripcion.curso?.NombreCurso || "Desconocido"}
+                      {inscripcion.Cursos?.NombreCurso || inscripcion.cursos?.NombreCurso || "Desconocido"}
                     </td>
                     <td className="border p-2">{inscripcion.docInscr}</td>
                     <td className="border p-2">{inscripcion.est}</td>
