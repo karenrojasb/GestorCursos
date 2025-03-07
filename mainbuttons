@@ -1,49 +1,42 @@
-Error: In HTML, <tbody> cannot be a child of <tbody>.
-This will cause a hydration error.
+<tbody>
+  {Object.entries(groupedInscripciones).map(([cursoId, inscripciones]) => {
+    const curso = inscripciones[0]; // Primer registro del curso para mostrar en la tabla
+    return (
+      <React.Fragment key={cursoId}>
+        {/* FILA PRINCIPAL DEL CURSO */}
+        <tr className="text-center hover:bg-gray-100 transition">
+          <td className="border p-2">{cursoId}</td>
+          <td className="border p-2">{curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}</td>
+          <td className="border p-2">{new Date(curso.fecreg).toLocaleDateString()}</td>
+          <td className="border p-2">
+            <button
+              onClick={() => toggleExpand(Number(cursoId))}
+              className="text-blue-500 hover:text-blue-700"
+            >
+              {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
+            </button>
+          </td>
+        </tr>
 
-  ...
-    <link>
-    <script>
-    <script>
-    <script>
-    <ClientSegmentRoot Component={function RootLayout} slots={{...}} params={{}}>
-      <RootLayout params={Promise}>
-        <html lang="es">
-          <body className="bg-gray-10...">
-            <header>
-            <main className="flex flex-...">
-              <motion.h1>
-              <MainButtons publico={2} esAdmin={true} onSelect={function onSelect}>
-                <div className="flex flex-...">
-                  <div className="w-full max...">
-                    <motion.button>
-                    <motion.button>
-                    <motion.button>
-                    <div>
-                    <InscripcionesModal onClose={function onClose}>
-                      <div className="p-6 rounde...">
-                        <div className="relative f...">
-                          <button>
-                          <h2>
-                          <div className="w-full max...">
-                            <table className="w-full bor...">
-                              <thead>
->                             <tbody>
->                               <tbody>
-                                ...
-              ...
-            ...
-
-    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
-    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
-    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
-    at validateDOMNesting (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:1804:212)
-    at completeWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7273:25)
-    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
-    at completeUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8020:23)
-    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7957:28)
-    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
-    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
-    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7565:211)
-    at performWorkOnRootViaSchedulerTask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8394:9)
-    at MessagePort.performWorkUntilDeadline (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:2353:64)
+        {/* FILAS EXPANDIDAS CON INSCRITOS */}
+        {expandedCourses[Number(cursoId)] && (
+          <tr>
+            <td colSpan={4}>
+              <div className="p-2 bg-gray-50 border border-gray-300 rounded-md">
+                <strong>Inscritos:</strong>
+                <ul className="list-disc pl-5 mt-2">
+                  {inscripciones.map((inscripcion) => (
+                    <li key={inscripcion.id} className="py-1">
+                      📌 <strong>Documento:</strong> {inscripcion.docInscr} | 
+                      <strong> Estado:</strong> {inscripcion.est}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </td>
+          </tr>
+        )}
+      </React.Fragment>
+    );
+  })}
+</tbody>
