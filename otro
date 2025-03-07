@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import React from "react";
 
 interface Inscripcion {
@@ -24,7 +24,9 @@ interface InscripcionesModalProps {
 
 export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
   const [expandedCourses, setExpandedCourses] = useState<{ [key: number]: boolean }>({});
+  const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -36,6 +38,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         console.log("Datos recibidos en el frontend:", data);
 
         setInscripciones(data);
+        setInscripcionesFiltradas(data); // Inicialmente todas las inscripciones
       } catch (error) {
         console.error("Error al obtener inscripciones:", error);
       }
@@ -44,8 +47,27 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
     fetchInscripciones();
   }, []);
 
+  // Filtrar inscripciones en tiempo real
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+
+    const filtrados = inscripciones.filter((inscripcion) => {
+      const cursoNombre = inscripcion.Cursos?.NombreCurso || inscripcion.cursos?.NombreCurso || "";
+      const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
+
+      return (
+        inscripcion.idCur?.toString().includes(texto) || // Buscar por ID Curso
+        cursoNombre.toLowerCase().includes(texto) || // Buscar por Nombre Curso
+        fechaRegistro.includes(texto) // Buscar por Fecha Registro
+      );
+    });
+
+    setInscripcionesFiltradas(filtrados);
+  };
+
   // Agrupar inscripciones por idCur
-  const groupedInscripciones = inscripciones.reduce((acc, inscripcion) => {
+  const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
     const cursoId = inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.cursos?.id || 0;
     if (!acc[cursoId]) {
       acc[cursoId] = [];
@@ -74,7 +96,19 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         {/* TÍTULO */}
         <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
 
-        {/* LISTA DE INSCRIPCIONES CON SCROLL */}
+        {/* BARRA DE BÚSQUEDA */}
+        <div className="flex items-center w-full mb-4 relative">
+          <MagnifyingGlassIcon className="absolute left-3 h-5 w-5 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Buscar por ID, Nombre o Fecha"
+            value={busqueda}
+            onChange={handleBuscar}
+            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#990000] shadow-sm"
+          />
+        </div>
+
+        {/* LISTA DE INSCRIPCIONES */}
         <div className="w-full max-h-[600px] overflow-auto border border-gray-300 rounded-md shadow-sm">
           {Object.entries(groupedInscripciones).length > 0 ? (
             <table className="w-full border-collapse border border-gray-300">
