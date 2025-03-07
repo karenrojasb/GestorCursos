@@ -1,96 +1,74 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
-import { InscripcionesService } from './inscripciones.service';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
+import { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
-@Controller('inscripciones')
-export class InscripcionesController {
-  constructor(private readonly inscripcionesService: InscripcionesService) {}
-  
-  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
-  @Post()
-  async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
-    return this.inscripcionesService.createInscripcion(createInscripcioneDto);
-  }
-
-  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
-  @Get()
-  async getInscripciones() {
-    return this.inscripcionesService.getInscripciones();
-  }
-
-  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
-  @Put(':id')
-  async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
-    const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
-    if (!updatedInscripcion) {
-      throw new NotFoundException(`La inscripción con ID #${id} no fue encontrada`);
-    }
-    return updatedInscripcion;
-  }
-
-  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
-  @Delete(':id')
-  async deleteInscripcion(@Param('id') id: string) {
-    return this.inscripcionesService.deleteInscripcion(Number(id));
-  }
+interface InscripcionesModalProps {
+  onClose: () => void;
 }
 
+export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
+  const [inscripciones, setInscripciones] = useState([]);
 
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      try {
+        const response = await fetch("http://localhost:8090/api/inscripciones"); // Ajusta la URL según tu backend
+        if (!response.ok) throw new Error("Error al obtener inscripciones");
+        const data = await response.json();
+        setInscripciones(data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
 
+    fetchInscripciones();
+  }, []);
 
+  return (
+    <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white 
+                      py-6 px-8 rounded-lg shadow-md">
+        
+        {/* BOTÓN CERRAR */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
 
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+        {/* TÍTULO */}
+        <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
 
-@Injectable()
-export class InscripcionesService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
-  async createInscripcion(data: CreateInscripcioneDto) {
-    console.log('Datos recibidos para crear inscripción:', data);
-    const nuevaInscripcion = await this.prisma.inscripciones.create({ data });
-    console.log('Inscripción creada exitosamente:', nuevaInscripcion);
-    return nuevaInscripcion;
-  }
-
-  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
-  async getInscripciones() {
-    return this.prisma.inscripciones.findMany({
-      include: {
-        curso: { select: { nombre_curso: true } }, // OBTIENE EL NOMBRE DEL CURSO DESDE gescur.Cursos
-      },
-    });
-  }
-
-  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
-  async updateInscripcion(id: number, data: UpdateInscripcioneDto) {
-    console.log('ID recibido para actualizar:', id);
-    console.log('Datos recibidos:', data);
-
-    try {
-      const updatedInscripcion = await this.prisma.inscripciones.update({
-        where: { id },
-        data,
-      });
-      console.log('Inscripción actualizada:', updatedInscripcion);
-      return updatedInscripcion;
-    } catch (error) {
-      console.error('Error al actualizar inscripción:', error);
-      throw new NotFoundException(`No se pudo actualizar la inscripción con ID #${id}`);
-    }
-  }
-
-  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
-  async deleteInscripcion(id: number) {
-    try {
-      return await this.prisma.inscripciones.delete({ where: { id } });
-    } catch (error) {
-      throw new NotFoundException(`No se encontró la inscripción con ID #${id} para eliminar`);
-    }
-  }
+        {/* LISTA DE INSCRIPCIONES CON SCROLL */}
+        <div className="w-full max-h-80 overflow-auto border border-gray-300 rounded-md shadow-sm">
+          {inscripciones.length > 0 ? (
+            <table className="w-full border-collapse border border-gray-300">
+              <thead className="bg-gray-200 text-gray-700">
+                <tr>
+                  <th className="border p-2">ID</th>
+                  <th className="border p-2">ID Curso</th>
+                  <th className="border p-2">Doc. Inscrito</th>
+                  <th className="border p-2">Estado</th>
+                  <th className="border p-2">Fecha Registro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inscripciones.map((inscripcion: any) => (
+                  <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
+                    <td className="border p-2">{inscripcion.id}</td>
+                    <td className="border p-2">{inscripcion.idCur}</td>
+                    <td className="border p-2">{inscripcion.docInscr}</td>
+                    <td className="border p-2">{inscripcion.est}</td>
+                    <td className="border p-2">{new Date(inscripcion.fecreg).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
