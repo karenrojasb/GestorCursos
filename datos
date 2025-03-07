@@ -1,37 +1,36 @@
 import React, { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
-
 interface CursoModalProps {
-  onSave: (data:any) => void;
+  onSave: (data: any) => void;
   onClose: () => void;
 }
 
-export default function CursoModal ({onClose, onSave}: CursoModalProps) {
-    const [curso, setCurso] = useState({
+export default function CursoModal({ onClose, onSave }: CursoModalProps) {
+  const [curso, setCurso] = useState({
     NombreCurso: "",
-    Valor: 0,
-    Publico: 0,
+    Valor: "",
+    Publico: "",
     Periodo: "",
     Inicio: "",
     Fin: "",
-    Horas: 0,
+    Horas: "",
     CupoMax: "",
     Lugar: "",
-    // LunesIni: "",                          
-    // LunesFin: "",
-    // MartesIni: "",
-    // MartesFin: "",
-    // MiercolesIni: "",
-    // MiercolesFin: "",                     
-    // JuevesIni: "",                         
-    // JuevesFin: "",                       
-    // ViernesIni: "",                       
-    // ViernesFin: "",                      
-    // SabadoIni: "",                       
-    // SabadoFin: "",                        
-    // DomingoIni: "",                        
-    // DomingoFin: "",  
+    LunesIni: "",
+    LunesFin: "",
+    MartesIni: "",
+    MartesFin: "",
+    MiercolesIni: "",
+    MiercolesFin: "",
+    JuevesIni: "",
+    JuevesFin: "",
+    ViernesIni: "",
+    ViernesFin: "",
+    SabadoIni: "",
+    SabadoFin: "",
+    DomingoIni: "",
+    DomingoFin: "",
     Linea: "",
     Estado: "",
     Modalidad: "",
@@ -45,64 +44,67 @@ export default function CursoModal ({onClose, onSave}: CursoModalProps) {
 
   // Manejar cambios en los inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurso({ ...curso, [e.target.name]: e.target.value});
+    setCurso({ ...curso, [e.target.name]: e.target.value });
   };
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave ({
+    onSave({
       NombreCurso: curso.NombreCurso,
-      Valor:  Number (curso.Valor),
-      Publico:  Number (curso.Publico) ,
+      Valor: curso.Valor ? Number(curso.Valor) : null,
+      Publico: curso.Publico ? Number(curso.Publico) : null,
       Periodo: curso.Periodo,
       Inicio: curso.Inicio,
       Fin: curso.Fin,
-      Horas: Number(curso.Horas) || 0,
-      CupoMax: Number(curso.CupoMax),
+      Horas: curso.Horas ? Number(curso.Horas) : null,
+      CupoMax: curso.CupoMax ? Number(curso.CupoMax) : null,
       Lugar: curso.Lugar,
-      // LunesIni: "",                          
-      // LunesFin: "",
-      // MartesIni: "",
-      // MartesFin: "",
-      // MiercolesIni: "",
-      // MiercolesFin: "",                     
-      // JuevesIni: "",                         
-      // JuevesFin: "",                       
-      // ViernesIni: "",                       
-      // ViernesFin: "",                      
-      // SabadoIni: "",                       
-      // SabadoFin: "",                        
-      // DomingoIni: "",                        
-      // DomingoFin: "",  
-      Linea: Number(curso.Linea),
-      Estado: Number(curso.Estado),
-      Modalidad: Number(curso.Modalidad),
-      Unidad: Number(curso.Unidad),
-      Profesor: Number(curso.Profesor),
-      SegundoPro: Number(curso.SegundoPro),
-      Proexterno: curso.Proexterno,
-      Descripcion: curso.Descripcion,
-      IdTipoCurso: Number(curso.IdTipoCurso), 
-
+      LunesIni: curso.LunesIni || "",
+      LunesFin: curso.LunesFin || "",
+      MartesIni: curso.MartesIni || "",
+      MartesFin: curso.MartesFin || "",
+      MiercolesIni: curso.MiercolesIni || "",
+      MiercolesFin: curso.MiercolesFin || "",
+      JuevesIni: curso.JuevesIni || "",
+      JuevesFin: curso.JuevesFin || "",
+      ViernesIni: curso.ViernesIni || "",
+      ViernesFin: curso.ViernesFin || "",
+      SabadoIni: curso.SabadoIni || "",
+      SabadoFin: curso.SabadoFin || "",
+      DomingoIni: curso.DomingoIni || "",
+      DomingoFin: curso.DomingoFin || "",
+      Linea: curso.Linea ? Number(curso.Linea) : null,
+      Estado: curso.Estado ? Number(curso.Estado) : null,
+      Modalidad: curso.Modalidad ? Number(curso.Modalidad) : null,
+      Unidad: curso.Unidad ? Number(curso.Unidad) : null,
+      Profesor: curso.Profesor ? Number(curso.Profesor) : null,
+      SegundoPro: curso.SegundoPro || "",
+      Proexterno: curso.Proexterno || "",
+      Descripcion: curso.Descripcion || "",
+      IdTipoCurso: curso.IdTipoCurso ? Number(curso.IdTipoCurso) : null,
     });
   };
-    
-    
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl flex flex-col max-h-[80vh] overflow-y-auto">
         {/* Botón de cerrar */}
-        <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" onClick={onClose}>
+        <button
+          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+          onClick={onClose}
+        >
           <XMarkIcon className="w-6 h-6" />
         </button>
 
-        <h2 className="text-xl font-bold mb-6 text-center text-[#990000]">Crear Curso</h2>
+        <h2 className="text-xl font-bold mb-6 text-center text-[#990000]">
+          Crear Curso
+        </h2>
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-gray-700 font-medium">Nombre del curso: </label>
+          <label className="block text-gray-700 font-medium">
+            Nombre del curso:
+          </label>
           <input
             type="text"
             name="NombreCurso"
@@ -112,204 +114,99 @@ export default function CursoModal ({onClose, onSave}: CursoModalProps) {
             required
           />
 
-          <label className="block font-semibold">Valor: </label>
+          {/* Campos adicionales de horarios */}
+          <label className="block font-semibold">Horario (Opcional):</label>
+          {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+            <div key={dia} className="grid grid-cols-2 gap-2">
+              <label>{dia} Inicio:</label>
+              <input
+                type="time"
+                name={`${dia}Ini`}
+                value={curso[`${dia}Ini` as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+              />
+              <label>{dia} Fin:</label>
+              <input
+                type="time"
+                name={`${dia}Fin`}
+                value={curso[`${dia}Fin` as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+          ))}
+
+          <label className="block font-semibold">Valor:</label>
           <input
             type="number"
             name="Valor"
             value={curso.Valor}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-            required
           />
 
-          <label className="block font-semibold">Público: </label>
+          <label className="block font-semibold">Público:</label>
           <input
             type="number"
             name="Publico"
             value={curso.Publico}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-            required
           />
-          
-         <label className="block font-semibold">Periodo: </label>
-         <input
+
+          <label className="block font-semibold">Periodo:</label>
+          <input
             type="text"
             name="Periodo"
             value={curso.Periodo}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-            required
-
           />
 
-          <label className="block font-semibold">Inicio: </label>
+          <label className="block font-semibold">Inicio:</label>
           <input
             type="date"
             name="Inicio"
             value={curso.Inicio}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-            required
-
           />
 
-          <label className="block font-semibold">Fin: </label>
+          <label className="block font-semibold">Fin:</label>
           <input
             type="date"
             name="Fin"
             value={curso.Fin}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-            required
           />
 
-           <label className="block font-semibold">Horas: </label>
+          <label className="block font-semibold">Horas:</label>
           <input
             type="number"
             name="Horas"
             value={curso.Horas}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-            required
           />
 
-          <label className="block font-semibold">Cupo Max: </label>
-          <input
-            type="number"
-            name="CupoMax"
-            value={curso.CupoMax}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Lugar: </label>
-          <input
-            type="text"
-            name="Lugar"
-            placeholder="Lugar"
-            value={curso.Lugar}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Linea: </label>
-          <input
-            type="number"
-            name="Linea"
-            placeholder="Linea"
-            value={curso.Linea}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Estado: </label>
-          <input
-            type="number"
-            name="Estado"
-            placeholder="Estado"
-            value={curso.Estado}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Modalidad: </label>
-          <input
-            type="number"
-            name="Modalidad"
-            placeholder="Modalidad"
-            value={curso.Modalidad}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Unidad: </label>
-          <input
-            type="number"
-            name="Unidad"
-            placeholder="Unidad"
-            value={curso.Unidad}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Profesor: </label>
-          <input
-            type="number"
-            name="Profesor"
-            placeholder="Profesor"
-            value={curso.Profesor}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Segundo Pro: </label>
-          <input
-            type="text"
-            name="SegundoPro"
-            placeholder="SegundoPro"
-            value={curso.SegundoPro}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Proexterno: </label>
-          <input
-            type="text"
-            name="Proexterno"
-            placeholder="Proexterno"
-            value={curso.Proexterno}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Descripción: </label>
-          <input
-            type="text"
-            name="Descripcion"
-            placeholder="Descripcion"
-            value={curso.Descripcion}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-            <label className="block font-semibold">ID Tipo de curso</label>
-            <input
-            type="number"
-            name="IdTipoCurso"
-            placeholder="IdTipoCurso"
-            value={curso.IdTipoCurso}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-          {/* BOTÓN PARA SUBIR EL ARCHIVO */}
+          {/* Botón para guardar */}
           <button
             type="submit"
-            className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
+            className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
+          >
             Guardar
           </button>
 
           <button
-          onClick={onClose}
-          className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition">
+            onClick={onClose}
+            className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
+          >
             Cancelar
           </button>
-
-
         </form>
       </div>
     </div>
   );
-};
-
+}
