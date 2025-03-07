@@ -3,7 +3,7 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface Inscripcion {
   id: number;
-  idCur?: number; // Ajuste para tomar el ID del curso correctamente
+  idCur?: number;
   Cursos?: {
     id: number;
     NombreCurso: string;
@@ -31,7 +31,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         if (!response.ok) throw new Error("Error al obtener inscripciones");
 
         const data: Inscripcion[] = await response.json();
-        console.log("📌 Datos recibidos en el frontend:", data); // 👀 Verifica la estructura de los datos
+        console.log("📌 Datos recibidos en el frontend:", data);
 
         setInscripciones(data);
       } catch (error) {
@@ -64,7 +64,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
               <thead className="bg-gray-200 text-gray-700">
                 <tr>
                   <th className="border p-2">ID</th>
-                  <th className="border p-2">ID Curso</th> {/* ID del curso corregido */}
+                  <th className="border p-2">ID Curso</th>
                   <th className="border p-2">Nombre del Curso</th>
                   <th className="border p-2">Doc. Inscrito</th>
                   <th className="border p-2">Estado</th>
