@@ -7,11 +7,12 @@ interface InscripcionesModalProps {
 
 export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
   const [inscripciones, setInscripciones] = useState([]);
+  const [cursos, setCursos] = useState<{ id: number; nombre_curso: string }[]>([]);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
       try {
-        const response = await fetch("http://localhost:8090/api/inscripciones"); // Ajusta la URL según tu backend
+        const response = await fetch("http://localhost:8090/api/inscripciones");
         if (!response.ok) throw new Error("Error al obtener inscripciones");
         const data = await response.json();
         setInscripciones(data);
@@ -20,13 +21,30 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
       }
     };
 
+    const fetchCursos = async () => {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos");
+        if (!response.ok) throw new Error("Error al obtener cursos");
+        const data = await response.json();
+        setCursos(data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
     fetchInscripciones();
+    fetchCursos();
   }, []);
+
+  // Función para obtener el nombre del curso según idCur
+  const obtenerNombreCurso = (idCur: number) => {
+    const curso = cursos.find((c) => c.id === idCur);
+    return curso ? curso.nombre_curso : "Desconocido";
+  };
 
   return (
     <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white 
-                      py-6 px-8 rounded-lg shadow-md">
+      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-6 px-8 rounded-lg shadow-md">
         
         {/* BOTÓN CERRAR */}
         <button
@@ -46,7 +64,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
               <thead className="bg-gray-200 text-gray-700">
                 <tr>
                   <th className="border p-2">ID</th>
-                  <th className="border p-2">ID Curso</th>
+                  <th className="border p-2">Curso</th>
                   <th className="border p-2">Doc. Inscrito</th>
                   <th className="border p-2">Estado</th>
                   <th className="border p-2">Fecha Registro</th>
@@ -56,7 +74,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                 {inscripciones.map((inscripcion: any) => (
                   <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
                     <td className="border p-2">{inscripcion.id}</td>
-                    <td className="border p-2">{inscripcion.idCur}</td>
+                    <td className="border p-2">{obtenerNombreCurso(inscripcion.idCur)}</td>
                     <td className="border p-2">{inscripcion.docInscr}</td>
                     <td className="border p-2">{inscripcion.est}</td>
                     <td className="border p-2">{new Date(inscripcion.fecreg).toLocaleDateString()}</td>
