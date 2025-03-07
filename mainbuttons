@@ -1,110 +1,104 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
-import { InscripcionesService } from './inscripciones.service';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
+import React, { useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
-@Controller('inscripciones')
-export class InscripcionesController {
-  constructor(private readonly inscripcionesService: InscripcionesService) {}
-  
-  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
-  @Post()
-  async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
-    return this.inscripcionesService.createInscripcion(createInscripcioneDto);
-  }
-
-  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
-  @Get()
-  async getInscripciones() {
-    return this.inscripcionesService.getInscripciones();
-  }
-
-  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
-  @Put(':id')
-  async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
-    const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
-    if (!updatedInscripcion) {
-      throw new NotFoundException(`La inscripción con ID #${id} no fue encontrada`);
-    }
-    return updatedInscripcion;
-  }
-
-  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
-  @Delete(':id')
-  async deleteInscripcion(@Param('id') id: string) {
-    return this.inscripcionesService.deleteInscripcion(Number(id));
-  }
+interface CursoModalProps {
+  idCur: number; // ID del curso al que se inscribe
+  onClose: () => void;
+  onSave: (data: { idCur: number; docInscr: string }) => void; // Ahora recibe datos
+  onInscripcionExitosa: () => void; // Función para actualizar la lista
 }
 
+export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitosa }: CursoModalProps) {
+  const [docInscr, setDocInscr] = useState("");
+  const [cargando, setCargando] = useState(false);
+  const [mensaje, setMensaje] = useState("");
 
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+  // Manejar cambios en el input
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDocInscr(e.target.value);
+  };
 
-@Injectable()
-export class InscripcionesService {
-  constructor(private readonly prisma: PrismaService) {}
+  // Enviar inscripción a la API
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!docInscr.trim()) {
+      setMensaje("Debe ingresar un documento válido.");
+      return;
+    }
 
-  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
-  async createInscripcion(data: CreateInscripcioneDto) {
-    console.log('Datos recibidos para crear inscripción:', data);
+    setCargando(true);
+    setMensaje("");
 
     try {
-      const nuevaInscripcion = await this.prisma.inscripciones.create({
-        data: {
-          idCur: data.idCur,
-          docInscr: data.docInscr,
-          fechaInscripcion: new Date(), // SE REGISTRA AUTOMÁTICAMENTE LA FECHA
-        },
+      const response = await fetch("http://localhost:8090/api/inscripciones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idCur, docInscr }),
       });
 
-      console.log('Inscripción creada exitosamente:', nuevaInscripcion);
-      return nuevaInscripcion;
+      if (!response.ok) throw new Error("Error al inscribir usuario.");
+
+      setMensaje("Inscripción realizada con éxito.");
+      setDocInscr("");
+      onInscripcionExitosa(); // Actualizar lista en InscripcionesModal
+      onSave({ idCur, docInscr }); // ✅ Llamar a onSave después de inscribir
     } catch (error) {
-      console.error('Error al crear inscripción:', error);
-      throw new Error('No se pudo registrar la inscripción.');
+      setMensaje("Hubo un problema al inscribir.");
+    } finally {
+      setCargando(false);
     }
-  }
+  };
 
-  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
-  async getInscripciones() {
-    return this.prisma.inscripciones.findMany({
-      include: {
-        Cursos: { select: { nombre_curso: true } }, // RELACIÓN CON LA TABLA Cursos
-      },
-    });
-  }
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col">
+        
+        {/* Botón de cerrar */}
+        <button
+          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+          onClick={onClose}
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
 
-  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
-  async updateInscripcion(id: number, data: UpdateInscripcioneDto) {
-    console.log('ID recibido para actualizar:', id);
-    console.log('Datos recibidos:', data);
+        <h2 className="text-xl font-bold mb-4 text-center text-[#990000]">Inscribir Usuario</h2>
 
-    try {
-      const updatedInscripcion = await this.prisma.inscripciones.update({
-        where: { id },
-        data,
-      });
-      console.log('Inscripción actualizada:', updatedInscripcion);
-      return updatedInscripcion;
-    } catch (error) {
-      console.error('Error al actualizar inscripción:', error);
-      throw new NotFoundException(`No se pudo actualizar la inscripción con ID #${id}`);
-    }
-  }
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <label className="block font-semibold">Documento del usuario:</label>
+          <input
+            type="text"
+            value={docInscr}
+            onChange={handleChange}
+            className="w-full p-2 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-[#990000] transition"
+            required
+          />
 
-  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
-  async deleteInscripcion(id: number) {
-    try {
-      return await this.prisma.inscripciones.delete({ where: { id } });
-    } catch (error) {
-      throw new NotFoundException(`No se encontró la inscripción con ID #${id} para eliminar`);
-    }
-  }
+          {/* Mensaje de error o éxito */}
+          {mensaje && (
+            <p className={`text-center text-sm font-semibold ${mensaje.includes("éxito") ? "text-green-600" : "text-red-600"}`}>
+              {mensaje}
+            </p>
+          )}
+
+          {/* Botón de inscripción */}
+          <button
+            type="submit"
+            className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
+            disabled={cargando}
+          >
+            {cargando ? "Inscribiendo..." : "Inscribir"}
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
+          >
+            Cancelar
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }
-
-
-
-
-
