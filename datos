@@ -9,80 +9,37 @@ interface CursoModalProps {
 export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [curso, setCurso] = useState({
     NombreCurso: "",
-    Valor: "",
-    Publico: "",
+    Valor: 0,
+    Publico: 0,
     Periodo: "",
     Inicio: "",
     Fin: "",
-    Horas: "",
-    CupoMax: "",
+    Horas: 0,
+    CupoMax: 0,
     Lugar: "",
-    LunesIni: "",
-    LunesFin: "",
-    MartesIni: "",
-    MartesFin: "",
-    MiercolesIni: "",
-    MiercolesFin: "",
-    JuevesIni: "",
-    JuevesFin: "",
-    ViernesIni: "",
-    ViernesFin: "",
-    SabadoIni: "",
-    SabadoFin: "",
-    DomingoIni: "",
-    DomingoFin: "",
-    Linea: "",
-    Estado: "",
-    Modalidad: "",
-    Unidad: "",
-    Profesor: "",
+    Linea: 0,
+    Estado: 0,
+    Modalidad: 0,
+    Unidad: 0,
+    Profesor: 0,
     SegundoPro: "",
     Proexterno: "",
     Descripcion: "",
-    IdTipoCurso: "",
+    IdTipoCurso: 0,
   });
 
   // Manejar cambios en los inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurso({ ...curso, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    setCurso({
+      ...curso,
+      [name]: type === "number" ? Number(value) || 0 : value,
+    });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      NombreCurso: curso.NombreCurso,
-      Valor: curso.Valor ? Number(curso.Valor) : null,
-      Publico: curso.Publico ? Number(curso.Publico) : null,
-      Periodo: curso.Periodo,
-      Inicio: curso.Inicio,
-      Fin: curso.Fin,
-      Horas: curso.Horas ? Number(curso.Horas) : null,
-      CupoMax: curso.CupoMax ? Number(curso.CupoMax) : null,
-      Lugar: curso.Lugar,
-      LunesIni: curso.LunesIni || "",
-      LunesFin: curso.LunesFin || "",
-      MartesIni: curso.MartesIni || "",
-      MartesFin: curso.MartesFin || "",
-      MiercolesIni: curso.MiercolesIni || "",
-      MiercolesFin: curso.MiercolesFin || "",
-      JuevesIni: curso.JuevesIni || "",
-      JuevesFin: curso.JuevesFin || "",
-      ViernesIni: curso.ViernesIni || "",
-      ViernesFin: curso.ViernesFin || "",
-      SabadoIni: curso.SabadoIni || "",
-      SabadoFin: curso.SabadoFin || "",
-      DomingoIni: curso.DomingoIni || "",
-      DomingoFin: curso.DomingoFin || "",
-      Linea: curso.Linea ? Number(curso.Linea) : null,
-      Estado: curso.Estado ? Number(curso.Estado) : null,
-      Modalidad: curso.Modalidad ? Number(curso.Modalidad) : null,
-      Unidad: curso.Unidad ? Number(curso.Unidad) : null,
-      Profesor: curso.Profesor ? Number(curso.Profesor) : null,
-      SegundoPro: curso.SegundoPro || "",
-      Proexterno: curso.Proexterno || "",
-      Descripcion: curso.Descripcion || "",
-      IdTipoCurso: curso.IdTipoCurso ? Number(curso.IdTipoCurso) : null,
-    });
+    onSave({ ...curso });
   };
 
   return (
@@ -102,96 +59,49 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-gray-700 font-medium">
-            Nombre del curso:
-          </label>
+          <label className="block font-semibold">Nombre del curso:</label>
           <input
             type="text"
             name="NombreCurso"
             value={curso.NombreCurso}
             onChange={handleChange}
-            className="w-full p-2 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-[#990000] transitions"
+            className="w-full p-2 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-[#990000] transition"
             required
           />
 
-          {/* Campos adicionales de horarios */}
-          <label className="block font-semibold">Horario (Opcional):</label>
-          {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
-            <div key={dia} className="grid grid-cols-2 gap-2">
-              <label>{dia} Inicio:</label>
+          {[
+            { label: "Valor", name: "Valor" },
+            { label: "Público", name: "Publico" },
+            { label: "Periodo", name: "Periodo", type: "text" },
+            { label: "Inicio", name: "Inicio", type: "date" },
+            { label: "Fin", name: "Fin", type: "date" },
+            { label: "Horas", name: "Horas" },
+            { label: "Cupo Máx", name: "CupoMax" },
+            { label: "Lugar", name: "Lugar", type: "text" },
+            { label: "Línea", name: "Linea" },
+            { label: "Estado", name: "Estado" },
+            { label: "Modalidad", name: "Modalidad" },
+            { label: "Unidad", name: "Unidad" },
+            { label: "Profesor", name: "Profesor" },
+            { label: "Segundo Profesor", name: "SegundoPro", type: "text" },
+            { label: "Profesor Externo", name: "Proexterno", type: "text" },
+            { label: "Descripción", name: "Descripcion", type: "text" },
+            { label: "ID Tipo de Curso", name: "IdTipoCurso" },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block font-semibold">{field.label}:</label>
               <input
-                type="time"
-                name={`${dia}Ini`}
-                value={curso[`${dia}Ini` as keyof typeof curso]}
+                type={field.type || "number"}
+                name={field.name}
+                value={curso[field.name as keyof typeof curso]}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
-              />
-              <label>{dia} Fin:</label>
-              <input
-                type="time"
-                name={`${dia}Fin`}
-                value={curso[`${dia}Fin` as keyof typeof curso]}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
+                required
               />
             </div>
           ))}
 
-          <label className="block font-semibold">Valor:</label>
-          <input
-            type="number"
-            name="Valor"
-            value={curso.Valor}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-
-          <label className="block font-semibold">Público:</label>
-          <input
-            type="number"
-            name="Publico"
-            value={curso.Publico}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-
-          <label className="block font-semibold">Periodo:</label>
-          <input
-            type="text"
-            name="Periodo"
-            value={curso.Periodo}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-
-          <label className="block font-semibold">Inicio:</label>
-          <input
-            type="date"
-            name="Inicio"
-            value={curso.Inicio}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-
-          <label className="block font-semibold">Fin:</label>
-          <input
-            type="date"
-            name="Fin"
-            value={curso.Fin}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-
-          <label className="block font-semibold">Horas:</label>
-          <input
-            type="number"
-            name="Horas"
-            value={curso.Horas}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-
-          {/* Botón para guardar */}
+          {/* Botones */}
           <button
             type="submit"
             className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
@@ -200,6 +110,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
           </button>
 
           <button
+            type="button"
             onClick={onClose}
             className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
           >
