@@ -1,19 +1,29 @@
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
+interface Inscripcion {
+  id: number;
+  Curso?: {
+    NombreCurso: string;
+  };
+  docInscr: string;
+  est: string;
+  fecreg: string;
+}
+
 interface InscripcionesModalProps {
   onClose: () => void;
 }
 
 export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
-  const [inscripciones, setInscripciones] = useState([]);
+  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
       try {
         const response = await fetch("http://localhost:8090/api/inscripciones"); // Ajusta la URL según tu backend
         if (!response.ok) throw new Error("Error al obtener inscripciones");
-        const data = await response.json();
+        const data: Inscripcion[] = await response.json();
         setInscripciones(data);
       } catch (error) {
         console.error("Error:", error);
@@ -45,25 +55,27 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
               <thead className="bg-gray-200 text-gray-700">
                 <tr>
                   <th className="border p-2">ID</th>
-                  <th className="border p-2">Nombre del Curso</th> {/* AHORA MUESTRA EL NOMBRE DEL CURSO */}
+                  <th className="border p-2">Nombre del Curso</th>
                   <th className="border p-2">Doc. Inscrito</th>
                   <th className="border p-2">Estado</th>
                   <th className="border p-2">Fecha Registro</th>
                 </tr>
               </thead>
               <tbody>
-  {inscripciones.map((inscripcion: any) => (
-    <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
-      <td className="border p-2">{inscripcion.id}</td>
-      <td className="border p-2">
-        {inscripcion.Curso?.NombreCurso ? inscripcion.Curso.NombreCurso : "Desconocido"}
-      </td>
-      <td className="border p-2">{inscripcion.docInscr}</td>
-      <td className="border p-2">{inscripcion.est}</td>
-      <td className="border p-2">{new Date(inscripcion.fecreg).toLocaleDateString()}</td>
-    </tr>
-  ))}
-</tbody>
+                {inscripciones.map((inscripcion) => (
+                  <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
+                    <td className="border p-2">{inscripcion.id}</td>
+                    <td className="border p-2">
+                      {inscripcion.Curso?.NombreCurso || "Desconocido"}
+                    </td>
+                    <td className="border p-2">{inscripcion.docInscr}</td>
+                    <td className="border p-2">{inscripcion.est}</td>
+                    <td className="border p-2">
+                      {new Date(inscripcion.fecreg).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           ) : (
             <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
