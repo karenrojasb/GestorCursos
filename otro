@@ -82,27 +82,38 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-gray-700 font-medium">
-            Nombre del curso:
-          </label>
-          <input
-            type="text"
-            name="NombreCurso"
-            value={curso.NombreCurso}
-            onChange={handleChange}
-            className="w-full p-2 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-[#990000] transitions"
-            required
-          />
-
-          <label className="block font-semibold">Valor: </label>
-          <input
-            type="number"
-            name="Valor"
-            value={curso.Valor}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
+          {[
+            { label: "Nombre del Curso", name: "NombreCurso", type: "text" },
+            { label: "Valor", name: "Valor", type: "number" },
+            { label: "Público", name: "Publico", type: "number" },
+            { label: "Periodo", name: "Periodo", type: "text" },
+            { label: "Fecha de Inicio", name: "Inicio", type: "date" },
+            { label: "Fecha de Fin", name: "Fin", type: "date" },
+            { label: "Horas", name: "Horas", type: "number" },
+            { label: "Cupo Máximo", name: "CupoMax", type: "number" },
+            { label: "Lugar", name: "Lugar", type: "text" },
+            { label: "Línea", name: "Linea", type: "number" },
+            { label: "Estado", name: "Estado", type: "number" },
+            { label: "Modalidad", name: "Modalidad", type: "number" },
+            { label: "Unidad", name: "Unidad", type: "number" },
+            { label: "Profesor Principal", name: "Profesor", type: "number" },
+            { label: "Segundo Profesor", name: "SegundoPro", type: "number" },
+            { label: "Profesor Externo", name: "Proexterno", type: "number" },
+            { label: "Descripción", name: "Descripcion", type: "text" },
+            { label: "ID Tipo de Curso", name: "IdTipoCurso", type: "number" },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block font-semibold">{field.label}:</label>
+              <input
+                type={field.type}
+                name={field.name}
+                value={(curso as any)[field.name]}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+          ))}
 
           {/* Tabla de horarios */}
           <h3 className="text-lg font-semibold mt-4">Horario del curso</h3>
@@ -119,10 +130,10 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                 {[
                   "Lunes",
                   "Martes",
-                  "Miércoles",
+                  "Miercoles",
                   "Jueves",
                   "Viernes",
-                  "Sábado",
+                  "Sabado",
                   "Domingo",
                 ].map((dia) => (
                   <tr key={dia}>
@@ -150,56 +161,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
               </tbody>
             </table>
           </div>
-
-          <label className="block font-semibold">Cupo Máx: </label>
-          <input
-            type="number"
-            name="CupoMax"
-            value={curso.CupoMax}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Lugar: </label>
-          <input
-            type="text"
-            name="Lugar"
-            value={curso.Lugar}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Profesor: </label>
-          <input
-            type="number"
-            name="Profesor"
-            value={curso.Profesor}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">Descripción: </label>
-          <input
-            type="text"
-            name="Descripcion"
-            value={curso.Descripcion}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-
-          <label className="block font-semibold">ID Tipo de curso</label>
-          <input
-            type="number"
-            name="IdTipoCurso"
-            value={curso.IdTipoCurso}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
 
           {/* Botón para guardar */}
           <button
