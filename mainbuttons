@@ -1,9 +1,62 @@
-<tbody>
+import { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+
+interface InscripcionesModalProps {
+  onClose: () => void;
+}
+
+export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
+  const [inscripciones, setInscripciones] = useState([]);
+
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      try {
+        const response = await fetch("http://localhost:8090/api/inscripciones"); // Ajusta la URL según tu backend
+        if (!response.ok) throw new Error("Error al obtener inscripciones");
+        const data = await response.json();
+        setInscripciones(data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchInscripciones();
+  }, []);
+
+  return (
+    <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-6 px-8 rounded-lg shadow-md">
+        
+        {/* BOTÓN CERRAR */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+
+        {/* TÍTULO */}
+        <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
+
+        {/* LISTA DE INSCRIPCIONES CON SCROLL */}
+        <div className="w-full max-h-80 overflow-auto border border-gray-300 rounded-md shadow-sm">
+          {inscripciones.length > 0 ? (
+            <table className="w-full border-collapse border border-gray-300">
+              <thead className="bg-gray-200 text-gray-700">
+                <tr>
+                  <th className="border p-2">ID</th>
+                  <th className="border p-2">Nombre del Curso</th> {/* AHORA MUESTRA EL NOMBRE DEL CURSO */}
+                  <th className="border p-2">Doc. Inscrito</th>
+                  <th className="border p-2">Estado</th>
+                  <th className="border p-2">Fecha Registro</th>
+                </tr>
+              </thead>
+              <tbody>
   {inscripciones.map((inscripcion: any) => (
     <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
       <td className="border p-2">{inscripcion.id}</td>
       <td className="border p-2">
-        {inscripcion.curso?.nombre_curso ? inscripcion.curso.nombre_curso : "Desconocido"}
+        {inscripcion.Curso?.NombreCurso ? inscripcion.Curso.NombreCurso : "Desconocido"}
       </td>
       <td className="border p-2">{inscripcion.docInscr}</td>
       <td className="border p-2">{inscripcion.est}</td>
@@ -11,3 +64,12 @@
     </tr>
   ))}
 </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
