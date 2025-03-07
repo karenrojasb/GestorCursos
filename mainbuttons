@@ -54,8 +54,6 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full">
       <div className="w-full max-w-md flex flex-col space-y-4 items-center">
-        
-        {/* BOTÓN CATÁLOGO */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -68,7 +66,6 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
         </motion.button>
         {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
 
-        {/* BOTÓN CERTIFICADOS */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -80,10 +77,8 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
           Certificados
         </motion.button>
 
-        {/* BOTONES SOLO PARA ADMINISTRADORES */}
         {esAdmin && (
           <>
-            {/* BOTÓN GESTOR DE CURSOS */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -95,12 +90,10 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
               Gestor de Cursos
             </motion.button>
 
-            {/* MODAL GESTOR DE CURSOS */}
             {showGestorModal && (
               <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                 <div className="relative flex flex-col items-center gap-3 w-full max-w-3xl bg-white 
                                 py-6 px-8 rounded-lg shadow-md">
-                  {/* BOTÓN CERRAR */}
                   <button
                     onClick={() => setShowGestorModal(false)}
                     className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
@@ -108,11 +101,9 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
                     <XMarkIcon className="h-6 w-6" />
                   </button>
 
-                  {/* TÍTULO */}
                   <h2 className="text-3xl font-bold text-[#990000] text-center">Gestor de Cursos</h2>
 
                   <div className="w-full flex flex-col items-center justify-center space-y-3 text-center">
-                    {/* BOTÓN CREAR CURSO */}
                     <motion.button
                       whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
                       whileTap={{ scale: 0.95 }}
@@ -126,7 +117,6 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
                       Crear Curso
                     </motion.button>
 
-                    {/* BOTÓN CATÁLOGO ADMIN */}
                     <motion.button
                       whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
                       whileTap={{ scale: 0.95 }}
@@ -140,7 +130,6 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
                       Catálogo
                     </motion.button>
 
-                    {/* BOTÓN VER INSCRITOS */}
                     <motion.button
                       whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
                       whileTap={{ scale: 0.95 }}
@@ -161,13 +150,8 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
         )}
       </div>
 
-      {/* MODALES INDEPENDIENTES */}
       {showCatalogoAdmin && <CatalogoAdminModal onClose={() => setShowCatalogoAdmin(false)} />}
-      {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} idCur={0} onSave={function (): void {
-        throw new Error("Function not implemented.");
-      } } onInscripcionExitosa={function (): void {
-        throw new Error("Function not implemented.");
-      } } />}
+      {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} idCur={0} onSave={handleSaveCurso} onInscripcionExitosa={() => {}} />}
       {showInscritosModal && <InscritosModal onClose={() => setShowInscritosModal(false)} />}
     </div>
   );
