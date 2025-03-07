@@ -23,6 +23,7 @@ interface InscripcionesModalProps {
 
 export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [expandedCourses, setExpandedCourses] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -42,6 +43,21 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
     fetchInscripciones();
   }, []);
 
+  // Agrupar inscripciones por idCur
+  const groupedInscripciones = inscripciones.reduce((acc, inscripcion) => {
+    const cursoId = inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.cursos?.id || 0;
+    if (!acc[cursoId]) {
+      acc[cursoId] = [];
+    }
+    acc[cursoId].push(inscripcion);
+    return acc;
+  }, {} as { [key: number]: Inscripcion[] });
+
+  // Alternar expansión de curso
+  const toggleExpand = (cursoId: number) => {
+    setExpandedCourses((prev) => ({ ...prev, [cursoId]: !prev[cursoId] }));
+  };
+
   return (
     <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-6 px-8 rounded-lg shadow-md">
@@ -59,35 +75,57 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
 
         {/* LISTA DE INSCRIPCIONES CON SCROLL */}
         <div className="w-full max-h-80 overflow-auto border border-gray-300 rounded-md shadow-sm">
-          {inscripciones.length > 0 ? (
+          {Object.entries(groupedInscripciones).length > 0 ? (
             <table className="w-full border-collapse border border-gray-300">
               <thead className="bg-gray-200 text-gray-700">
                 <tr>
-                  <th className="border p-2">ID</th>
                   <th className="border p-2">ID Curso</th>
                   <th className="border p-2">Nombre del Curso</th>
-                  <th className="border p-2">Doc. Inscrito</th>
-                  <th className="border p-2">Estado</th>
                   <th className="border p-2">Fecha Registro</th>
+                  <th className="border p-2">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {inscripciones.map((inscripcion) => (
-                  <tr key={inscripcion.id} className="text-center hover:bg-gray-100 transition">
-                    <td className="border p-2">{inscripcion.id}</td>
-                    <td className="border p-2">
-                      {inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.cursos?.id || "N/A"}
-                    </td>
-                    <td className="border p-2">
-                      {inscripcion.Cursos?.NombreCurso || inscripcion.cursos?.NombreCurso || "Desconocido"}
-                    </td>
-                    <td className="border p-2">{inscripcion.docInscr}</td>
-                    <td className="border p-2">{inscripcion.est}</td>
-                    <td className="border p-2">
-                      {new Date(inscripcion.fecreg).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
+                {Object.entries(groupedInscripciones).map(([cursoId, inscripciones]) => {
+                  const curso = inscripciones[0]; // Tomamos el primer elemento para mostrar el nombre y la fecha
+                  return (
+                    <tbody key={cursoId}>
+                      {/* FILA PRINCIPAL DEL CURSO */}
+                      <tr className="text-center hover:bg-gray-100 transition">
+                        <td className="border p-2">{cursoId}</td>
+                        <td className="border p-2">{curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}</td>
+                        <td className="border p-2">{new Date(curso.fecreg).toLocaleDateString()}</td>
+                        <td className="border p-2">
+                          <button
+                            onClick={() => toggleExpand(Number(cursoId))}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* FILAS EXPANDIDAS CON INSCRITOS */}
+                      {expandedCourses[Number(cursoId)] && (
+                        <tr>
+                          <td colSpan={4}>
+                            <div className="p-2 bg-gray-50 border border-gray-300 rounded-md">
+                              <strong>Inscritos:</strong>
+                              <ul className="list-disc pl-5 mt-2">
+                                {inscripciones.map((inscripcion) => (
+                                  <li key={inscripcion.id} className="py-1">
+                                    📌 <strong>Documento:</strong> {inscripcion.docInscr} | 
+                                    <strong> Estado:</strong> {inscripcion.est}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  );
+                })}
               </tbody>
             </table>
           ) : (
