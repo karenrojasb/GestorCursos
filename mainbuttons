@@ -37,7 +37,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
 
         setInscripciones(data);
       } catch (error) {
-        console.error("❌ Error al obtener inscripciones:", error);
+        console.error("Error al obtener inscripciones:", error);
       }
     };
 
@@ -61,7 +61,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
 
   return (
     <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-6 px-8 rounded-lg shadow-md">
+      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-6 px-8 rounded-lg shadow-md border-4 border-[#990000]">
         
         {/* BOTÓN CERRAR */}
         <button
@@ -78,57 +78,56 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         <div className="w-full max-h-80 overflow-auto border border-gray-300 rounded-md shadow-sm">
           {Object.entries(groupedInscripciones).length > 0 ? (
             <table className="w-full border-collapse border border-gray-300">
-              <thead className="bg-gray-200 text-gray-700">
+              <thead className="bg-[#990000] text-white">
                 <tr>
-                  <th className="border p-2">ID Curso</th>
-                  <th className="border p-2">Nombre del Curso</th>
-                  <th className="border p-2">Fecha Registro</th>
-                  <th className="border p-2">Acciones</th>
+                  <th className="border border-gray-300 p-3">ID Curso</th>
+                  <th className="border border-gray-300 p-3">Nombre del Curso</th>
+                  <th className="border border-gray-300 p-3">Fecha Registro</th>
+                  <th className="border border-gray-300 p-3">Acciones</th>
                 </tr>
               </thead>
-             <tbody>
-  {Object.entries(groupedInscripciones).map(([cursoId, inscripciones]) => {
-    const curso = inscripciones[0]; // Primer registro del curso para mostrar en la tabla
-    return (
-      <React.Fragment key={cursoId}>
-        {/* FILA PRINCIPAL DEL CURSO */}
-        <tr className="text-center hover:bg-gray-100 transition">
-          <td className="border p-2">{cursoId}</td>
-          <td className="border p-2">{curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}</td>
-          <td className="border p-2">{new Date(curso.fecreg).toLocaleDateString()}</td>
-          <td className="border p-2">
-            <button
-              onClick={() => toggleExpand(Number(cursoId))}
-              className="text-blue-500 hover:text-blue-700"
-            >
-              {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
-            </button>
-          </td>
-        </tr>
+              <tbody>
+                {Object.entries(groupedInscripciones).map(([cursoId, inscripciones], index) => {
+                  const curso = inscripciones[0]; // Primer registro del curso para mostrar en la tabla
+                  return (
+                    <React.Fragment key={cursoId}>
+                      {/* FILA PRINCIPAL DEL CURSO */}
+                      <tr className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
+                        <td className="border border-gray-300 p-3">{cursoId}</td>
+                        <td className="border border-gray-300 p-3">{curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}</td>
+                        <td className="border border-gray-300 p-3">{new Date(curso.fecreg).toLocaleDateString()}</td>
+                        <td className="border border-gray-300 p-3">
+                          <button
+                            onClick={() => toggleExpand(Number(cursoId))}
+                            className="bg-[#990000] text-white px-4 py-1 rounded-md hover:bg-red-700 transition"
+                          >
+                            {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
+                          </button>
+                        </td>
+                      </tr>
 
-        {/* FILAS EXPANDIDAS CON INSCRITOS */}
-        {expandedCourses[Number(cursoId)] && (
-          <tr>
-            <td colSpan={4}>
-              <div className="p-2 bg-gray-50 border border-gray-300 rounded-md">
-                <strong>Inscritos:</strong>
-                <ul className="list-disc pl-5 mt-2">
-                  {inscripciones.map((inscripcion) => (
-                    <li key={inscripcion.id} className="py-1">
-                       <strong>Documento:</strong> {inscripcion.docInscr} | 
-                      <strong> Estado:</strong> {inscripcion.est}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </td>
-          </tr>
-        )}
-      </React.Fragment>
-    );
-  })}
-</tbody>
-                 
+                      {/* FILAS EXPANDIDAS CON INSCRITOS */}
+                      {expandedCourses[Number(cursoId)] && (
+                        <tr>
+                          <td colSpan={4}>
+                            <div className="p-4 bg-gray-50 border border-gray-300 rounded-md shadow-md mt-2">
+                              <h3 className="text-lg font-semibold text-[#990000]">Inscritos:</h3>
+                              <ul className="list-disc pl-5 mt-2 space-y-2">
+                                {inscripciones.map((inscripcion) => (
+                                  <li key={inscripcion.id} className="text-gray-700">
+                                    <strong>Documento:</strong> {inscripcion.docInscr} | 
+                                    <strong> Estado:</strong> {inscripcion.est}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
             </table>
           ) : (
             <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
