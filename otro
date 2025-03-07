@@ -201,7 +201,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             required
           />
 
-          {/* BOTÓN PARA SUBIR EL ARCHIVO */}
+          {/* Botón para guardar */}
           <button
             type="submit"
             className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
@@ -209,6 +209,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             Guardar
           </button>
 
+          {/* Botón para cancelar */}
           <button
             onClick={onClose}
             className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
