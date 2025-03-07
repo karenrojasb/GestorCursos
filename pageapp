@@ -1,27 +1,34 @@
-"use client";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+In HTML, whitespace text nodes cannot be a child of <tr>. Make sure you don't have any extra whitespace between tags on each line of your source code.
+This will cause a hydration error.
 
-export default function HomePage() {
-  const router = useRouter();
-  const mensaje = "Bienvenido a Gestión de Cursos";
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold text-[#990000] mb-6 flex space-x-1">
-        {mensaje.split("").map((letra, index) => (
-          <motion.span
-            key={index}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.05, delay: index * 0.05 }}
-          >
-            {letra === " " ? "\u00A0" : letra}
-          </motion.span>
-        ))}
-      </h1>
-
-    
-    </div>
-  );
-}
+  ...
+    <ClientSegmentRoot Component={function RootLayout} slots={{...}} params={{}}>
+      <RootLayout params={Promise}>
+        <html lang="es">
+          <body className="bg-gray-10...">
+            <header>
+            <main className="flex flex-...">
+              <motion.h1>
+              <MainButtons publico={2} esAdmin={true} onSelect={function onSelect}>
+                <div className="flex flex-...">
+                  <div className="w-full max...">
+                    <motion.button>
+                    <motion.button>
+                    <motion.button>
+                    <div>
+                    <InscripcionesModal onClose={function onClose}>
+                      <div className="p-6 rounde...">
+                        <div className="relative f...">
+                          <button>
+                          <h2>
+                          <div className="w-full max...">
+                            <table className="w-full bor...">
+                              <thead className="bg-gray-20...">
+>                               <tr>
+                                  <th>
+                                  <th>
+>                                 {" "}
+                                  ...
+                              ...
+              ...
+            ...
