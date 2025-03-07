@@ -4,11 +4,11 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 interface CursoModalProps {
   idCur: number; // ID del curso al que se inscribe
   onClose: () => void;
-  onSave: () => void;
+  onSave: (data: { idCur: number; docInscr: string }) => void; // Ahora recibe datos
   onInscripcionExitosa: () => void; // Función para actualizar la lista
 }
 
-export default function CursoModal({ idCur, onClose, onInscripcionExitosa }: CursoModalProps) {
+export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitosa }: CursoModalProps) {
   const [docInscr, setDocInscr] = useState("");
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState("");
@@ -41,6 +41,7 @@ export default function CursoModal({ idCur, onClose, onInscripcionExitosa }: Cur
       setMensaje("Inscripción realizada con éxito.");
       setDocInscr("");
       onInscripcionExitosa(); // Actualizar lista en InscripcionesModal
+      onSave({ idCur, docInscr }); // ✅ Llamar a onSave después de inscribir
     } catch (error) {
       setMensaje("Hubo un problema al inscribir.");
     } finally {
