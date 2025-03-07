@@ -1,191 +1,97 @@
-"use client";
-import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
+import { InscripcionesService } from './inscripciones.service';
+import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
+import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
 
-interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: number;
-  Lugar: string;
-  LunesIni?: string;
-  LunesFin?: string;
-  MartesIni?: string;
-  MartesFin?: string;
-  MiercolesIni?: string;
-  MiercolesFin?: string;
-  JuevesIni?: string;
-  JuevesFin?: string;
-  ViernesIni?: string;
-  ViernesFin?: string;
-  SabadoIni?: string;
-  SabadoFin?: string;
-  DomingoIni?: string;
-  DomingoFin?: string;
-  Linea: number;
-  Estado: number;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: number;
-  Descripcion: string;
-  IdTipoCurso: number;
+@Controller('inscripciones')
+export class InscripcionesController {
+  constructor(private readonly inscripcionesService: InscripcionesService) {}
+  
+  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
+  @Post()
+  async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
+    return this.inscripcionesService.createInscripcion(createInscripcioneDto);
+  }
+
+  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
+  @Get()
+  async getInscripciones() {
+    return this.inscripcionesService.getInscripciones();
+  }
+
+  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
+  @Put(':id')
+  async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
+    const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
+    if (!updatedInscripcion) {
+      throw new NotFoundException(`La inscripción con ID #${id} no fue encontrada`);
+    }
+    return updatedInscripcion;
+  }
+
+  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
+  @Delete(':id')
+  async deleteInscripcion(@Param('id') id: string) {
+    return this.inscripcionesService.deleteInscripcion(Number(id));
+  }
 }
 
-export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
-  const [mensajeExito, setMensajeExito] = useState("");
 
-  // OBTENER CURSOS DEL BACKEND
-  const fetchCursos = async () => {
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos");
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      const data = await response.json();
-      setCursos(data);
-      setCursosFiltrados(data);
-    } catch (error) {
-      console.error("Error al obtener los cursos:", error);
-    }
-  };
 
-  // CARGAR CURSOS AL MONTAR EL COMPONENTE
-  useEffect(() => {
-    fetchCursos();
-  }, []);
 
-  // BUSCAR CURSOS POR NOMBRE
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
+import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
-  // EXPANDIR DETALLES DEL CURSO
-  const handleVerMas = (id: number) => {
-    setExpandedCursoId(expandedCursoId === id ? null : id);
-  };
+@Injectable()
+export class InscripcionesService {
+  constructor(private readonly prisma: PrismaService) {}
 
-  // ELIMINAR CURSO
-  const handleDeleteCourse = async (id: number) => {
-    const confirmar = window.confirm("¿Estás seguro de que deseas eliminar este curso?");
-    if (!confirmar) return;
+  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
+  async createInscripcion(data: CreateInscripcioneDto) {
+    console.log('Datos recibidos para crear inscripción:', data);
+    const nuevaInscripcion = await this.prisma.inscripciones.create({ data });
+    console.log('Inscripción creada exitosamente:', nuevaInscripcion);
+    return nuevaInscripcion;
+  }
+
+  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
+  async getInscripciones() {
+    return this.prisma.inscripciones.findMany({
+      include: {
+        Cursos: { select: { NombreCurso: true } }, // OBTIENE EL NOMBRE DEL CURSO DESDE gescur.Cursos
+      },
+    });
+  }
+
+  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
+  async updateInscripcion(id: number, data: UpdateInscripcioneDto) {
+    console.log('ID recibido para actualizar:', id);
+    console.log('Datos recibidos:', data);
 
     try {
-      const response = await fetch(`http://localhost:8090/api/cursos/${id}`, {
-        method: "DELETE",
+      const updatedInscripcion = await this.prisma.inscripciones.update({
+        where: { id },
+        data,
       });
-      if (!response.ok) {
-        console.error("Error al eliminar el curso:", response.status);
-        return;
-      }
-      setMensajeExito("Curso eliminado correctamente");
-      setTimeout(() => setMensajeExito(""), 3000);
-      setCursos(prevCursos => prevCursos.filter(curso => curso.id !== id));
-      setCursosFiltrados(prevCursos => prevCursos.filter(curso => curso.id !== id));
+      console.log('Inscripción actualizada:', updatedInscripcion);
+      return updatedInscripcion;
     } catch (error) {
-      console.error("Error al eliminar el curso", error);
-      alert("No se pudo eliminar el curso");
+      console.error('Error al actualizar inscripción:', error);
+      throw new NotFoundException(`No se pudo actualizar la inscripción con ID #${id}`);
     }
-  };
+  }
 
-  // INICIAR EDICIÓN DEL CURSO
-  const handleEditar = (curso: Curso) => {
-    setEditandoCurso({ ...curso });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (!editandoCurso) return;
-    const { name, value } = e.target;
-
-    setEditandoCurso(prev => ({
-      ...prev!,
-      [name]: isNaN(Number(value)) ? value : Number(value),
-    }));
-  };
-
-  // GUARDAR CAMBIOS AL EDITAR
-  const handleGuardarEdicion = async () => {
-    if (!editandoCurso) return;
-
+  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
+  async deleteInscripcion(id: number) {
     try {
-      const response = await fetch(`http://localhost:8090/api/cursos/${editandoCurso.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editandoCurso),
-      });
-
-      if (!response.ok) {
-        console.error("Error al actualizar:", response.status);
-        return;
-      }
-
-      setMensajeExito("¡Curso actualizado con éxito!");
-      await fetchCursos();
-      setTimeout(() => {
-        setMensajeExito("");
-        setEditandoCurso(null);
-      }, 3000);
+      return await this.prisma.inscripciones.delete({ where: { id } });
     } catch (error) {
-      console.error("Error al guardar la edición:", error);
+      throw new NotFoundException(`No se encontró la inscripción con ID #${id} para eliminar`);
     }
-  };
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        
-        {/* BOTÓN CERRAR */}
-        <button className="absolute top-4 right-4 text-gray-500 hover:text-red-600" onClick={onClose}>
-          <XMarkIcon className="w-6 h-6" />
-        </button>
-
-        {/* BARRA DE BÚSQUEDA */}
-        <div className="flex items-center space-x-2 mb-4">
-          <button
-            onClick={() => setIsSearchActive(!isSearchActive)}
-            className="p-2 rounded-full bg-gray-200">
-            {isSearchActive ? <XMarkIcon className="h-6 w-6 text-red-600" /> : <MagnifyingGlassIcon className="h-6 w-6 text-red-600" />}
-          </button>
-          <input
-            type="text"
-            placeholder="Buscar curso"
-            value={busqueda}
-            onChange={handleBuscar}
-            className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out ${
-              isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"
-            } focus:outline-none`}
-          />
-        </div>
-
-        {/* LISTA DE CURSOS */}
-        <div className="flex-1 overflow-y-auto max-h-[60vh] space-y-2">
-          {cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map(curso => (
-              <div key={curso.id} className="border-b py-2">
-                <span>{curso.NombreCurso}</span>
-                <span>{curso.Inicio || "dd/mm/aaaa"}</span>
-                <button onClick={() => handleDeleteCourse(curso.id)}>
-                  <TrashIcon className="h-5 w-5 text-red-600" />
-                </button>
-              </div>
-            ))
-          ) : (
-            <p className="text-center py-4">No hay cursos disponibles.</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  }
 }
+
+
