@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import MainButtonsProps from "./components/mainbuttons";
@@ -11,7 +11,7 @@ interface LayoutProps {
 
 interface Usuario {
   nombre: string;
-  publico: number; // 1 = Profesors, 2 = Administración
+  publico: number; // 1 = Profesor, 2 = Administración
   esAdmin: boolean; // true si es administrador
 }
 
@@ -19,6 +19,14 @@ export default function RootLayout({ children }: LayoutProps) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [id_emp, setIdEmp] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Recuperar docInscr del localStorage al iniciar la aplicación
+    const storedDocInscr = localStorage.getItem("docInscr");
+    if (storedDocInscr) {
+      console.log("Documento de inscripción recuperado:", storedDocInscr);
+    }
+  }, []);
 
   // FUNCIÓN PARA INICIAR SESIÓN Y OBTENER DATOS DEL USUARIO
   const iniciarSesion = async () => {
@@ -37,32 +45,43 @@ export default function RootLayout({ children }: LayoutProps) {
       });
 
       const data = await response.json();
-      console.log("Datos recibidos del backend:", data); 
+      console.log("Datos recibidos del backend:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "El documento no es correcto.");
       }
 
-      // VERIFICAR SI EL USUARIO ESTA EN LAS GESCUR.EMP_NOMINA
+      // VERIFICAR SI EL USUARIO ESTA EN LA TABLA GESCUR.EMP_NOMINA
       if (data.publico === null || data.publico === undefined) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      // Verificamos si el usuario tiene un rol permitido
+      // Verificar si el usuario tiene un rol permitido
       const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
       if (!esUsuarioValido) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      // DEFINIR EL USUARIO CON SU ROL
+      // Guardar `docInscr` en localStorage
+      if (data.docInscr) {
+        localStorage.setItem("docInscr", data.docInscr);
+      }
+
+      // Guardar usuario en el estado
       setUsuario({
         nombre: data.nombre,
-        publico: data.publico, // 1 = Profesor, 2 = Administradores
-        esAdmin: Boolean(data.esAdmin), // Convertimos null en false
+        publico: data.publico,
+        esAdmin: Boolean(data.esAdmin),
       });
     } catch (error: any) {
       setError(error.message);
     }
+  };
+
+  // FUNCIÓN PARA CERRAR SESIÓN
+  const cerrarSesion = () => {
+    setUsuario(null);
+    localStorage.removeItem("docInscr"); // Eliminar docInscr del localStorage al cerrar sesión
   };
 
   // RENDERIZA EL FORMULARIO DE LOGIN SI NO HAY USUARIO
@@ -106,7 +125,7 @@ export default function RootLayout({ children }: LayoutProps) {
             <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
             <button
               className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
-              onClick={() => setUsuario(null)}
+              onClick={cerrarSesion}
             >
               Cerrar Sesión
             </button>
