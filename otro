@@ -4,95 +4,86 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface CursoModalProps {
   onClose: () => void;
-  onSave: (data: CursoFormData) => void;
-}
-
-interface CursoFormData {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: number;
-  Lugar: string;
-  Horarios: Record<string, string>;
-  Linea: number;
-  Estado: number;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: number;
-  Descripcion: string;
-  IdTipoCurso: number;
+  onSave: (data: any) => void;
 }
 
 export default function CursoModal({ onClose, onSave }: CursoModalProps) {
-  const [formData, setFormData] = useState<CursoFormData>({
-    id: 0,
+  const [formData, setFormData] = useState({
     NombreCurso: "",
-    Valor: 0,
-    Publico: 0,
+    Valor: "",
+    Publico: "",
     Periodo: "",
     Inicio: "",
     Fin: "",
-    Horas: 0,
-    CupoMax: 0,
+    Horas: "",
+    CupoMax: "",
     Lugar: "",
-    Horarios: {
-      LunesIni: "",
-      LunesFin: "",
-      MartesIni: "",
-      MartesFin: "",
-      MiercolesIni: "",
-      MiercolesFin: "",
-      JuevesIni: "",
-      JuevesFin: "",
-      ViernesIni: "",
-      ViernesFin: "",
-      SabadoIni: "",
-      SabadoFin: "",
-      DomingoIni: "",
-      DomingoFin: "",
-    },
-    Linea: 0,
-    Estado: 0,
-    Modalidad: 0,
-    Unidad: 0,
-    Profesor: 0,
+    Linea: "",
+    Estado: "",
+    Modalidad: "",
+    Unidad: "",
+    Profesor: "",
     SegundoPro: "",
-    Proexterno: 0,
+    Proexterno: "",
     Descripcion: "",
-    IdTipoCurso: 0,
+    IdTipoCurso: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-
-    setFormData((prevData) => {
-      if (name in prevData.Horarios) {
-        return {
-          ...prevData,
-          Horarios: {
-            ...prevData.Horarios,
-            [name]: value,
-          },
-        };
-      }
-
-      return {
-        ...prevData,
-        [name]: value,
-      };
-    });
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+
+    // Verificar campos obligatorios
+    if (!formData.NombreCurso || !formData.Valor || !formData.Periodo || !formData.Inicio || !formData.Fin) {
+      alert("Por favor completa todos los campos obligatorios.");
+      return;
+    }
+
+    try {
+      console.log("Datos enviados al backend:", formData);
+
+      const response = await fetch("http://localhost:8090/api/cursos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          Valor: Number(formData.Valor),
+          Publico: Number(formData.Publico),
+          Horas: Number(formData.Horas),
+          CupoMax: Number(formData.CupoMax),
+          Linea: Number(formData.Linea),
+          Estado: Number(formData.Estado),
+          Modalidad: Number(formData.Modalidad),
+          Unidad: Number(formData.Unidad),
+          Profesor: Number(formData.Profesor),
+          Proexterno: Number(formData.Proexterno),
+          IdTipoCurso: Number(formData.IdTipoCurso),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error al guardar:", errorData);
+        alert(`Error al guardar: ${errorData.message || "Ocurrió un problema"}`);
+        return;
+      }
+
+      const result = await response.json();
+      alert("Curso guardado correctamente");
+      onSave(result);
+    } catch (error) {
+      console.error("Error de red o servidor:", error);
+      alert("No se pudo conectar con el servidor");
+    }
   };
 
   return (
@@ -116,34 +107,18 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
           Crear Curso
         </h2>
 
-        {/* SCROLLABLE FORMULARIO */}
-        <div className="max-h-[80vh] overflow-y-auto pr-2">
+        {/* FORMULARIO CON SCROLL */}
+        <div className="max-h-[400px] overflow-y-auto px-2">
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-            <input name="NombreCurso" placeholder="Nombre del Curso" onChange={handleChange} className="border p-2 rounded" required />
-            <input name="Valor" type="number" placeholder="Valor" onChange={handleChange} className="border p-2 rounded" required />
-            <input name="Publico" type="number" placeholder="Público" onChange={handleChange} className="border p-2 rounded" required />
-            <input name="Periodo" placeholder="Periodo" onChange={handleChange} className="border p-2 rounded" required />
-            <input name="Inicio" type="date" onChange={handleChange} className="border p-2 rounded" required />
-            <input name="Fin" type="date" onChange={handleChange} className="border p-2 rounded" required />
-            <input name="Horas" type="number" placeholder="Horas" onChange={handleChange} className="border p-2 rounded" required />
-            <input name="CupoMax" type="number" placeholder="Cupo Máximo" onChange={handleChange} className="border p-2 rounded" required />
-            <input name="Lugar" placeholder="Lugar" onChange={handleChange} className="border p-2 rounded" required />
-
-            {/* HORARIOS */}
-            <div className="col-span-2 grid grid-cols-3 gap-4">
-              {Object.keys(formData.Horarios).map((dia) => (
-                <input
-                  key={dia}
-                  name={dia}
-                  type="time"
-                  placeholder={dia.replace("Ini", " Inicio").replace("Fin", " Fin")}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-              ))}
-            </div>
-
-            {/* DATOS ADICIONALES */}
+            <input name="NombreCurso" placeholder="Nombre del Curso *" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Valor" type="number" placeholder="Valor *" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Publico" type="number" placeholder="Público" onChange={handleChange} className="border p-2 rounded" />
+            <input name="Periodo" placeholder="Periodo *" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Inicio" type="date" placeholder="Inicio *" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Fin" type="date" placeholder="Fin *" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Horas" type="number" placeholder="Horas" onChange={handleChange} className="border p-2 rounded" />
+            <input name="CupoMax" type="number" placeholder="Cupo Máximo" onChange={handleChange} className="border p-2 rounded" />
+            <input name="Lugar" placeholder="Lugar" onChange={handleChange} className="border p-2 rounded" />
             <input name="Linea" type="number" placeholder="Línea" onChange={handleChange} className="border p-2 rounded" />
             <input name="Estado" type="number" placeholder="Estado" onChange={handleChange} className="border p-2 rounded" />
             <input name="Modalidad" type="number" placeholder="Modalidad" onChange={handleChange} className="border p-2 rounded" />
