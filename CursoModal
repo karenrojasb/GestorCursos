@@ -28,9 +28,9 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     Modalidad: "",
     Unidad: "",
     Profesor: "",
-    SegundoPro: "",  // Campo opcional
-    Proexterno: "",  // Campo opcional
-    Descripcion: "", // Campo opcional
+    SegundoPro: "",  // Ahora es opcional
+    Proexterno: "",  // Ahora es opcional
+    Descripcion: "", // Ahora es opcional
     IdTipoCurso: "",
   });
 
@@ -48,7 +48,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         const data: Opcion[] = await response.json();
 
-        // Filtrar opciones según el Tipo correspondiente
         setOpcionesPublico(data.filter((item) => item.Tipo === 1));
         setOpcionesLinea(data.filter((item) => item.Tipo === 2));
         setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
@@ -72,15 +71,17 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Convertir valores numéricos y limpiar datos vacíos
     const cursoData = Object.keys(curso).reduce((acc, key) => {
       const value = curso[key as keyof typeof curso];
 
-      if (value !== "" || ["SegundoPro", "Proexterno", "Descripcion"].includes(key)) {
-        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"].includes(key)
-          ? Number(value) || null
-          : value || null; // Si está vacío, lo deja como null
+      if (value !== "") {
+        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key)
+          ? Number(value) || null // Convierte a número o deja null
+          : value; // Si es texto, lo deja como está
+      } else if (["SegundoPro", "Proexterno", "Descripcion"].includes(key)) {
+        acc[key] = null; // Si están vacíos, los envía como null
       }
+
       return acc;
     }, {} as Record<string, any>);
 
@@ -102,7 +103,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         <h2 className="text-xl font-bold mb-4">Crear Curso</h2>
 
         <form onSubmit={handleSubmit}>
-          {/* Campos del formulario */}
           {Object.keys(curso).map((key) => (
             <div key={key} className="mb-3">
               <label className="block font-semibold">{key}:</label>
@@ -154,7 +154,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                 </select>
               ) : (
                 <input 
-                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key) ? "number" : "text"} 
+                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
                   name={key}
                   value={curso[key as keyof typeof curso]}
                   onChange={handleChange}
