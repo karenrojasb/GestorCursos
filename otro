@@ -1,5 +1,23 @@
-Type '{ id: number; especificacion: string | null; }[]' is not assignable to type '{ id: number; especificacion: string; }[]'.
-  Type '{ id: number; especificacion: string | null; }' is not assignable to type '{ id: number; especificacion: string; }'.
-    Types of property 'especificacion' are incompatible.
-      Type 'string | null' is not assignable to type 'string'.
-        Type 'null' is not assignable to type 'string'.ts(2322)
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
+
+@Injectable()
+export class ListasService {
+  constructor(private prisma: PrismaService) {}
+
+  async obtenerEspecificaciones(): Promise<{ id: number; especificacion: string }[]> {
+    const resultados = await this.prisma.listas.findMany({
+      where: { Tipo: 1 },
+      select: {
+        id: true,
+        Especificacion: true,
+      },
+    });
+
+    // Reemplazamos `null` con una cadena vacía para evitar errores de tipado
+    return resultados.map(item => ({
+      id: item.id,
+      especificacion: item.Especificacion ?? "", // Si `null`, se reemplaza por ""
+    }));
+  }
+}
