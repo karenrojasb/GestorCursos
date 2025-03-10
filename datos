@@ -1,139 +1,52 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+model Cursos {
+  id                                Int             @id(map: "PK__Cursos__3213E83FF1A9718F") @default(autoincrement())
+  NombreCurso                       String?         @db.VarChar(100)
+  Valor                             Int?
+  Publico                           Int?
+  Periodo                           String?         @db.VarChar(10)
+  Inicio                            String?         @db.VarChar(15)
+  Fin                               String?         @db.VarChar(15)
+  Horas                             Int?
+  CupoMax                           Int?
+  Lugar                             String?         @db.VarChar(50)
+  LunesIni                          String?         @db.VarChar(15)
+  LunesFin                          String?         @db.VarChar(15)
+  MartesIni                         String?         @db.VarChar(15)
+  MartesFin                         String?         @db.VarChar(15)
+  MiercolesIni                      String?         @db.VarChar(15)
+  MiercolesFin                      String?         @db.VarChar(15)
+  JuevesIni                         String?         @db.VarChar(15)
+  JuevesFin                         String?         @db.VarChar(15)
+  ViernesIni                        String?         @db.VarChar(15)
+  ViernesFin                        String?         @db.VarChar(15)
+  SabadoIni                         String?         @db.VarChar(15)
+  SabadoFin                         String?         @db.VarChar(15)
+  DomingoIni                        String?         @db.VarChar(15)
+  DomingoFin                        String?         @db.VarChar(15)
+  Linea                             Int?
+  Estado                            Int?
+  Modalidad                         Int?
+  Unidad                            Int?
+  Profesor                          Int?
+  SegundoPro                        Int?
+  Proexterno                        String?         @db.VarChar(50)
+  Descripcion                       String?         @db.VarChar(400)
+  IdTipoCurso                       Int?
+  Listas_Cursos_EstadoToListas      Listas?         @relation("Cursos_EstadoToListas", fields: [Estado], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Estado__59063A47")
+  Listas_Cursos_IdTipoCursoToListas Listas?         @relation("Cursos_IdTipoCursoToListas", fields: [IdTipoCurso], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__IdTipoCu__59FA5E80")
+  Listas_Cursos_LineaToListas       Listas?         @relation("Cursos_LineaToListas", fields: [Linea], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Linea__5AEE82B9")
+  Listas_Cursos_ModalidadToListas   Listas?         @relation("Cursos_ModalidadToListas", fields: [Modalidad], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Modalida__5BE2A6F2")
+  Listas_Cursos_PublicoToListas     Listas?         @relation("Cursos_PublicoToListas", fields: [Publico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Publico__5CD6CB2B")
+  Inscripciones                     Inscripciones[]
 
-@Injectable()
-export class InscripcionesService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  // MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
-  async createInscripcion(data: CreateInscripcioneDto) {
-    console.log('Datos recibidos para crear inscripción:', data);
-
-    try {
-      const nuevaInscripcion = await this.prisma.inscripciones.create({
-        data: {
-          idCur: data.idCur,
-          docInscr: data.docInscr,
-          fecreg: new Date(),
-        },
-        include: {
-          curso: { select: { NombreCurso: true } }, // Incluir el curso
-        },
-      });
-
-      console.log('Inscripción creada exitosamente:', nuevaInscripcion);
-      return {
-        id: nuevaInscripcion.id,
-        idCur: nuevaInscripcion.idCur,
-        docInscr: nuevaInscripcion.docInscr,
-        fecreg: nuevaInscripcion.fecreg,
-        NombreCurso: nuevaInscripcion.curso?.NombreCurso || 'Curso no encontrado',
-      };
-    } catch (error) {
-      console.error('Error al crear inscripción:', error);
-      throw new Error('No se pudo registrar la inscripción.');
-    }
-  }
-
-  // MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
-  async getInscripciones() {
-    try {
-      const inscripciones = await this.prisma.inscripciones.findMany({
-        include: {
-          curso: { select: { NombreCurso: true } }, // Relación con el curso
-        },
-      });
-
-      return inscripciones.map((inscripcion) => ({
-        id: inscripcion.id,
-        idCur: inscripcion.idCur,
-        docInscr: inscripcion.docInscr,
-        fecreg: inscripcion.fecreg,
-        NombreCurso: inscripcion.curso?.NombreCurso || 'Curso no encontrado',
-      }));
-    } catch (error) {
-      console.error('Error al obtener inscripciones:', error);
-      throw new Error('No se pudieron obtener las inscripciones.');
-    }
-  }
-
-  // MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
-  async updateInscripcion(id: number, data: UpdateInscripcioneDto) {
-    console.log('ID recibido para actualizar:', id);
-    console.log('Datos recibidos:', data);
-
-    try {
-      const updatedInscripcion = await this.prisma.inscripciones.update({
-        where: { id },
-        data,
-        include: {
-          curso: { select: { NombreCurso: true } }, // Incluir el curso en la respuesta
-        },
-      });
-
-      console.log('Inscripción actualizada:', updatedInscripcion);
-      return {
-        id: updatedInscripcion.id,
-        idCur: updatedInscripcion.idCur,
-        docInscr: updatedInscripcion.docInscr,
-        fecreg: updatedInscripcion.fecreg,
-        NombreCurso: updatedInscripcion.curso?.NombreCurso || 'Curso no encontrado',
-      };
-    } catch (error) {
-      console.error('Error al actualizar inscripción:', error);
-      throw new NotFoundException(`No se pudo actualizar la inscripción con ID #${id}`);
-    }
-  }
-
-  // MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
-  async deleteInscripcion(id: number) {
-    try {
-      return await this.prisma.inscripciones.delete({ where: { id } });
-    } catch (error) {
-      throw new NotFoundException(`No se encontró la inscripción con ID #${id} para eliminar`);
-    }
-  }
+  @@schema("gescur")
 }
 
-
-
-
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
-import { InscripcionesService } from './inscripciones.service';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
-
-@Controller('inscripciones')
-export class InscripcionesController {
-  constructor(private readonly inscripcionesService: InscripcionesService) {}
-
-  // MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
-  @Post()
-  async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
-    return this.inscripcionesService.createInscripcion(createInscripcioneDto);
-  }
-
-  // MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
-  @Get()
-  async getInscripciones() {
-    return this.inscripcionesService.getInscripciones();
-  }
-
-  // MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
-  @Put(':id')
-  async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
-    const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
-    if (!updatedInscripcion) {
-      throw new NotFoundException(`La inscripción con ID #${id} no fue encontrada`);
-    }
-    return updatedInscripcion;
-  }
-
-  // MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
-  @Delete(':id')
-  async deleteInscripcion(@Param('id') id: string) {
-    return this.inscripcionesService.deleteInscripcion(Number(id));
-  }
-}
+model Inscripciones {
+  id       Int       @id(map: "PK__Inscripc__3213E83FF1560A49") @default(autoincrement())
+  idCur    Int?
+  docInscr Int?
+  est      Boolean?
+  fecreg   DateTime? @db.Date
+  Cursos   Cursos?   @relation(fields: [idCur], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Inscripci__idCur__76969D2E")
+  Notas    Notas[]
