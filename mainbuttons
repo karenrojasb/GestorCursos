@@ -1,105 +1,172 @@
-import React, { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+"use client";
 
-interface CursoModalProps {
-  onClose: () => void;
-  onSave: (data: { nombreCurso: string; valor: number }) => void;
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import CatalogoModal from "./catalogomodal";
+import CatalogoAdminModal from "./catalogoadminmodal";
+import CursoModal from "./CursoModal";
+import InscritosModal from "./InscripcionesModal";
+import {
+  BookOpenIcon,
+  DocumentCheckIcon,
+  PencilIcon,
+  XMarkIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/solid";
+import { PencilSquareIcon } from "@heroicons/react/16/solid";
+
+interface MainButtonsProps {
+  onSelect: (section: string) => void;
+  publico: number;
+  esAdmin: boolean;
 }
 
-export default function CursoModal({ onClose, onSave }: CursoModalProps) {
-  const [rol, setRol] = useState<number | null>(null); // 3: Administrador
-  const [nombreCurso, setNombreCurso] = useState("");
-  const [valor, setValor] = useState("");
-  const [cargando, setCargando] = useState(false);
-  const [mensaje, setMensaje] = useState("");
+export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsProps) {
+  const [showCatalogo, setShowCatalogo] = useState(false);
+  const [showGestorModal, setShowGestorModal] = useState(false);
+  const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
+  const [showCursoModal, setShowCursoModal] = useState(false);
+  const [showInscritosModal, setShowInscritosModal] = useState(false);
 
-  // Obtener el rol del usuario logueado
   useEffect(() => {
-    const usuarioLogueado = localStorage.getItem("usuario");
-    if (usuarioLogueado) {
-      const usuario = JSON.parse(usuarioLogueado);
+    console.log("Valor de publico:", publico);
+    console.log("Valor de esAdmin:", esAdmin);
+  }, [publico, esAdmin]);
 
-      // Consultar en la base de datos su rol
-      fetch(`http://localhost:8090/api/usuarios/${usuario.id}`)
-        .then((res) => res.json())
-        .then((data) => setRol(data.publico)) // 3: Administrador
-        .catch((error) => console.error("Error al obtener rol:", error));
-    }
-  }, []);
-
-  // Crear curso (Solo administradores)
-  const handleCrearCurso = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCargando(true);
-    setMensaje("");
-
+  const handleSaveCurso = async (data: any) => {
     try {
       const response = await fetch("http://localhost:8090/api/cursos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre_curso: nombreCurso, valor: Number(valor) }),
+        body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("Error al crear el curso.");
+      if (!response.ok) throw new Error("Error al guardar el curso");
 
-      setMensaje("Curso creado con éxito.");
-      onSave({ nombreCurso, valor: Number(valor) });
-      onClose();
+      alert("Curso guardado con éxito");
+      setShowCursoModal(false);
     } catch (error) {
-      setMensaje("Hubo un problema al crear el curso.");
-    } finally {
-      setCargando(false);
+      console.error("Error:", error);
+      alert("Hubo un error al guardar el curso");
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col">
-
-        {/* Botón Cerrar */}
-        <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
-          onClick={onClose}
+    <div className="flex flex-col items-center justify-center min-h-screen w-full">
+      <div className="w-full max-w-md flex flex-col space-y-4 items-center">
+        
+        {/* BOTÓN CATÁLOGO */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowCatalogo(true)}
+          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                     text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
         >
-          <XMarkIcon className="w-6 h-6" />
-        </button>
+          <BookOpenIcon className="h-6 w-6 text-white" />
+          Catálogo
+        </motion.button>
+        {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
 
-        <h2 className="text-xl font-bold mb-4 text-center text-[#990000]">Crear Curso</h2>
+        {/* BOTÓN CERTIFICADOS */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onSelect("catalogomodal")}
+          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                     text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
+        >
+          <DocumentCheckIcon className="h-6 w-6 text-white" />
+          Certificados
+        </motion.button>
 
-        {/* Mensaje de error o éxito */}
-        {mensaje && (
-          <p className={`text-center text-sm font-semibold ${mensaje.includes("éxito") ? "text-green-600" : "text-red-600"}`}>
-            {mensaje}
-          </p>
-        )}
+        {/* BOTONES SOLO PARA ADMINISTRADORES */}
+        {esAdmin && (
+          <>
+            {/* BOTÓN GESTOR DE CURSOS */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowGestorModal(true)}
+              className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                         text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
+            >
+              <PencilIcon className="h-6 w-6 text-white" />
+              Gestor de Cursos
+            </motion.button>
 
-        {/* Formulario para crear curso (Solo si el usuario es Administrador) */}
-        {rol === 3 ? (
-          <form onSubmit={handleCrearCurso}>
-            <input
-              type="text"
-              placeholder="Nombre del curso"
-              value={nombreCurso}
-              onChange={(e) => setNombreCurso(e.target.value)}
-              className="w-full p-2 border rounded mb-2"
-              required
-            />
-            <input
-              type="number"
-              placeholder="Valor"
-              value={valor}
-              onChange={(e) => setValor(e.target.value)}
-              className="w-full p-2 border rounded mb-2"
-              required
-            />
-            <button type="submit" className="w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
-              {cargando ? "Creando..." : "Crear Curso"}
-            </button>
-          </form>
-        ) : (
-          <p className="text-center text-red-600 font-semibold">
-            No tienes permisos para crear cursos.
-          </p>
+            {/* MODAL GESTOR DE CURSOS */}
+            {showGestorModal && (
+              <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="relative flex flex-col items-center gap-3 w-full max-w-3xl bg-white 
+                                py-6 px-8 rounded-lg shadow-md">
+                  
+                  {/* BOTÓN CERRAR */}
+                  <button
+                    onClick={() => setShowGestorModal(false)}
+                    className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
+
+                  {/* TÍTULO */}
+                  <h2 className="text-3xl font-bold text-[#990000] text-center">Gestor de Cursos</h2>
+
+                  <div className="w-full flex flex-col items-center justify-center space-y-3 text-center">
+                    {/* BOTÓN CREAR CURSO */}
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        console.log("Abriendo modal de Crear Curso");
+                        setShowCursoModal(true);
+                        setShowGestorModal(false);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <PencilSquareIcon className="h-6 w-6 text-white" />
+                      Crear Curso
+                    </motion.button>
+
+                    {/* BOTÓN CATÁLOGO ADMIN */}
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        console.log("Abriendo Catálogo Admin");
+                        setShowCatalogoAdmin(true);
+                        setShowGestorModal(false);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <BookOpenIcon className="h-6 w-6 text-white" />
+                      Catálogo
+                    </motion.button>
+
+                    {/* BOTÓN VER INSCRITOS */}
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        console.log("Abriendo Modal de Inscritos");
+                        setShowInscritosModal(true);
+                        setShowGestorModal(false);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <UserGroupIcon className="h-6 w-6 text-white" />
+                      Ver Inscritos
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* MODALES ADMIN */}
+            {showCatalogoAdmin && <CatalogoAdminModal onClose={() => setShowCatalogoAdmin(false)} />}
+            {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} onSave={handleSaveCurso} />}
+            {showInscritosModal && <InscritosModal onClose={() => setShowInscritosModal(false)} />}
+          </>
         )}
       </div>
     </div>
