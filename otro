@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 interface CursoModalProps {
   onClose: () => void;
-  onSave: () => void;
+  onSave: (data: any) => void;
 }
 
 const CursoModal: React.FC<CursoModalProps> = ({ onClose, onSave }) => {
@@ -16,96 +16,22 @@ const CursoModal: React.FC<CursoModalProps> = ({ onClose, onSave }) => {
     Horas: "",
     CupoMax: "",
     Lugar: "",
-    LunesIni: "",
-    LunesFin: "",
-    MartesIni: "",
-    MartesFin: "",
-    MiercolesIni: "",
-    MiercolesFin: "",
-    JuevesIni: "",
-    JuevesFin: "",
-    ViernesIni: "",
-    ViernesFin: "",
-    SabadoIni: "",
-    SabadoFin: "",
-    DomingoIni: "",
-    DomingoFin: "",
     Linea: "",
     Estado: "",
     Modalidad: "",
     Unidad: "",
     Profesor: "",
-    SegundoPto: "",
-    Proexterno: "",
     Descripcion: "",
     IdTipoCurso: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    const cursoData = {
-      NombreCurso: formData.NombreCurso,
-      Valor: Number(formData.Valor),
-      Público: Number(formData.Público),
-      Periodo: formData.Periodo,
-      Inicio: formData.Inicio,
-      Fin: formData.Fin,
-      Horas: Number(formData.Horas),
-      CupoMax: Number(formData.CupoMax),
-      Lugar: formData.Lugar,
-      LunesIni: formData.LunesIni || null,
-      LunesFin: formData.LunesFin || null,
-      MartesIni: formData.MartesIni || null,
-      MartesFin: formData.MartesFin || null,
-      MiercolesIni: formData.MiercolesIni || null,
-      MiercolesFin: formData.MiercolesFin || null,
-      JuevesIni: formData.JuevesIni || null,
-      JuevesFin: formData.JuevesFin || null,
-      ViernesIni: formData.ViernesIni || null,
-      ViernesFin: formData.ViernesFin || null,
-      SabadoIni: formData.SabadoIni || null,
-      SabadoFin: formData.SabadoFin || null,
-      DomingoIni: formData.DomingoIni || null,
-      DomingoFin: formData.DomingoFin || null,
-      Linea: Number(formData.Linea),
-      Estado: Number(formData.Estado),
-      Modalidad: Number(formData.Modalidad),
-      Unidad: Number(formData.Unidad),
-      Profesor: Number(formData.Profesor),
-      SegundoPto: Number(formData.SegundoPto),
-      Proexterno: formData.Proexterno,
-      Descripcion: formData.Descripcion,
-      IdTipoCurso: Number(formData.IdTipoCurso),
-    };
-
-    console.log("🚀 Enviando datos:", JSON.stringify(cursoData));
-
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cursoData),
-      });
-
-      console.log("✅ Estado de respuesta:", response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(JSON.stringify(errorData));
-      }
-
-      const responseData = await response.json();
-      console.log("✅ Curso guardado con éxito:", responseData);
-      onSave();
-      onClose();
-    } catch (error) {
-      console.error("❌ Error al guardar el curso:", error);
-    }
+    onSave(formData);
   };
 
   return (
@@ -113,25 +39,7 @@ const CursoModal: React.FC<CursoModalProps> = ({ onClose, onSave }) => {
       <div className="modal-content">
         <h2>Crear Curso</h2>
         <form onSubmit={handleSubmit}>
-          <input type="text" name="NombreCurso" placeholder="Ej: Programación en Java" onChange={handleChange} required />
-          <input type="number" name="Valor" placeholder="Costo del curso en pesos" onChange={handleChange} required />
-          <input type="number" name="Público" placeholder="Tipo de público (Ej: 1 para estudiantes)" onChange={handleChange} required />
-          <input type="text" name="Periodo" placeholder="Ej: Primer semestre 2025" onChange={handleChange} required />
-          <input type="text" name="Inicio" placeholder="Fecha de inicio (Ej: 10/03/2025)" onChange={handleChange} required />
-          <input type="text" name="Fin" placeholder="Fecha de finalización (Ej: 10/06/2025)" onChange={handleChange} required />
-          <input type="number" name="Horas" placeholder="Cantidad total de horas" onChange={handleChange} required />
-          <input type="number" name="CupoMax" placeholder="Máximo de estudiantes permitidos" onChange={handleChange} required />
-          <input type="text" name="Lugar" placeholder="Ubicación del curso (Ej: Aula 101)" onChange={handleChange} required />
-          <input type="number" name="Linea" placeholder="Código de la línea del curso" onChange={handleChange} required />
-          <input type="number" name="Estado" placeholder="Estado (Ej: 1 = Activo, 0 = Inactivo)" onChange={handleChange} required />
-          <input type="number" name="Modalidad" placeholder="Ej: 1 para presencial, 2 para virtual" onChange={handleChange} required />
-          <input type="number" name="Unidad" placeholder="Código de la unidad académica" onChange={handleChange} required />
-          <input type="number" name="Profesor" placeholder="ID del profesor asignado" onChange={handleChange} required />
-          <input type="number" name="SegundoPto" placeholder="Otro punto relacionado (opcional)" onChange={handleChange} required />
-          <input type="text" name="Proexterno" placeholder="Ej: Nombre del profesor externo (si aplica)" onChange={handleChange} required />
-          <input type="text" name="Descripcion" placeholder="Breve descripción del curso" onChange={handleChange} required />
-          <input type="number" name="IdTipoCurso" placeholder="Código del tipo de curso" onChange={handleChange} required />
-
+          <input type="text" name="NombreCurso" onChange={handleChange} required />
           <button type="submit">Guardar</button>
           <button type="button" onClick={onClose}>Cancelar</button>
         </form>
