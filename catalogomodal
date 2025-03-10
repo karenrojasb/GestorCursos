@@ -1,156 +1,172 @@
-import React, { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+"use client";
 
-interface CursoModalProps {
-  idCur: number; 
-  onClose: () => void;
-  onSave: (data: { idCur: number; docInscr: number }) => void;
-  onInscripcionExitosa: () => void;
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import CatalogoModal from "./catalogomodal";
+import CatalogoAdminModal from "./catalogoadminmodal";
+import CursoModal from "./CursoModal";
+import InscritosModal from "./InscripcionesModal";
+import {
+  BookOpenIcon,
+  DocumentCheckIcon,
+  PencilIcon,
+  XMarkIcon,
+  UserGroupIcon,
+  ChartBarIcon,
+} from "@heroicons/react/24/solid";
+import { PencilSquareIcon } from "@heroicons/react/16/solid";
+
+interface MainButtonsProps {
+  onSelect: (section: string) => void;
+  publico: number;
+  esAdmin: boolean;
 }
 
-export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitosa }: CursoModalProps) {
-  const [docInscr, setDocInscr] = useState<number | null>(null);
-  const [cargando, setCargando] = useState(false);
-  const [mensaje, setMensaje] = useState("");
-  const [inscrito, setInscrito] = useState(false); 
+export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsProps) {
+  const [showCatalogo, setShowCatalogo] = useState(false);
+  const [showGestorModal, setShowGestorModal] = useState(false);
+  const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
+  const [showCursoModal, setShowCursoModal] = useState(false);
+  const [showInscritosModal, setShowInscritosModal] = useState(false);
 
-  // OBTENER ID DEL USUARIO DESDE LOCALSTORAGE
   useEffect(() => {
-    const usuarioLogueado = localStorage.getItem("usuario");
-    if (usuarioLogueado) {
-      const usuario = JSON.parse(usuarioLogueado);
-      setDocInscr(Number(usuario.id)); // Convertir el id a número
-    }
-  }, []);
+    console.log("Valor de publico:", publico);
+    console.log("Valor de esAdmin:", esAdmin);
+  }, [publico, esAdmin]);
 
-  // VERIFICA SI EL USUARIO YA ESTÁ INSCRITO EN EL CURSO
-  useEffect(() => {
-    const verificarInscripcion = async () => {
-      if (!docInscr) return; // No ejecutar si no hay un usuario logueado
-
-      try {
-        const response = await fetch(`http://localhost:8090/api/inscripciones/${idCur}/${docInscr}`);
-        if (response.ok) {
-          setInscrito(true);
-        }
-      } catch (error) {
-        console.error("Error al verificar inscripción:", error);
-      }
-    };
-
-    verificarInscripcion();
-  }, [idCur, docInscr]);
-
-  // INSCRIBIRSE AL CURSO
-  const handleInscribir = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCargando(true);
-    setMensaje("");
-
-    if (!docInscr) {
-      setMensaje("Error: No se pudo obtener el ID del usuario.");
-      setCargando(false);
-      return;
-    }
-
+  const handleSaveCurso = async (data: any) => {
     try {
-      const response = await fetch("http://localhost:8090/api/inscripciones", {
+      const response = await fetch("http://localhost:8090/api/cursos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idCur, docInscr }),
+        body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al inscribir usuario.");
-      }
+      if (!response.ok) throw new Error("Error al guardar el curso");
 
-      setMensaje("Inscripción realizada con éxito.");
-      setInscrito(true);
-      onInscripcionExitosa();
-      onSave({ idCur, docInscr });
+      alert("Curso guardado con éxito");
+      setShowCursoModal(false);
     } catch (error) {
-      console.error("Error en la inscripción:", error);
-      setMensaje("Hubo un problema al inscribir.");
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  // CANCELAR INSCRIPCIÓN
-  const handleCancelarInscripcion = async () => {
-    setCargando(true);
-    setMensaje("");
-
-    try {
-      const response = await fetch(`http://localhost:8090/api/inscripciones/${idCur}/${docInscr}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Error al cancelar la inscripción.");
-
-      setMensaje("Inscripción cancelada.");
-      setInscrito(false);
-      onInscripcionExitosa();
-    } catch (error) {
-      console.error("Error al cancelar inscripción:", error);
-      setMensaje("Hubo un problema al cancelar la inscripción.");
-    } finally {
-      setCargando(false);
+      console.error("Error:", error);
+      alert("Hubo un error al guardar el curso");
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col">
-        
-        {/* BOTÓN CERRAR */}
-        <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
-          onClick={onClose}
+    <div className="flex flex-col items-center justify-center min-h-screen w-full">
+      <div className="w-full max-w-md flex flex-col space-y-4 items-center">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowCatalogo(true)}
+          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                     text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
         >
-          <XMarkIcon className="w-6 h-6" />
-        </button>
+          <BookOpenIcon className="h-6 w-6 text-white" />
+          Catálogo
+        </motion.button>
+        {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
 
-        <h2 className="text-xl font-bold mb-4 text-center text-[#990000]">
-          {inscrito ? "Cancelar Inscripción" : "Inscribir Usuario"}
-        </h2>
-
-        {/* MENSAJE DE ERROR O ÉXITO */}
-        {mensaje && (
-          <p className={`text-center text-sm font-semibold ${mensaje.includes("éxito") ? "text-green-600" : "text-red-600"}`}>
-            {mensaje}
-          </p>
-        )}
-
-        {/* BOTÓN DE INSCRIPCIÓN Y CANCELACIÓN */}
-        {inscrito ? (
-          <button
-            type="button"
-            onClick={handleCancelarInscripcion}
-            className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
-            disabled={cargando}
-          >
-            {cargando ? "Cancelando..." : "Cancelar Inscripción"}
-          </button>
-        ) : (
-          <button
-            onClick={handleInscribir}
-            className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
-            disabled={cargando}
-          >
-            {cargando ? "Inscribiendo..." : "Inscribir"}
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onSelect("catalogomodal")}
+          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                     text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
         >
-          Cerrar
-        </button>
+          <DocumentCheckIcon className="h-6 w-6 text-white" />
+          Certificados
+        </motion.button>
+
+        {esAdmin && (
+          <>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowGestorModal(true)}
+              className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                         text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
+            >
+              <PencilIcon className="h-6 w-6 text-white" />
+              Gestor de Cursos
+            </motion.button>
+
+            {showGestorModal && (
+              <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="relative flex flex-col items-center gap-3 w-full max-w-3xl bg-white 
+                                py-6 px-8 rounded-lg shadow-md">
+                  <button
+                    onClick={() => setShowGestorModal(false)}
+                    className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
+
+                  <h2 className="text-3xl font-bold text-[#990000] text-center">Gestor de Cursos</h2>
+
+                  <div className="w-full flex flex-col items-center justify-center space-y-3 text-center">
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setShowGestorModal(false);
+                        setShowCursoModal(true);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <PencilSquareIcon className="h-6 w-6 text-white" />
+                      Crear Curso
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setShowGestorModal(false);
+                        setShowCatalogoAdmin(true);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <BookOpenIcon className="h-6 w-6 text-white" />
+                      Catálogo
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setShowGestorModal(false);
+                        setShowCatalogoAdmin(true);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <ChartBarIcon className="h-6 w-6 text-white" />
+                      Reportes
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setShowGestorModal(false);
+                        setShowInscritosModal(true);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <UserGroupIcon className="h-6 w-6 text-white" />
+                      Ver Inscritos
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
+
+      {showCatalogoAdmin && <CatalogoAdminModal onClose={() => setShowCatalogoAdmin(false)} />}
+      {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} idCur={0} onSave={handleSaveCurso} onInscripcionExitosa={() => {}} />}
+      {showInscritosModal && <InscritosModal onClose={() => setShowInscritosModal(false)} />}
     </div>
   );
 }
