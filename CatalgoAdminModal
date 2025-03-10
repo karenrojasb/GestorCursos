@@ -89,7 +89,19 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         <form onSubmit={handleSubmit}>
 
-          {/* Campo de Inicio con ícono de calendario */}
+          {/* Campo NombreCurso */}
+          <div className="mb-3">
+            <label className="block font-semibold">Nombre del Curso:</label>
+            <input 
+              type="text" 
+              name="NombreCurso"
+              value={curso.NombreCurso}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+            />
+          </div>
+
+          {/* Campos Inicio y Fin con icono de calendario */}
           <div className="mb-3">
             <label className="block font-semibold">Inicio:</label>
             <div className="relative">
@@ -104,7 +116,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             </div>
           </div>
 
-          {/* Campo de Fin con ícono de calendario */}
           <div className="mb-3">
             <label className="block font-semibold">Fin:</label>
             <div className="relative">
@@ -119,22 +130,56 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             </div>
           </div>
 
-          {/* Otros campos del formulario */}
-          {Object.keys(curso)
-            .filter((key) => key !== "Inicio" && key !== "Fin")
-            .map((key) => (
-              <div key={key} className="mb-3">
-                <label className="block font-semibold">{key}:</label>
-                <input 
-                  type="text"
-                  name={key}
-                  value={curso[key as keyof typeof curso]}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-            ))}
+          {/* Desplegables */}
+          <div className="mb-3">
+            <label className="block font-semibold">Público:</label>
+            <select name="Publico" value={curso.Publico} onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="">Selecciona una opción</option>
+              {opcionesPublico.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </div>
 
+          <div className="mb-3">
+            <label className="block font-semibold">Línea:</label>
+            <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="">Selecciona una opción</option>
+              {opcionesLinea.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="block font-semibold">Modalidad:</label>
+            <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="">Selecciona una opción</option>
+              {opcionesModalidad.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="block font-semibold">Estado:</label>
+            <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="">Selecciona una opción</option>
+              {opcionesEstado.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Botón de guardar */}
           <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
             Guardar
           </button>
