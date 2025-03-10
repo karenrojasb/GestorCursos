@@ -7,7 +7,6 @@ interface CursoModalProps {
   onSave: (data: CursoFormData) => void;
 }
 
-// Definir la estructura del curso
 interface CursoFormData {
   id: number;
   NombreCurso: string;
@@ -19,22 +18,7 @@ interface CursoFormData {
   Horas: number;
   CupoMax: number;
   Lugar: string;
-  Horarios: {
-    LunesIni: string;
-    LunesFin: string;
-    MartesIni: string;
-    MartesFin: string;
-    MiercolesIni: string;
-    MiercolesFin: string;
-    JuevesIni: string;
-    JuevesFin: string;
-    ViernesIni: string;
-    ViernesFin: string;
-    SabadoIni: string;
-    SabadoFin: string;
-    DomingoIni: string;
-    DomingoFin: string;
-  };
+  Horarios: Record<string, string>;
   Linea: number;
   Estado: number;
   Modalidad: number;
@@ -85,7 +69,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     IdTipoCurso: 0,
   });
 
-  // Manejo de cambios en los inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
@@ -107,7 +90,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     });
   };
 
-  // Enviar formulario
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
@@ -134,51 +116,53 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
           Crear Curso
         </h2>
 
-        {/* FORMULARIO */}
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-          <input name="NombreCurso" placeholder="Nombre del Curso" onChange={handleChange} className="border p-2 rounded" required />
-          <input name="Valor" type="number" placeholder="Valor" onChange={handleChange} className="border p-2 rounded" required />
-          <input name="Publico" type="number" placeholder="Público" onChange={handleChange} className="border p-2 rounded" required />
-          <input name="Periodo" placeholder="Periodo" onChange={handleChange} className="border p-2 rounded" required />
-          <input name="Inicio" type="date" onChange={handleChange} className="border p-2 rounded" required />
-          <input name="Fin" type="date" onChange={handleChange} className="border p-2 rounded" required />
-          <input name="Horas" type="number" placeholder="Horas" onChange={handleChange} className="border p-2 rounded" required />
-          <input name="CupoMax" type="number" placeholder="Cupo Máximo" onChange={handleChange} className="border p-2 rounded" required />
-          <input name="Lugar" placeholder="Lugar" onChange={handleChange} className="border p-2 rounded" required />
+        {/* SCROLLABLE FORMULARIO */}
+        <div className="max-h-[80vh] overflow-y-auto pr-2">
+          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+            <input name="NombreCurso" placeholder="Nombre del Curso" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Valor" type="number" placeholder="Valor" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Publico" type="number" placeholder="Público" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Periodo" placeholder="Periodo" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Inicio" type="date" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Fin" type="date" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Horas" type="number" placeholder="Horas" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="CupoMax" type="number" placeholder="Cupo Máximo" onChange={handleChange} className="border p-2 rounded" required />
+            <input name="Lugar" placeholder="Lugar" onChange={handleChange} className="border p-2 rounded" required />
 
-          {/* HORARIOS */}
-          <div className="col-span-2 grid grid-cols-3 gap-4">
-            {Object.keys(formData.Horarios).map((dia) => (
-              <input
-                key={dia}
-                name={dia}
-                type="time"
-                placeholder={dia.replace("Ini", " Inicio").replace("Fin", " Fin")}
-                onChange={handleChange}
-                className="border p-2 rounded"
-              />
-            ))}
-          </div>
+            {/* HORARIOS */}
+            <div className="col-span-2 grid grid-cols-3 gap-4">
+              {Object.keys(formData.Horarios).map((dia) => (
+                <input
+                  key={dia}
+                  name={dia}
+                  type="time"
+                  placeholder={dia.replace("Ini", " Inicio").replace("Fin", " Fin")}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+              ))}
+            </div>
 
-          {/* DATOS ADICIONALES */}
-          <input name="Linea" type="number" placeholder="Línea" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Estado" type="number" placeholder="Estado" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Modalidad" type="number" placeholder="Modalidad" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Unidad" type="number" placeholder="Unidad" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Profesor" type="number" placeholder="Profesor" onChange={handleChange} className="border p-2 rounded" />
-          <input name="SegundoPro" placeholder="Segundo Profesor" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Proexterno" type="number" placeholder="Profesor Externo" onChange={handleChange} className="border p-2 rounded" />
-          <input name="IdTipoCurso" type="number" placeholder="ID Tipo Curso" onChange={handleChange} className="border p-2 rounded" />
-          <textarea name="Descripcion" placeholder="Descripción" onChange={handleChange} className="border p-2 rounded col-span-2 h-20"></textarea>
+            {/* DATOS ADICIONALES */}
+            <input name="Linea" type="number" placeholder="Línea" onChange={handleChange} className="border p-2 rounded" />
+            <input name="Estado" type="number" placeholder="Estado" onChange={handleChange} className="border p-2 rounded" />
+            <input name="Modalidad" type="number" placeholder="Modalidad" onChange={handleChange} className="border p-2 rounded" />
+            <input name="Unidad" type="number" placeholder="Unidad" onChange={handleChange} className="border p-2 rounded" />
+            <input name="Profesor" type="number" placeholder="Profesor" onChange={handleChange} className="border p-2 rounded" />
+            <input name="SegundoPro" placeholder="Segundo Profesor" onChange={handleChange} className="border p-2 rounded" />
+            <input name="Proexterno" type="number" placeholder="Profesor Externo" onChange={handleChange} className="border p-2 rounded" />
+            <input name="IdTipoCurso" type="number" placeholder="ID Tipo Curso" onChange={handleChange} className="border p-2 rounded" />
+            <textarea name="Descripcion" placeholder="Descripción" onChange={handleChange} className="border p-2 rounded col-span-2 h-20"></textarea>
 
-          {/* BOTÓN GUARDAR */}
-          <button
-            type="submit"
-            className="col-span-2 bg-[#990000] text-white py-2 rounded-lg shadow-md transition-all hover:shadow-lg"
-          >
-            Guardar Curso
-          </button>
-        </form>
+            {/* BOTÓN GUARDAR */}
+            <button
+              type="submit"
+              className="col-span-2 bg-[#990000] text-white py-2 rounded-lg shadow-md transition-all hover:shadow-lg"
+            >
+              Guardar Curso
+            </button>
+          </form>
+        </div>
       </motion.div>
     </div>
   );
