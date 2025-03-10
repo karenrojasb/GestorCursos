@@ -1,96 +1,51 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface CursoModalProps {
-  idCur: number; 
+  onSave: (data: any) => void;
   onClose: () => void;
-  onSave: (data: { idCur: number; docInscr: string }) => void;
-  onInscripcionExitosa: () => void;
 }
 
-export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitosa }: CursoModalProps) {
-  const [docInscr, setDocInscr] = useState(""); 
-  const [cargando, setCargando] = useState(false);
-  const [mensaje, setMensaje] = useState("");
-  const [inscrito, setInscrito] = useState(false); 
+export default function CursoModal({ onClose, onSave }: CursoModalProps) {
+  const [curso, setCurso] = useState({
+    NombreCurso: "",
+    Valor: 0,
+    Publico: 0,
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
+    Horas: 0,
+    CupoMax: 0,
+    Lugar: "",
+    Linea: 0,
+    Estado: 0,
+    Modalidad: 0,
+    Unidad: 0,
+    Profesor: 0,
+    SegundoPro: "",
+    Proexterno: "",
+    Descripcion: "",
+    IdTipoCurso: 0,
+  });
 
-  // OBTENER ID DEL USUARIO
-  useEffect(() => {
-    const usuarioLogueado = localStorage.getItem("usuario"); 
-    if (usuarioLogueado) {
-      const usuario = JSON.parse(usuarioLogueado);
-      setDocInscr(usuario.id); 
-    }
-  }, []);
-
-  // VERIFICA SI EL USUARIO YA ESTA INSCRITO
-  useEffect(() => {
-    const verificarInscripcion = async () => {
-      if (!docInscr) return; 
-      try {
-        const response = await fetch(`http://localhost:8090/api/inscripciones/${idCur}/${docInscr}`);
-        setInscrito(response.ok); 
-      } catch (error) {
-        console.error("Error al verificar inscripción:", error);
-      }
-    };
-
-    verificarInscripcion();
-  }, [idCur, docInscr]);
-
-  // INSCRIBIRSE AL CURSO
-  const handleInscribir = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCargando(true);
-    setMensaje("");
-
-    try {
-      const response = await fetch("http://localhost:8090/api/inscripciones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idCur, docInscr }),
-      });
-
-      if (!response.ok) throw new Error("Error al inscribir usuario.");
-
-      setMensaje("Inscripción realizada con éxito.");
-      setInscrito(true); 
-      onInscripcionExitosa();
-      onSave({ idCur, docInscr });
-    } catch (error) {
-      setMensaje("Hubo un problema al inscribir.");
-    } finally {
-      setCargando(false);
-    }
+  // Manejar cambios en los inputs
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = e.target;
+    setCurso({
+      ...curso,
+      [name]: type === "number" ? Number(value) || 0 : value,
+    });
   };
 
-  // CANCELAR INSCRIPCIÓN
-  const handleCancelarInscripcion = async () => {
-    setCargando(true);
-    setMensaje("");
-
-    try {
-      const response = await fetch(`http://localhost:8090/api/inscripciones/${idCur}/${docInscr}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Error al cancelar la inscripción.");
-
-      setMensaje("Inscripción cancelada.");
-      setInscrito(false); 
-      onInscripcionExitosa();
-    } catch (error) {
-      setMensaje("Hubo un problema al cancelar la inscripción.");
-    } finally {
-      setCargando(false);
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({ ...curso });
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col">
-        
-        {/* BOTÓN CERRAR */}
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl flex flex-col max-h-[80vh] overflow-y-auto">
+        {/* Botón de cerrar */}
         <button
           className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
           onClick={onClose}
@@ -98,44 +53,70 @@ export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitos
           <XMarkIcon className="w-6 h-6" />
         </button>
 
-        <h2 className="text-xl font-bold mb-4 text-center text-[#990000]">
-          {inscrito ? "Cancelar Inscripción" : "Inscribir Usuario"}
+        <h2 className="text-xl font-bold mb-6 text-center text-[#990000]">
+          Crear Curso
         </h2>
 
-        {/* MENJASE ERROR O ÉXITO */}
-        {mensaje && (
-          <p className={`text-center text-sm font-semibold ${mensaje.includes("éxito") ? "text-green-600" : "text-red-600"}`}>
-            {mensaje}
-          </p>
-        )}
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <label className="block font-semibold">Nombre del curso:</label>
+          <input
+            type="text"
+            name="NombreCurso"
+            value={curso.NombreCurso}
+            onChange={handleChange}
+            className="w-full p-2 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-[#990000] transition"
+            required
+          />
 
-        {/* BOTÓN DE INSCRIPCIÓN Y CANCELACIÓN */}
-        {inscrito ? (
+          {[
+            { label: "Valor", name: "Valor" },
+            { label: "Público", name: "Publico" },
+            { label: "Periodo", name: "Periodo", type: "text" },
+            { label: "Inicio", name: "Inicio", type: "date" },
+            { label: "Fin", name: "Fin", type: "date" },
+            { label: "Horas", name: "Horas" },
+            { label: "Cupo Máx", name: "CupoMax" },
+            { label: "Lugar", name: "Lugar", type: "text" },
+            { label: "Línea", name: "Linea" },
+            { label: "Estado", name: "Estado" },
+            { label: "Modalidad", name: "Modalidad" },
+            { label: "Unidad", name: "Unidad" },
+            { label: "Profesor", name: "Profesor" },
+            { label: "Segundo Profesor", name: "SegundoPro", type: "text" },
+            { label: "Profesor Externo", name: "Proexterno", type: "text" },
+            { label: "Descripción", name: "Descripcion", type: "text" },
+            { label: "ID Tipo de Curso", name: "IdTipoCurso" },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block font-semibold">{field.label}:</label>
+              <input
+                type={field.type || "number"}
+                name={field.name}
+                value={curso[field.name as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+          ))}
+
+          {/* Botones */}
+          <button
+            type="submit"
+            className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
+          >
+            Guardar
+          </button>
+
           <button
             type="button"
-            onClick={handleCancelarInscripcion}
+            onClick={onClose}
             className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
-            disabled={cargando}
           >
-            {cargando ? "Cancelando..." : "Cancelar Inscripción"}
+            Cancelar
           </button>
-        ) : (
-          <button
-            onClick={handleInscribir}
-            className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition"
-            disabled={cargando}
-          >
-            {cargando ? "Inscribiendo..." : "Inscribir"}
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-3 w-full bg-gray-500 text-white py-2 rounded-lg hover:scale-105 transition"
-        >
-          Cerrar
-        </button>
+        </form>
       </div>
     </div>
   );
