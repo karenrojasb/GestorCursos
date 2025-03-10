@@ -24,7 +24,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     idTipoCurso: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setCurso({ ...curso, [name]: value });
   };
@@ -58,22 +58,67 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         <form onSubmit={handleSubmit}>
           <label className="block font-semibold">Nombre del Curso:</label>
-          <input type="text" name="nombre_curso" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
+          <input type="text" name="nombre_curso" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
 
           <label className="block font-semibold">Valor:</label>
-          <input type="number" name="valor" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
+          <input type="number" name="valor" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
 
           <label className="block font-semibold">Público:</label>
-          <input type="number" name="público" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
+          <select name="público" className="w-full border p-2 rounded mb-3" onChange={handleChange} required>
+            <option value="">Seleccione...</option>
+            <option value="1">Profesor</option>
+            <option value="2">Administrativo</option>
+          </select>
 
           <label className="block font-semibold">Periodo:</label>
-          <input type="text" name="periodo" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
+          <input type="text" name="periodo" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
 
           <label className="block font-semibold">Inicio:</label>
-          <input type="date" name="inicio" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
+          <input type="date" name="inicio" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
 
           <label className="block font-semibold">Fin:</label>
-          <input type="date" name="fin" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
+          <input type="date" name="fin" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
+
+          <label className="block font-semibold">Horas:</label>
+          <input type="number" name="horas" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
+
+          <label className="block font-semibold">Cupo Máximo:</label>
+          <input type="number" name="cupoMax" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
+
+          <label className="block font-semibold">Línea:</label>
+          <input type="text" name="linea" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
+
+          <label className="block font-semibold">Estado:</label>
+          <select name="estado" className="w-full border p-2 rounded mb-3" onChange={handleChange} required>
+            <option value="">Seleccione...</option>
+            <option value="1">Activo</option>
+            <option value="0">Inactivo</option>
+          </select>
+
+          <label className="block font-semibold">Modalidad:</label>
+          <select name="modalidad" className="w-full border p-2 rounded mb-3" onChange={handleChange} required>
+            <option value="">Seleccione...</option>
+            <option value="1">Presencial</option>
+            <option value="2">Virtual</option>
+            <option value="3">Mixta</option>
+          </select>
+
+          <label className="block font-semibold">Unidad:</label>
+          <input type="text" name="unidad" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
+
+          <label className="block font-semibold">Profesor:</label>
+          <input type="number" name="profesor" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
+
+          <label className="block font-semibold">Segundo Profesor (opcional):</label>
+          <input type="number" name="segundoPro" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
+
+          <label className="block font-semibold">Tipo de Curso:</label>
+          <select name="idTipoCurso" className="w-full border p-2 rounded mb-3" onChange={handleChange} required>
+            <option value="">Seleccione...</option>
+            <option value="1">Diplomado</option>
+            <option value="2">Taller</option>
+            <option value="3">Seminario</option>
+          </select>
 
           <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
             Guardar
