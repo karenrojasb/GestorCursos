@@ -1,16 +1,33 @@
- NombreCurso: "",
-    Valor: "",
-    Público: "",
-    Periodo: "",
-    Inicio: "",
-    Fin: "",
-    Horas: "",
-    CupoMax: "",
-    Lugar: "",
-    Linea: "",
-    Estado: "",
-    Modalidad: "",
-    Unidad: "",
-    Profesor: "",
-    Descripcion: "",
-    IdTipoCurso: "",
+ id: number;                               
+  NombreCurso: string;                       
+  Valor: number;                             
+  Publico: number;                           
+  Periodo: string;                           
+  Inicio: string;                            
+  Fin: string;                               
+  Horas: number;                             
+  CupoMax: number;                           
+  Lugar: string;                             
+  LunesIni?: string;                          
+  LunesFin? : string;                         
+  MartesIni?  : string;                       
+  MartesFin? : string;                        
+  MiercolesIni?: string;                      
+  MiercolesFin? : string;                     
+  JuevesIni?: string;                         
+  JuevesFin?: string;                        
+  ViernesIni?: string;                       
+  ViernesFin?: string;                      
+  SabadoIni?: string;                       
+  SabadoFin?: string;                        
+  DomingoIni?: string;                        
+  DomingoFin? : string;                      
+  Linea: number;                             
+  Estado: number;                             
+  Modalidad: number;                          
+  Unidad: number;                             
+  Profesor: number;                           
+  SegundoPro : string;                       
+  Proexterno : number;                     
+  Descripcion: string; 
+  IdTipoCurso: number;
