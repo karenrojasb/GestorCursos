@@ -1,144 +1,132 @@
-import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { CursosService } from './cursos.service';
+import { CreateCursoDto } from './dto/create-curso.dto';
+import { UpdateCursoDto } from './dto/update-curso.dto';
 
-interface CursoModalProps {
-  onClose: () => void;
-  onSave: (data: any) => void;
+@Controller('cursos')
+export class CursosController {
+  constructor(private readonly cursosService: CursosService) {}
+
+  //ENVIAR CREAR CURSOS
+  @Post()
+  async createCourses(@Body() data: CreateCursoDto){
+    console.log("Recibiendo datos:", CreateCursoDto);
+    return this.cursosService.createCourses(data);
+  }
+
+  //OBTENER CURSOS
+  @Get() 
+  async getCourses (){
+    return this.cursosService.getCourses();
+  }
+
+
+  //ACTUALIZAR CURSO POR ID
+  @Put(':id')
+  async updateCourse(@Param('id') id: string, @Body() UpdateCursoDto: UpdateCursoDto) {
+    const updateCourse = await this.cursosService.UpdateCourse(Number(id), UpdateCursoDto)
+    if (!updateCourse) {
+      throw new NotFoundException(`The id #${id} not found`);
+  }
+  return updateCourse;
 }
 
-interface OpcionPublico {
-  id: number;
-  especificacion: string;
+  //ELIMINAR CURSOS
+  @Delete (':id' )
+  async deletecourse(@Param('id') id: string){
+    return this.cursosService.deleteCourse(Number(id));
+  }  
 }
 
-export default function CursoModal({ onClose, onSave }: CursoModalProps) {
-  const [curso, setCurso] = useState({
-    NombreCurso: "",
-    Valor: "",
-    Publico: "",
-    Periodo: "",
-    Inicio: "",
-    Fin: "",
-    Horas: "",
-    CupoMax: "",
-    Lugar: "",
-    Linea: "",
-    Estado: "",
-    Modalidad: "",
-    Unidad: "",
-    Profesor: "",
-    SegundoPro: "",
-    Proexterno: "",
-    Descripcion: "",
-    IdTipoCurso: "",
-  });
 
-  const [opcionesPublico, setOpcionesPublico] = useState<OpcionPublico[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchOpcionesPublico() {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos/especificaciones"); // Cambio en el endpoint
-        if (!response.ok) throw new Error(`Error ${response.status}: No se pudo obtener las opciones`);
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { CreateCursoDto } from './dto/create-curso.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setOpcionesPublico(data);
-        } else {
-          throw new Error("Formato de datos incorrecto");
-        }
-      } catch (error) {
-        console.error("Error cargando las opciones de público:", error);
-        setError("No se pudieron cargar las opciones.");
-      } finally {
-        setLoading(false);
-      }
+
+
+@Injectable()
+export class CursosService {
+  constructor(private readonly prisma: PrismaService) {}
+
+
+  //MÉTODO PARA CREAR UN NUEVO CURSO
+  // async createCourses(CreateCursoDto: CreateCursoDto){
+  //   console.log("Datos recibidos:", CreateCursoDto);
+
+  //   const TipoCurso = await this.prisma.TipoCurso.findUnique({
+  //     where: { id: CreateCursoDto.IdTipoCurso}
+  //   });
+
+  //   if (!TipoCurso){
+  //     throw new BadRequestException("El IdTipoCurso no existe en l base de datos");
+  //   }
+  //   return this.prisma.cursos.create({data: CreateCursoDto});
+  // }
+
+
+  async createCourses(data: CreateCursoDto) {
+    console.log("Data recibida:", data);
+
+    try {
+      const nuevoCurso = await this.prisma.cursos.create({data});
+
+      return nuevoCurso;      
+    } catch (error) {
+      console.error ("Error al crear el curso en el back", error);
+      throw new Error("Error al crear al curso");
     }
+    
+    // //ENTRADA LOG
+    // console.log('Data received to create course:', data);
+    // const nuevoCurso = await this.prisma.cursos.create({ data });
+    // //RESULTADO LOG
+    // console.log('Course created successfully:', nuevoCurso);
+    // return nuevoCurso;
+  }
 
-    fetchOpcionesPublico();
-  }, []);
+  //MÉTODO OBTENER UN CURSO
+  async getCourses() {
+    return this.prisma.cursos.findMany();
+  }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setCurso((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  // OBTENER CURSO POR ID
+  async getCourseId(id:  number){
+    return await this.prisma.cursos.findUnique({
+      where: {id},
+    });
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  
 
-    const cursoData = Object.keys(curso).reduce((acc, key) => {
-      const value = curso[key as keyof typeof curso];
-      if (value !== "") {
-        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key)
-          ? Number(value) || null
-          : value;
-      }
-      return acc;
-    }, {} as Record<string, any>);
+  //MÉTODO ACTUALIZAR UN CURSO POR ID
+  async UpdateCourse (id: number, data: Prisma.CursosUpdateInput){
+    console.log ('id received:', id);
+    console.log('data received:', data);
 
-    onSave(cursoData);
-  };
+    try {
+      const updateCourse = await this.prisma.cursos.update({
+        where: {id},
+        data,
+      });
+      console.log ('update course:', updateCourse);
+      return updateCourse;
+    }
+    catch (error){
+      console.error ('error when updating course:', error);
+      throw new error('the course was not updated');
+    }
+   
+  }
+  
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md transition-transform transform scale-100 opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto text-black">
-        
-        {/* Botón de cerrar */}
-        <button 
-          onClick={onClose} 
-          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90"
-        >
-          <XMarkIcon className="w-6 h-6" />
-        </button>
+  //MÉTODO PARA ELIMINAR UN CURSO POR ID
+  async deleteCourse(id: number) {
+    return this.prisma.cursos.delete({ where: { id } });
+  }
 
-        <h2 className="text-xl font-bold mb-4 text-black">Crear Curso</h2>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <form onSubmit={handleSubmit}>
-          {Object.keys(curso).map((key) => (
-            <div key={key} className="mb-3">
-              <label className="block font-semibold text-black">{key}:</label>
-
-              {key === "Publico" ? (
-                <select 
-                  name="Publico" 
-                  value={curso.Publico} 
-                  onChange={handleChange} 
-                  className="w-full border border-gray-400 p-2 rounded text-black bg-white"
-                >
-                  <option value="">Selecciona una opción</option>
-                  {loading ? (
-                    <option disabled>Cargando opciones...</option>
-                  ) : (
-                    opcionesPublico.map((opcion) => (
-                      <option key={opcion.id} value={opcion.id}>
-                        {opcion.especificacion}
-                      </option>
-                    ))
-                  )}
-                </select>
-              ) : (
-                <input 
-                  type={["Valor", "Horas", "CupoMax", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key) ? "number" : "text"} 
-                  name={key}
-                  value={curso[key as keyof typeof curso]}
-                  onChange={handleChange}
-                  className="w-full border border-gray-400 p-2 rounded text-black bg-white"
-                />
-              )}
-            </div>
-          ))}
-
-          <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
-            Guardar
-          </button>
-        </form>
-      </div>
-    </div>
-  );
 }
+
