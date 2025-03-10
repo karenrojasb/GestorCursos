@@ -1,155 +1,158 @@
 "use client";
-import { ReactNode, useState, useEffect, createContext } from "react";
-import Image from "next/image";
+
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import MainButtonsProps from "./components/mainbuttons";
-import "./globals.css";
+import CatalogoModal from "./catalogomodal";
+import CatalogoAdminModal from "./catalogoadminmodal";
+import CursoModal from "./CursoModal";
+import InscritosModal from "./InscripcionesModal";
+import {
+  BookOpenIcon,
+  DocumentCheckIcon,
+  PencilIcon,
+  XMarkIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/solid";
+import { PencilSquareIcon } from "@heroicons/react/16/solid";
 
-interface LayoutProps {
-  children: ReactNode;
+interface MainButtonsProps {
+  onSelect: (section: string) => void;
+  publico: number;
+  esAdmin: boolean;
 }
 
-interface Usuario {
-  id: string;
-  nombre: string;
-  publico: number; // 1 = Profesor, 2 = Finanzas
-  esAdmin: boolean; // true si es administrador
-}
-
-// Contexto para compartir el usuario en toda la aplicación
-export const UsuarioContext = createContext<{ usuario: Usuario | null }>({ usuario: null });
-
-export default function RootLayout({ children }: LayoutProps) {
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [id_emp, setIdEmp] = useState("");
-  const [error, setError] = useState("");
+export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsProps) {
+  const [showCatalogo, setShowCatalogo] = useState(false);
+  const [showGestorModal, setShowGestorModal] = useState(false);
+  const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
+  const [showCursoModal, setShowCursoModal] = useState(false);
+  const [showInscritosModal, setShowInscritosModal] = useState(false);
 
   useEffect(() => {
-    const usuarioGuardado = localStorage.getItem("usuario");
-    if (usuarioGuardado) {
-      setUsuario(JSON.parse(usuarioGuardado));
-    }
-  }, []);
+    console.log("Valor de publico:", publico);
+    console.log("Valor de esAdmin:", esAdmin);
+  }, [publico, esAdmin]);
 
-  const iniciarSesion = async () => {
-    setError("");
-
-    if (id_emp.trim() === "") {
-      setError("Ingrese su Documento.");
-      return;
-    }
-
+  const handleSaveCurso = async (data: any) => {
     try {
-      const response = await fetch("http://localhost:8090/api/usuario/login", {
+      const response = await fetch("http://localhost:8090/api/cursos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_emp }),
+        body: JSON.stringify(data),
       });
 
-      const data = await response.json();
+      if (!response.ok) throw new Error("Error al guardar el curso");
 
-      if (!response.ok) {
-        throw new Error(data.message || "El documento no es correcto.");
-      }
-
-      if (data.publico === null || data.publico === undefined) {
-        throw new Error("No tiene permisos para ingresar al sistema.");
-      }
-
-      const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
-      if (!esUsuarioValido) {
-        throw new Error("No tiene permisos para ingresar al sistema.");
-      }
-
-      const usuarioData: Usuario = {
-        id: id_emp,
-        nombre: data.nombre,
-        publico: data.publico,
-        esAdmin: Boolean(data.esAdmin),
-      };
-
-      setUsuario(usuarioData);
-      localStorage.setItem("usuario", JSON.stringify(usuarioData));
-    } catch (error: any) {
-      setError(error.message);
+      alert("Curso guardado con éxito");
+      setShowCursoModal(false);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Hubo un error al guardar el curso");
     }
   };
 
-  if (!usuario) {
-    return (
-      <html lang="es">
-        <body className="flex items-center justify-center h-screen bg-gray-200">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Iniciar Sesión</h2>
-            <input
-              type="text"
-              placeholder="Ingrese su ID"
-              value={id_emp}
-              onChange={(e) => setIdEmp(e.target.value)}
-              className="border p-2 w-full mb-3 rounded"
-            />
-            <button
-              onClick={iniciarSesion}
-              className="bg-[#990000] text-white px-4 py-2 rounded w-full hover:bg-red-700 transition"
-            >
-              Entrar
-            </button>
-            {error && <p className="text-red-600 mt-2">{error}</p>}
-          </div>
-        </body>
-      </html>
-    );
-  }
-
   return (
-    <UsuarioContext.Provider value={{ usuario }}>
-      <html lang="es">
-        <body className="bg-gray-100 flex flex-col min-h-screen">
-          <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
-            <img
-              src="/img/ecijg126.png"
-              alt="Logo"
-              className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
-            />
-            <div className="flex flex-col items-center ml-auto">
-              <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
-              <button
-                className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
-                onClick={() => {
-                  setUsuario(null);
-                  localStorage.removeItem("usuario");
-                }}
-              >
-                Cerrar Sesión
-              </button>
-            </div>
-          </header>
+    <div className="flex flex-col items-center justify-center min-h-screen w-full">
+      <div className="w-full max-w-md flex flex-col space-y-4 items-center">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowCatalogo(true)}
+          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                     text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
+        >
+          <BookOpenIcon className="h-6 w-6 text-white" />
+          Catálogo
+        </motion.button>
+        {showCatalogo && <CatalogoModal onClose={() => setShowCatalogo(false)} />}
 
-          <main className="flex flex-col items-center justify-center flex-1 p-6">
-            <motion.h1
-              className="text-3xl font-bold text-[#990000] mb-6 text-center"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onSelect("catalogomodal")}
+          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                     text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
+        >
+          <DocumentCheckIcon className="h-6 w-6 text-white" />
+          Certificados
+        </motion.button>
+
+        {esAdmin && (
+          <>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowGestorModal(true)}
+              className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+                         text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
             >
-              Bienvenido a Gestión de Cursos
-            </motion.h1>
+              <PencilIcon className="h-6 w-6 text-white" />
+              Gestor de Cursos
+            </motion.button>
 
-            <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
+            {showGestorModal && (
+              <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="relative flex flex-col items-center gap-3 w-full max-w-3xl bg-white 
+                                py-6 px-8 rounded-lg shadow-md">
+                  <button
+                    onClick={() => setShowGestorModal(false)}
+                    className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
 
-            {children}
-          </main>
+                  <h2 className="text-3xl font-bold text-[#990000] text-center">Gestor de Cursos</h2>
 
-          <footer className="bg-white text-center py-4 shadow-inner w-full">
-            <div className="flex items-center justify-between px-6">
-              <p className="text-gray-700">
-                &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
-              </p>
-              <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
-            </div>
-          </footer>
-        </body>
-      </html>
-    </UsuarioContext.Provider>
+                  <div className="w-full flex flex-col items-center justify-center space-y-3 text-center">
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setShowGestorModal(false);
+                        setShowCursoModal(true);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <PencilSquareIcon className="h-6 w-6 text-white" />
+                      Crear Curso
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setShowGestorModal(false);
+                        setShowCatalogoAdmin(true);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <BookOpenIcon className="h-6 w-6 text-white" />
+                      Catálogo
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setShowGestorModal(false);
+                        setShowInscritosModal(true);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <UserGroupIcon className="h-6 w-6 text-white" />
+                      Ver Inscritos
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {showCatalogoAdmin && <CatalogoAdminModal onClose={() => setShowCatalogoAdmin(false)} />}
+      {showCursoModal && <CursoModal onClose={() => setShowCursoModal(false)} idCur={0} onSave={handleSaveCurso} onInscripcionExitosa={() => {}} />}
+      {showInscritosModal && <InscritosModal onClose={() => setShowInscritosModal(false)} />}
+    </div>
   );
 }
