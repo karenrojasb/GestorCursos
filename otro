@@ -1,133 +1,75 @@
-import { useState } from "react";
+"use client";
+import { useState, useEffect } from "react";
+import { Curso, createCurso, updateCurso } from "../services/cursosService";
 
 interface CursoModalProps {
+  curso?: Curso | null;
   onClose: () => void;
-  onSave: (data: any) => void;
+  onSave: () => void;
 }
 
-export default function CursoModal({ onClose, onSave }: CursoModalProps) {
-  const [curso, setCurso] = useState({
-    nombre_curso: "",
-    valor: "",
-    público: "",
-    periodo: "",
-    inicio: "",
-    fin: "",
-    horas: "",
-    cupoMax: "",
-    linea: "",
-    estado: "",
-    modalidad: "",
-    unidad: "",
-    profesor: "",
-    segundoPro: "",
-    idTipoCurso: "",
+export default function CursoModal({ curso, onClose, onSave }: CursoModalProps) {
+  const [formData, setFormData] = useState<Curso>({
+    NombreCurso: "",
+    Valor: 0,
+    Publico: 0,
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
+    Horas: 0,
+    CupoMax: 0,
+    Lugar: "",
+    Modalidad: 0,
+    Unidad: 0,
+    Profesor: 0,
+    Descripcion: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setCurso({ ...curso, [name]: value });
+  useEffect(() => {
+    if (curso) {
+      setFormData(curso);
+    }
+  }, [curso]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cursoData = {
-      nombre_curso: curso.nombre_curso,
-      valor: Number(curso.valor),
-      público: Number(curso.público),
-      periodo: curso.periodo,
-      inicio: curso.inicio,
-      fin: curso.fin,
-      horas: Number(curso.horas),
-      cupoMax: Number(curso.cupoMax),
-      linea: Number(curso.linea),
-      estado: Number(curso.estado),
-      modalidad: Number(curso.modalidad),
-      unidad: Number(curso.unidad),
-      profesor: Number(curso.profesor),
-      segundoPro: Number(curso.segundoPro),
-      idTipoCurso: Number(curso.idTipoCurso),
-    };
-    onSave(cursoData); // Envía los datos al backend
+    try {
+      if (curso && curso.id) {
+        await updateCurso(curso.id, formData);
+      } else {
+        await createCurso(formData);
+      }
+      onSave();
+      onClose();
+    } catch (error) {
+      console.error("Error al guardar el curso:", error);
+    }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl flex flex-col h-[700px] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Crear Curso</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 className="text-xl font-bold text-[#990000] text-center mb-4">
+          {curso ? "Editar Curso" : "Crear Curso"}
+        </h2>
 
-        <form onSubmit={handleSubmit}>
-          <label className="block font-semibold">Nombre del Curso:</label>
-          <input type="text" name="nombre_curso" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <input type="text" name="NombreCurso" placeholder="Nombre del Curso" value={formData.NombreCurso} onChange={handleChange} className="w-full p-2 border rounded" required />
+          <input type="number" name="Valor" placeholder="Valor" value={formData.Valor} onChange={handleChange} className="w-full p-2 border rounded" required />
+          <input type="text" name="Periodo" placeholder="Periodo" value={formData.Periodo} onChange={handleChange} className="w-full p-2 border rounded" required />
+          <input type="date" name="Inicio" value={formData.Inicio} onChange={handleChange} className="w-full p-2 border rounded" required />
+          <input type="date" name="Fin" value={formData.Fin} onChange={handleChange} className="w-full p-2 border rounded" required />
+          <input type="text" name="Lugar" placeholder="Lugar" value={formData.Lugar} onChange={handleChange} className="w-full p-2 border rounded" required />
 
-          <label className="block font-semibold">Valor:</label>
-          <input type="number" name="valor" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Público:</label>
-          <select name="público" className="w-full border p-2 rounded mb-3" onChange={handleChange} required>
-            <option value="">Seleccione...</option>
-            <option value="1">Profesor</option>
-            <option value="2">Administrativo</option>
-          </select>
-
-          <label className="block font-semibold">Periodo:</label>
-          <input type="text" name="periodo" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Inicio:</label>
-          <input type="date" name="inicio" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Fin:</label>
-          <input type="date" name="fin" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Horas:</label>
-          <input type="number" name="horas" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Cupo Máximo:</label>
-          <input type="number" name="cupoMax" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Línea:</label>
-          <input type="text" name="linea" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Estado:</label>
-          <select name="estado" className="w-full border p-2 rounded mb-3" onChange={handleChange} required>
-            <option value="">Seleccione...</option>
-            <option value="1">Activo</option>
-            <option value="0">Inactivo</option>
-          </select>
-
-          <label className="block font-semibold">Modalidad:</label>
-          <select name="modalidad" className="w-full border p-2 rounded mb-3" onChange={handleChange} required>
-            <option value="">Seleccione...</option>
-            <option value="1">Presencial</option>
-            <option value="2">Virtual</option>
-            <option value="3">Mixta</option>
-          </select>
-
-          <label className="block font-semibold">Unidad:</label>
-          <input type="text" name="unidad" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Profesor:</label>
-          <input type="number" name="profesor" className="w-full border p-2 rounded mb-3" onChange={handleChange} required />
-
-          <label className="block font-semibold">Segundo Profesor (opcional):</label>
-          <input type="number" name="segundoPro" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
-
-          <label className="block font-semibold">Tipo de Curso:</label>
-          <select name="idTipoCurso" className="w-full border p-2 rounded mb-3" onChange={handleChange} required>
-            <option value="">Seleccione...</option>
-            <option value="1">Diplomado</option>
-            <option value="2">Taller</option>
-            <option value="3">Seminario</option>
-          </select>
-
-          <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
-            Guardar
-          </button>
+          <div className="flex justify-between">
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
+            <button type="submit" className="px-4 py-2 bg-[#990000] text-white rounded">Guardar</button>
+          </div>
         </form>
-
-        <button onClick={onClose} className="mt-4 w-full bg-gray-400 text-white py-2 rounded-lg hover:scale-105 transition">
-          Cancelar
-        </button>
       </div>
     </div>
   );
