@@ -40,7 +40,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   useEffect(() => {
     async function fetchOpcionesPublico() {
       try {
-        const response = await fetch("http://localhost:8090/api/listas/especificaciones");
+        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
         if (!response.ok) throw new Error("Error al obtener las opciones");
 
         const data: OpcionPublico[] = await response.json();
