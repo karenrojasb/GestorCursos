@@ -16,7 +16,10 @@ export class InscripcionesService {
         data: {
           idCur: data.idCur,
           docInscr: data.docInscr,
-          fecreg: new Date(), 
+          fecreg: new Date(),
+        },
+        include: {
+          curso: { select: { NombreCurso: true } }, // Incluir el nombre del curso
         },
       });
 
@@ -28,13 +31,26 @@ export class InscripcionesService {
     }
   }
 
-  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
+  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES
   async getInscripciones() {
-    return this.prisma.inscripciones.findMany({
-      include: {
-        Cursos: { select: { NombreCurso: true } }, 
-      },
-    });
+    try {
+      const inscripciones = await this.prisma.inscripciones.findMany({
+        include: {
+          curso: { select: { NombreCurso: true } }, // Relación corregida
+        },
+      });
+
+      return inscripciones.map((inscripcion) => ({
+        id: inscripcion.id,
+        idCur: inscripcion.idCur,
+        docInscr: inscripcion.docInscr,
+        fecreg: inscripcion.fecreg,
+        NombreCurso: inscripcion.curso?.NombreCurso || 'Curso no encontrado',
+      }));
+    } catch (error) {
+      console.error('Error al obtener inscripciones:', error);
+      throw new Error('No se pudieron obtener las inscripciones.');
+    }
   }
 
   //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
@@ -46,7 +62,11 @@ export class InscripcionesService {
       const updatedInscripcion = await this.prisma.inscripciones.update({
         where: { id },
         data,
+        include: {
+          curso: { select: { NombreCurso: true } },
+        },
       });
+
       console.log('Inscripción actualizada:', updatedInscripcion);
       return updatedInscripcion;
     } catch (error) {
@@ -66,7 +86,6 @@ export class InscripcionesService {
 }
 
 
-
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
 import { InscripcionesService } from './inscripciones.service';
 import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
@@ -75,20 +94,17 @@ import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
 @Controller('inscripciones')
 export class InscripcionesController {
   constructor(private readonly inscripcionesService: InscripcionesService) {}
-  
-  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
+
   @Post()
   async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
     return this.inscripcionesService.createInscripcion(createInscripcioneDto);
   }
 
-  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
   @Get()
   async getInscripciones() {
     return this.inscripcionesService.getInscripciones();
   }
 
-  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
   @Put(':id')
   async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
     const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
@@ -98,7 +114,6 @@ export class InscripcionesController {
     return updatedInscripcion;
   }
 
-  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
   @Delete(':id')
   async deleteInscripcion(@Param('id') id: string) {
     return this.inscripcionesService.deleteInscripcion(Number(id));
