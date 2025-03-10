@@ -1,183 +1,78 @@
-"use client";
+import React, { useState, useEffect, useContext } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import { UsuarioContext } from "../layout"; // Importamos el contexto
 
-import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
-
-interface Curso {
-  id: number;                               
-  NombreCurso: string;                       
-  Valor: number;                             
-  Publico: number;                           
-  Periodo: string;                           
-  Inicio: string;                            
-  Fin: string;                               
-  Horas: number;                             
-  CupoMax: number;                           
-  Lugar: string;                             
-  Profesor: number;                           
-  Descripcion: string; 
+interface CursoModalProps {
+  idCur: number;
+  onClose: () => void;
+  onSave: (data: { idCur: number; docInscr: string }) => void;
+  onInscripcionExitosa: () => void;
 }
 
-export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
+export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitosa }: CursoModalProps) {
+  const { usuario } = useContext(UsuarioContext); // Obtenemos el usuario del contexto
+  const [cargando, setCargando] = useState(false);
+  const [mensaje, setMensaje] = useState("");
+  const [inscrito, setInscrito] = useState(false);
 
   useEffect(() => {
-    const fetchCursos = async () => {
+    if (!usuario) return;
+    const verificarInscripcion = async () => {
       try {
-        const response = await fetch("http://localhost:8090/api/cursos");
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const hoy = new Date();
-
-        const cursosActivos = data.filter((curso: Curso) => {
-          if (!curso.Fin) return true;
-          return new Date(curso.Fin) >= hoy;
-        });
-
-        setCursos(cursosActivos);
-        setCursosFiltrados(cursosActivos);
+        const response = await fetch(`http://localhost:8090/api/inscripciones/${idCur}/${usuario.id}`);
+        setInscrito(response.ok);
       } catch (error) {
-        console.error("Error al obtener los cursos:", error);
+        console.error("Error al verificar inscripción:", error);
       }
     };
+    verificarInscripcion();
+  }, [idCur, usuario]);
 
-    fetchCursos();
-  }, []);
+  const handleInscribir = async () => {
+    if (!usuario) return;
+    setCargando(true);
+    setMensaje("");
 
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(
-      cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto))
-    );
-  };
-
-  const handleVerMas = (id: number) => {
-    setExpandedCursoId(expandedCursoId === id ? null : id);
-  };
-
-  const handleInscribir = async (cursoId: number) => {
     try {
       const response = await fetch("http://localhost:8090/api/inscripciones", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id_curso: cursoId,
-          usuario: "usuario@example.com", // Reemplaza esto con el email del usuario autenticado
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idCur, docInscr: usuario.id }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Error en la inscripción: ${response.status}`);
-      }
+      if (!response.ok) throw new Error("Error al inscribir usuario.");
 
-      alert("Inscripción exitosa!");
-    } catch (error) {
-      console.error("Error al inscribirse:", error);
-      alert("Hubo un error al inscribirse. Inténtelo de nuevo.");
+      setMensaje("Inscripción realizada con éxito.");
+      setInscrito(true);
+      onInscripcionExitosa();
+      onSave({ idCur, docInscr: usuario.id });
+    } catch {
+      setMensaje("Hubo un problema al inscribir.");
+    } finally {
+      setCargando(false);
     }
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
-        {/* BARRA DE BÚSQUEDA */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="relative flex items-center"
-            onMouseEnter={() => setIsSearchActive(true)}
-            onMouseLeave={() => !busqueda && setIsSearchActive(false)}>
-            <button
-              onClick={() => setIsSearchActive(!isSearchActive)}
-              className="p-2 rounded-full bg-gray-200 transition-transform duration-500"
-            >
-              {isSearchActive ? (
-                <XMarkIcon className="h-6 w-6 text-[#990000] rotate-180" />
-              ) : (
-                <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
-              )}
-            </button>
-            <input
-              type="text"
-              placeholder="Busque el nombre del curso"
-              value={busqueda}
-              onChange={handleBuscar}
-              className={`px-4 py-2 border rounded-full transition-all duration-500 
-                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />
-          </div>
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col">
+        <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000]" onClick={onClose}>
+          <XMarkIcon className="w-6 h-6" />
+        </button>
 
-          {/* BOTÓN CERRAR */}
-          <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" onClick={onClose}>
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-        </div>
+        <h2 className="text-xl font-bold mb-4 text-center text-[#990000]">
+          {inscrito ? "Cancelar Inscripción" : "Inscribir Usuario"}
+        </h2>
 
-        {/* ENCABEZADOS */}
-        <div className="grid grid-cols-3 font-semibold border-b pb-2">
-          <span>Nombre del curso</span>
-          <span className="text-center">Fecha</span>
-          <span className="text-right w-16"></span>
-        </div>
+        {mensaje && <p className="text-center text-sm font-semibold text-red-600">{mensaje}</p>}
 
-        {/* CONTENIDO DE LOS CURSOS */}
-        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
-          {cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map((curso) => (
-              <div key={curso.id} className="border-b py-2">
-                <div className="grid grid-cols-3 items-center">
-                  <span className="text-left">{curso.NombreCurso}</span>
-                  <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-
-                  {/* BOTÓN VER MÁS */}
-                  <button
-                    onClick={() => handleVerMas(curso.id)}
-                    className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
-                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-                  >
-                    {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
-                  </button>
-                </div>
-
-                {/* CONTENIDO EXPANDIDO DEL CURSO */}
-                {expandedCursoId === curso.id && (
-                  <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
-                    <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
-                    
-                    <p><strong>Id:</strong> {curso.id}</p>
-                    <p><strong>Valor:</strong> {curso.Valor}</p>
-                    <p><strong>Fin:</strong> {curso.Fin}</p>
-                    <p><strong>Publico:</strong> {curso.Publico}</p>
-                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
-                    <p><strong>Horas:</strong> {curso.Horas}</p>
-                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
-                    <p><strong>Profesor:</strong> {curso.Profesor}</p>
-                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
-
-                    {/* BOTÓN INSCRIBIR */}
-                    <button 
-                      onClick={() => handleInscribir(curso.id)}
-                      className="mt-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
-                      duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-                    >
-                      Inscribir
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="text-center py-4">No hay cursos disponibles.</p>
-          )}
-        </div>
+        <button
+          onClick={handleInscribir}
+          className="mt-3 w-full bg-[#990000] text-white py-2 rounded-lg"
+          disabled={cargando}
+        >
+          {cargando ? "Inscribiendo..." : "Inscribir"}
+        </button>
       </div>
     </div>
   );
