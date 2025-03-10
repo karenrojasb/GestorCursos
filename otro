@@ -1,14 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Curso, createCurso, updateCurso } from "../services/cursosService";
 
-interface CursoModalProps {
-  curso?: Curso | null;
-  onClose: () => void;
-  onSave: () => void;
+interface Curso {
+  id?: number;
+  NombreCurso: string;
+  Valor: number;
+  Publico: number;
+  Periodo: string;
+  Inicio: string;
+  Fin: string;
+  Horas: number;
+  CupoMax: number;
+  Lugar: string;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  Descripcion: string;
 }
 
-export default function CursoModal({ curso, onClose, onSave }: CursoModalProps) {
+export default function CursoModal({ curso, onClose, onSave }: { curso?: Curso; onClose: () => void; onSave: () => void }) {
   const [formData, setFormData] = useState<Curso>({
     NombreCurso: "",
     Valor: 0,
@@ -37,16 +47,28 @@ export default function CursoModal({ curso, onClose, onSave }: CursoModalProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const url = curso
+      ? `http://localhost:8090/api/cursos/${curso.id}`
+      : "http://localhost:8090/api/cursos/create";
+    const method = curso ? "PUT" : "POST";
+
     try {
-      if (curso && curso.id) {
-        await updateCurso(curso.id, formData);
-      } else {
-        await createCurso(formData);
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error en la respuesta:", errorData);
+        throw new Error("Error al guardar el curso");
       }
+
       onSave();
       onClose();
     } catch (error) {
-      console.error("Error al guardar el curso:", error);
+      console.error("Error en la petición:", error);
     }
   };
 
