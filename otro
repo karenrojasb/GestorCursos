@@ -6,28 +6,18 @@ export class ListasService {
   constructor(private prisma: PrismaService) {}
 
   async obtenerEspecificaciones(): Promise<{ id: number; especificacion: string }[]> {
-    return this.prisma.listas.findMany({
+    const resultados = await this.prisma.listas.findMany({
       where: { Tipo: 1 },
       select: {
         id: true,
         Especificacion: true,
       },
     });
-  }
-}
 
-
-
-
-import { Controller, Get } from '@nestjs/common';
-import { ListasService } from './listas.service';
-
-@Controller('listas')
-export class ListasController {
-  constructor(private readonly listasService: ListasService) {}
-
-  @Get('especificaciones')
-  async obtenerEspecificaciones() {
-    return this.listasService.obtenerEspecificaciones();
+    // Asegurarnos de que se devuelve correctamente como un array de objetos
+    return resultados.map(item => ({
+      id: item.id,
+      especificacion: item.Especificacion, // Convertimos a formato esperado
+    }));
   }
 }
