@@ -37,6 +37,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Cargar opciones del backend
   useEffect(() => {
     async function fetchOpcionesPublico() {
       try {
@@ -44,13 +45,15 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         if (!response.ok) throw new Error(`Error ${response.status}: No se pudo obtener las opciones`);
 
         const data = await response.json();
+        console.log("Opciones recibidas:", data); // Verificar qué datos llegan
+
         if (Array.isArray(data)) {
           setOpcionesPublico(data);
         } else {
           throw new Error("Formato de datos incorrecto");
         }
       } catch (error) {
-        console.error("Error cargando las opciones de público:", error);
+        console.error("Error cargando opciones de público:", error);
         setError("No se pudieron cargar las opciones.");
       } finally {
         setLoading(false);
@@ -110,13 +113,14 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                   value={curso.Publico} 
                   onChange={handleChange} 
                   className="w-full border border-gray-400 p-2 rounded text-black bg-white"
+                  defaultValue="" 
                 >
                   <option value="">Selecciona una opción</option>
                   {loading ? (
                     <option disabled>Cargando opciones...</option>
                   ) : (
                     opcionesPublico.map((opcion) => (
-                      <option key={opcion.id} value={opcion.id}>
+                      <option key={opcion.id} value={opcion.id} className="text-black">
                         {opcion.especificacion}
                       </option>
                     ))
