@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class InscripcionesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
+  // MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
   async createInscripcion(data: CreateInscripcioneDto) {
     console.log('Datos recibidos para crear inscripción:', data);
 
@@ -19,24 +19,30 @@ export class InscripcionesService {
           fecreg: new Date(),
         },
         include: {
-          curso: { select: { NombreCurso: true } }, // Incluir el nombre del curso
+          curso: { select: { NombreCurso: true } }, // Incluir el curso
         },
       });
 
       console.log('Inscripción creada exitosamente:', nuevaInscripcion);
-      return nuevaInscripcion;
+      return {
+        id: nuevaInscripcion.id,
+        idCur: nuevaInscripcion.idCur,
+        docInscr: nuevaInscripcion.docInscr,
+        fecreg: nuevaInscripcion.fecreg,
+        NombreCurso: nuevaInscripcion.curso?.NombreCurso || 'Curso no encontrado',
+      };
     } catch (error) {
       console.error('Error al crear inscripción:', error);
       throw new Error('No se pudo registrar la inscripción.');
     }
   }
 
-  //  MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES
+  // MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
   async getInscripciones() {
     try {
       const inscripciones = await this.prisma.inscripciones.findMany({
         include: {
-          curso: { select: { NombreCurso: true } }, // Relación corregida
+          curso: { select: { NombreCurso: true } }, // Relación con el curso
         },
       });
 
@@ -53,7 +59,7 @@ export class InscripcionesService {
     }
   }
 
-  //  MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
+  // MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
   async updateInscripcion(id: number, data: UpdateInscripcioneDto) {
     console.log('ID recibido para actualizar:', id);
     console.log('Datos recibidos:', data);
@@ -63,19 +69,25 @@ export class InscripcionesService {
         where: { id },
         data,
         include: {
-          curso: { select: { NombreCurso: true } },
+          curso: { select: { NombreCurso: true } }, // Incluir el curso en la respuesta
         },
       });
 
       console.log('Inscripción actualizada:', updatedInscripcion);
-      return updatedInscripcion;
+      return {
+        id: updatedInscripcion.id,
+        idCur: updatedInscripcion.idCur,
+        docInscr: updatedInscripcion.docInscr,
+        fecreg: updatedInscripcion.fecreg,
+        NombreCurso: updatedInscripcion.curso?.NombreCurso || 'Curso no encontrado',
+      };
     } catch (error) {
       console.error('Error al actualizar inscripción:', error);
       throw new NotFoundException(`No se pudo actualizar la inscripción con ID #${id}`);
     }
   }
 
-  //  MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
+  // MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
   async deleteInscripcion(id: number) {
     try {
       return await this.prisma.inscripciones.delete({ where: { id } });
@@ -84,6 +96,8 @@ export class InscripcionesService {
     }
   }
 }
+
+
 
 
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
@@ -95,16 +109,19 @@ import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
 export class InscripcionesController {
   constructor(private readonly inscripcionesService: InscripcionesService) {}
 
+  // MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
   @Post()
   async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
     return this.inscripcionesService.createInscripcion(createInscripcioneDto);
   }
 
+  // MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL NOMBRE DEL CURSO)
   @Get()
   async getInscripciones() {
     return this.inscripcionesService.getInscripciones();
   }
 
+  // MÉTODO PARA ACTUALIZAR UNA INSCRIPCIÓN POR ID
   @Put(':id')
   async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
     const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
@@ -114,6 +131,7 @@ export class InscripcionesController {
     return updatedInscripcion;
   }
 
+  // MÉTODO PARA ELIMINAR UNA INSCRIPCIÓN POR ID
   @Delete(':id')
   async deleteInscripcion(@Param('id') id: string) {
     return this.inscripcionesService.deleteInscripcion(Number(id));
