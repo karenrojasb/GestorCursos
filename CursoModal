@@ -8,7 +8,8 @@ interface CursoModalProps {
 
 interface OpcionPublico {
   id: number;
-  especificacion: string;
+  Especificacion: string; // Coincide con el nombre del backend
+  Tipo: number;
 }
 
 export default function CursoModal({ onClose, onSave }: CursoModalProps) {
@@ -35,7 +36,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
   const [opcionesPublico, setOpcionesPublico] = useState<OpcionPublico[]>([]);
 
-  // Llamar al backend para obtener las opciones del desplegable (Tipo = 1)
+  // Llamar al backend para obtener las opciones del desplegable (solo Tipo = 1)
   useEffect(() => {
     async function fetchOpcionesPublico() {
       try {
@@ -43,7 +44,10 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         if (!response.ok) throw new Error("Error al obtener las opciones");
 
         const data: OpcionPublico[] = await response.json();
-        setOpcionesPublico(data);
+
+        // Filtrar solo las opciones con Tipo: 1 (Público)
+        const opcionesFiltradas = data.filter((item) => item.Tipo === 1);
+        setOpcionesPublico(opcionesFiltradas);
       } catch (error) {
         console.error("Error cargando las opciones de público:", error);
       }
@@ -108,7 +112,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                   <option value="">Selecciona una opción</option>
                   {opcionesPublico.map((opcion) => (
                     <option key={opcion.id} value={opcion.id}>
-                      {opcion.especificacion}
+                      {opcion.Especificacion} {/* Se asegura que se use la propiedad correcta */}
                     </option>
                   ))}
                 </select>
