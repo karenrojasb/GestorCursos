@@ -4,11 +4,50 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface CursoModalProps {
   onClose: () => void;
-  onSave: (data: any) => void;
+  onSave: (data: CursoFormData) => void;
+}
+
+// Definir la estructura del curso
+interface CursoFormData {
+  id: number;
+  NombreCurso: string;
+  Valor: number;
+  Publico: number;
+  Periodo: string;
+  Inicio: string;
+  Fin: string;
+  Horas: number;
+  CupoMax: number;
+  Lugar: string;
+  Horarios: {
+    LunesIni: string;
+    LunesFin: string;
+    MartesIni: string;
+    MartesFin: string;
+    MiercolesIni: string;
+    MiercolesFin: string;
+    JuevesIni: string;
+    JuevesFin: string;
+    ViernesIni: string;
+    ViernesFin: string;
+    SabadoIni: string;
+    SabadoFin: string;
+    DomingoIni: string;
+    DomingoFin: string;
+  };
+  Linea: number;
+  Estado: number;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  SegundoPro: string;
+  Proexterno: number;
+  Descripcion: string;
+  IdTipoCurso: number;
 }
 
 export default function CursoModal({ onClose, onSave }: CursoModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CursoFormData>({
     id: 0,
     NombreCurso: "",
     Valor: 0,
@@ -20,13 +59,20 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     CupoMax: 0,
     Lugar: "",
     Horarios: {
-      Lunes: { Inicio: "", Fin: "" },
-      Martes: { Inicio: "", Fin: "" },
-      Miercoles: { Inicio: "", Fin: "" },
-      Jueves: { Inicio: "", Fin: "" },
-      Viernes: { Inicio: "", Fin: "" },
-      Sabado: { Inicio: "", Fin: "" },
-      Domingo: { Inicio: "", Fin: "" },
+      LunesIni: "",
+      LunesFin: "",
+      MartesIni: "",
+      MartesFin: "",
+      MiercolesIni: "",
+      MiercolesFin: "",
+      JuevesIni: "",
+      JuevesFin: "",
+      ViernesIni: "",
+      ViernesFin: "",
+      SabadoIni: "",
+      SabadoFin: "",
+      DomingoIni: "",
+      DomingoFin: "",
     },
     Linea: 0,
     Estado: 0,
@@ -39,35 +85,29 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     IdTipoCurso: 0,
   });
 
+  // Manejo de cambios en los inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-
-    let newValue: any = value;
-    if (type === "number") newValue = Number(value);
-    if (type === "time" || type === "date") newValue = value;
-
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: newValue,
-    }));
-  };
-
-  const handleHorarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const [dia, tipo] = name.split("_"); // Ejemplo: Lunes_Ini -> ["Lunes", "Ini"]
 
-    setFormData((prevData) => ({
-      ...prevData,
-      Horarios: {
-        ...prevData.Horarios,
-        [dia]: {
-          ...prevData.Horarios[dia],
-          [tipo]: value,
-        },
-      },
-    }));
+    setFormData((prevData) => {
+      if (name in prevData.Horarios) {
+        return {
+          ...prevData,
+          Horarios: {
+            ...prevData.Horarios,
+            [name]: value,
+          },
+        };
+      }
+
+      return {
+        ...prevData,
+        [name]: value,
+      };
+    });
   };
 
+  // Enviar formulario
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
@@ -96,26 +136,27 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         {/* FORMULARIO */}
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-          <input name="NombreCurso" placeholder="Nombre del Curso" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Valor" type="number" placeholder="Valor" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Publico" type="number" placeholder="Público" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Periodo" placeholder="Periodo" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Inicio" type="date" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Fin" type="date" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Horas" type="number" placeholder="Horas" onChange={handleChange} className="border p-2 rounded" />
-          <input name="CupoMax" type="number" placeholder="Cupo Máximo" onChange={handleChange} className="border p-2 rounded" />
-          <input name="Lugar" placeholder="Lugar" onChange={handleChange} className="border p-2 rounded" />
+          <input name="NombreCurso" placeholder="Nombre del Curso" onChange={handleChange} className="border p-2 rounded" required />
+          <input name="Valor" type="number" placeholder="Valor" onChange={handleChange} className="border p-2 rounded" required />
+          <input name="Publico" type="number" placeholder="Público" onChange={handleChange} className="border p-2 rounded" required />
+          <input name="Periodo" placeholder="Periodo" onChange={handleChange} className="border p-2 rounded" required />
+          <input name="Inicio" type="date" onChange={handleChange} className="border p-2 rounded" required />
+          <input name="Fin" type="date" onChange={handleChange} className="border p-2 rounded" required />
+          <input name="Horas" type="number" placeholder="Horas" onChange={handleChange} className="border p-2 rounded" required />
+          <input name="CupoMax" type="number" placeholder="Cupo Máximo" onChange={handleChange} className="border p-2 rounded" required />
+          <input name="Lugar" placeholder="Lugar" onChange={handleChange} className="border p-2 rounded" required />
 
-          {/* HORARIOS POR DÍA */}
+          {/* HORARIOS */}
           <div className="col-span-2 grid grid-cols-3 gap-4">
-            {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
-              <div key={dia} className="flex flex-col">
-                <label className="font-semibold">{dia}</label>
-                <div className="flex gap-2">
-                  <input name={`${dia}_Inicio`} type="time" onChange={handleHorarioChange} className="border p-2 rounded w-1/2" />
-                  <input name={`${dia}_Fin`} type="time" onChange={handleHorarioChange} className="border p-2 rounded w-1/2" />
-                </div>
-              </div>
+            {Object.keys(formData.Horarios).map((dia) => (
+              <input
+                key={dia}
+                name={dia}
+                type="time"
+                placeholder={dia.replace("Ini", " Inicio").replace("Fin", " Fin")}
+                onChange={handleChange}
+                className="border p-2 rounded"
+              />
             ))}
           </div>
 
