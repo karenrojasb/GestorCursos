@@ -1,0 +1,106 @@
+import { useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+
+interface CursoModalProps {
+  onClose: () => void;
+  onSave: (data: any) => void;
+}
+
+export default function CursoModal({ onClose, onSave }: CursoModalProps) {
+  const [curso, setCurso] = useState({
+    NombreCurso: "",
+    Valor: "",
+    Publico: "",
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
+    Horas: "",
+    CupoMax: "",
+    Lugar: "",
+    // LunesIni: "",
+    // LunesFin: "",
+    // MartesIni: "",
+    // MartesFin: "",
+    // MiercolesIni: "",
+    // MiercolesFin: "",
+    // JuevesIni: "",
+    // JuevesFin: "",
+    // ViernesIni: "",
+    // ViernesFin: "",
+    // SabadoIni: "",
+    // SabadoFin: "",
+    // DomingoIni: "",
+    // DomingoFin: "",
+    Linea: "",
+    Estado: "",
+    Modalidad: "",
+    Unidad: "",
+    Profesor: "",
+    SegundoPro: "",
+    Proexterno: "",
+    Descripcion: "",
+    IdTipoCurso: ""
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurso((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Convertir valores numéricos y limpiar datos vacíos
+    const cursoData = Object.keys(curso).reduce((acc, key) => {
+      const value = curso[key as keyof typeof curso];
+      
+      if (value !== "") {
+        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key)
+          ? Number(value) || null // Convierte en número o lo deja como null
+          : value;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    onSave(cursoData);
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md transition-transform transform scale-95 opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+        
+        {/* Botón de cerrar */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+
+        <h2 className="text-xl font-bold mb-4">Crear Curso</h2>
+
+        <form onSubmit={handleSubmit}>
+          {/* Campos del formulario */}
+          {Object.keys(curso).map((key) => (
+            <div key={key} className="mb-3">
+              <label className="block font-semibold">{key}:</label>
+              <input 
+                type={["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key) ? "number" : "text"} 
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded"
+              />
+            </div>
+          ))}
+
+          <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
+            Guardar
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
