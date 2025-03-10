@@ -1,5 +1,143 @@
-Msg 547, Level 16, State 0, Line 42
-The DELETE statement conflicted with the REFERENCE constraint "FK__Inscripci__idCur__76969D2E". The conflict occurred in database "GestorCursos", table "gescur.Inscripciones", column 'idCur'.
-The statement has been terminated.
+"use client";
+import { ReactNode, useState } from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import MainButtonsProps from "./components/mainbuttons";
+import "./globals.css";
 
-Completion time: 2025-03-10T16:55:28.2687696-05:00
+interface LayoutProps {
+  children: ReactNode;
+}
+
+interface Usuario {
+  nombre: string;
+  publico: number; // 1 = Profesors, 2 = Administración
+  esAdmin: boolean; // true si es administrador
+}
+
+export default function RootLayout({ children }: LayoutProps) {
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [id_emp, setIdEmp] = useState("");
+  const [error, setError] = useState("");
+
+  // FUNCIÓN PARA INICIAR SESIÓN Y OBTENER DATOS DEL USUARIO
+  const iniciarSesion = async () => {
+    setError("");
+
+    if (id_emp.trim() === "") {
+      setError("Ingrese su Documento.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8090/api/usuario/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_emp }),
+      });
+
+      const data = await response.json();
+      console.log("Datos recibidos del backend:", data); 
+
+      if (!response.ok) {
+        throw new Error(data.message || "El documento no es correcto.");
+      }
+
+      // VERIFICAR SI EL USUARIO ESTA EN LAS GESCUR.EMP_NOMINA
+      if (data.publico === null || data.publico === undefined) {
+        throw new Error("No tiene permisos para ingresar al sistema.");
+      }
+
+      // Verificamos si el usuario tiene un rol permitido
+      const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
+      if (!esUsuarioValido) {
+        throw new Error("No tiene permisos para ingresar al sistema.");
+      }
+
+      // DEFINIR EL USUARIO CON SU ROL
+      setUsuario({
+        nombre: data.nombre,
+        publico: data.publico, // 1 = Profesor, 2 = Administradores
+        esAdmin: Boolean(data.esAdmin), // Convertimos null en false
+      });
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
+
+  // RENDERIZA EL FORMULARIO DE LOGIN SI NO HAY USUARIO
+  if (!usuario) {
+    return (
+      <html lang="es">
+        <body className="flex items-center justify-center h-screen bg-gray-200">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Iniciar Sesión</h2>
+            <input
+              type="text"
+              placeholder="Ingrese su Documento"
+              value={id_emp}
+              onChange={(e) => setIdEmp(e.target.value)}
+              className="border p-2 w-full mb-3 rounded"
+            />
+            <button
+              onClick={iniciarSesion}
+              className="bg-[#990000] text-white px-4 py-2 rounded w-full hover:bg-red-700 transition"
+            >
+              Entrar
+            </button>
+            {error && <p className="text-red-600 mt-2">{error}</p>}
+          </div>
+        </body>
+      </html>
+    );
+  }
+
+  // SI EL USUARIO YA ESTÁ AUTENTICADO, MUESTRA LA INTERFAZ PRINCIPAL
+  return (
+    <html lang="es">
+      <body className="bg-gray-100 flex flex-col min-h-screen">
+        <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+          <img
+            src="/img/ecijg126.png"
+            alt="Logo"
+            className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
+          />
+          <div className="flex flex-col items-center ml-auto">
+            <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
+            <button
+              className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
+              onClick={() => setUsuario(null)}
+            >
+              Cerrar Sesión
+            </button>
+          </div>
+        </header>
+
+        <main className="flex flex-col items-center justify-center flex-1 p-6">
+          <motion.h1
+            className="text-3xl font-bold text-[#990000] mb-6 text-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Bienvenido a Gestión de Cursos
+          </motion.h1>
+
+          {/* PASAMOS LOS ROLES AL COMPONENTE DE BOTONES */}
+          <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
+
+          {children}
+        </main>
+
+        <footer className="bg-white text-center py-4 shadow-inner w-full">
+          <div className="flex items-center justify-between px-6">
+            <p className="text-gray-700">
+              &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
+            </p>
+            <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
+          </div>
+        </footer>
+      </body>
+    </html>
+  );
+}
