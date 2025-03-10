@@ -36,6 +36,9 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
   const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
   const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
+  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
+  const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
+  const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
 
   useEffect(() => {
     async function fetchOpciones() {
@@ -45,9 +48,12 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         const data: Opcion[] = await response.json();
 
-        // Filtrar por tipo
-        setOpcionesPublico(data.filter((item) => item.Tipo === 1)); // Tipo 1 para Publico
-        setOpcionesLinea(data.filter((item) => item.Tipo === 2));   // Tipo 2 para Linea
+        // Filtrar opciones según el Tipo correspondiente
+        setOpcionesPublico(data.filter((item) => item.Tipo === 1));      // Público
+        setOpcionesLinea(data.filter((item) => item.Tipo === 2));        // Línea
+        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));    // Modalidad
+        setOpcionesEstado(data.filter((item) => item.Tipo === 4));       // Estado
+        setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));    // Tipo de Curso
       } catch (error) {
         console.error("Error cargando las opciones:", error);
       }
@@ -102,13 +108,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
               <label className="block font-semibold">{key}:</label>
 
               {key === "Publico" ? (
-                // Desplegable para "Publico"
-                <select 
-                  name="Publico" 
-                  value={curso.Publico} 
-                  onChange={handleChange} 
-                  className="w-full border p-2 rounded"
-                >
+                <select name="Publico" value={curso.Publico} onChange={handleChange} className="w-full border p-2 rounded">
                   <option value="">Selecciona una opción</option>
                   {opcionesPublico.map((opcion) => (
                     <option key={opcion.id} value={opcion.id}>
@@ -117,13 +117,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                   ))}
                 </select>
               ) : key === "Linea" ? (
-                // Desplegable para "Linea"
-                <select 
-                  name="Linea" 
-                  value={curso.Linea} 
-                  onChange={handleChange} 
-                  className="w-full border p-2 rounded"
-                >
+                <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded">
                   <option value="">Selecciona una opción</option>
                   {opcionesLinea.map((opcion) => (
                     <option key={opcion.id} value={opcion.id}>
@@ -131,8 +125,34 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                     </option>
                   ))}
                 </select>
+              ) : key === "Modalidad" ? (
+                <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesModalidad.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Estado" ? (
+                <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesEstado.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "IdTipoCurso" ? (
+                <select name="IdTipoCurso" value={curso.IdTipoCurso} onChange={handleChange} className="w-full border p-2 rounded">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesTipoCurso.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
               ) : (
-                // Otros inputs normales
                 <input 
                   type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key) ? "number" : "text"} 
                   name={key}
