@@ -1,98 +1,143 @@
-"use client";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-interface Curso {
-  id?: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: number;
-  Lugar: string;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  Descripcion: string;
+interface CursoModalProps {
+  onClose: () => void;
+  onSave: () => void;
 }
 
-export default function CursoModal({ curso, onClose, onSave }: { curso?: Curso; onClose: () => void; onSave: () => void }) {
-  const [formData, setFormData] = useState<Curso>({
+const CursoModal: React.FC<CursoModalProps> = ({ onClose, onSave }) => {
+  const [formData, setFormData] = useState({
     NombreCurso: "",
-    Valor: 0,
-    Publico: 0,
+    Valor: "",
+    Público: "",
     Periodo: "",
     Inicio: "",
     Fin: "",
-    Horas: 0,
-    CupoMax: 0,
+    Horas: "",
+    CupoMax: "",
     Lugar: "",
-    Modalidad: 0,
-    Unidad: 0,
-    Profesor: 0,
+    LunesIni: "",
+    LunesFin: "",
+    MartesIni: "",
+    MartesFin: "",
+    MiercolesIni: "",
+    MiercolesFin: "",
+    JuevesIni: "",
+    JuevesFin: "",
+    ViernesIni: "",
+    ViernesFin: "",
+    SabadoIni: "",
+    SabadoFin: "",
+    DomingoIni: "",
+    DomingoFin: "",
+    Linea: "",
+    Estado: "",
+    Modalidad: "",
+    Unidad: "",
+    Profesor: "",
+    SegundoPto: "",
+    Proexterno: "",
     Descripcion: "",
+    IdTipoCurso: "",
   });
 
-  useEffect(() => {
-    if (curso) {
-      setFormData(curso);
-    }
-  }, [curso]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const url = curso
-      ? `http://localhost:8090/api/cursos/${curso.id}`
-      : "http://localhost:8090/api/cursos/create";
-    const method = curso ? "PUT" : "POST";
+
+    const cursoData = {
+      NombreCurso: formData.NombreCurso,
+      Valor: Number(formData.Valor),
+      Público: Number(formData.Público),
+      Periodo: formData.Periodo,
+      Inicio: formData.Inicio,
+      Fin: formData.Fin,
+      Horas: Number(formData.Horas),
+      CupoMax: Number(formData.CupoMax),
+      Lugar: formData.Lugar,
+      LunesIni: formData.LunesIni || null,
+      LunesFin: formData.LunesFin || null,
+      MartesIni: formData.MartesIni || null,
+      MartesFin: formData.MartesFin || null,
+      MiercolesIni: formData.MiercolesIni || null,
+      MiercolesFin: formData.MiercolesFin || null,
+      JuevesIni: formData.JuevesIni || null,
+      JuevesFin: formData.JuevesFin || null,
+      ViernesIni: formData.ViernesIni || null,
+      ViernesFin: formData.ViernesFin || null,
+      SabadoIni: formData.SabadoIni || null,
+      SabadoFin: formData.SabadoFin || null,
+      DomingoIni: formData.DomingoIni || null,
+      DomingoFin: formData.DomingoFin || null,
+      Linea: Number(formData.Linea),
+      Estado: Number(formData.Estado),
+      Modalidad: Number(formData.Modalidad),
+      Unidad: Number(formData.Unidad),
+      Profesor: Number(formData.Profesor),
+      SegundoPto: Number(formData.SegundoPto),
+      Proexterno: formData.Proexterno,
+      Descripcion: formData.Descripcion,
+      IdTipoCurso: Number(formData.IdTipoCurso),
+    };
+
+    console.log("🚀 Enviando datos:", JSON.stringify(cursoData));
 
     try {
-      const response = await fetch(url, {
-        method,
+      const response = await fetch("http://localhost:8090/api/cursos", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(cursoData),
       });
+
+      console.log("✅ Estado de respuesta:", response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error en la respuesta:", errorData);
-        throw new Error("Error al guardar el curso");
+        throw new Error(JSON.stringify(errorData));
       }
 
+      const responseData = await response.json();
+      console.log("✅ Curso guardado con éxito:", responseData);
       onSave();
       onClose();
     } catch (error) {
-      console.error("Error en la petición:", error);
+      console.error("❌ Error al guardar el curso:", error);
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-xl font-bold text-[#990000] text-center mb-4">
-          {curso ? "Editar Curso" : "Crear Curso"}
-        </h2>
+    <div className="modal">
+      <div className="modal-content">
+        <h2>Crear Curso</h2>
+        <form onSubmit={handleSubmit}>
+          <input type="text" name="NombreCurso" placeholder="Nombre del curso" onChange={handleChange} required />
+          <input type="number" name="Valor" placeholder="Valor" onChange={handleChange} required />
+          <input type="number" name="Público" placeholder="Público" onChange={handleChange} required />
+          <input type="text" name="Periodo" placeholder="Periodo" onChange={handleChange} required />
+          <input type="text" name="Inicio" placeholder="Inicio" onChange={handleChange} required />
+          <input type="text" name="Fin" placeholder="Fin" onChange={handleChange} required />
+          <input type="number" name="Horas" placeholder="Horas" onChange={handleChange} required />
+          <input type="number" name="CupoMax" placeholder="Cupo Máximo" onChange={handleChange} required />
+          <input type="text" name="Lugar" placeholder="Lugar" onChange={handleChange} required />
+          <input type="number" name="Linea" placeholder="Línea" onChange={handleChange} required />
+          <input type="number" name="Estado" placeholder="Estado" onChange={handleChange} required />
+          <input type="number" name="Modalidad" placeholder="Modalidad" onChange={handleChange} required />
+          <input type="number" name="Unidad" placeholder="Unidad" onChange={handleChange} required />
+          <input type="number" name="Profesor" placeholder="Profesor" onChange={handleChange} required />
+          <input type="number" name="SegundoPto" placeholder="Segundo Pto" onChange={handleChange} required />
+          <input type="text" name="Proexterno" placeholder="Proexterno" onChange={handleChange} required />
+          <input type="text" name="Descripcion" placeholder="Descripción" onChange={handleChange} required />
+          <input type="number" name="IdTipoCurso" placeholder="Tipo de Curso" onChange={handleChange} required />
 
-        <form onSubmit={handleSubmit} className="space-y-2">
-          <input type="text" name="NombreCurso" placeholder="Nombre del Curso" value={formData.NombreCurso} onChange={handleChange} className="w-full p-2 border rounded" required />
-          <input type="number" name="Valor" placeholder="Valor" value={formData.Valor} onChange={handleChange} className="w-full p-2 border rounded" required />
-          <input type="text" name="Periodo" placeholder="Periodo" value={formData.Periodo} onChange={handleChange} className="w-full p-2 border rounded" required />
-          <input type="date" name="Inicio" value={formData.Inicio} onChange={handleChange} className="w-full p-2 border rounded" required />
-          <input type="date" name="Fin" value={formData.Fin} onChange={handleChange} className="w-full p-2 border rounded" required />
-          <input type="text" name="Lugar" placeholder="Lugar" value={formData.Lugar} onChange={handleChange} className="w-full p-2 border rounded" required />
-
-          <div className="flex justify-between">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
-            <button type="submit" className="px-4 py-2 bg-[#990000] text-white rounded">Guardar</button>
-          </div>
+          <button type="submit">Guardar</button>
+          <button type="button" onClick={onClose}>Cancelar</button>
         </form>
       </div>
     </div>
   );
-}
+};
+
+export default CursoModal;
