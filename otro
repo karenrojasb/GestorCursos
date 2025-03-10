@@ -1,168 +1,181 @@
-import { useState, useEffect } from "react";
+"use client";
+
 import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import React from "react";
+import { useEffect, useState } from "react";
 
-interface Inscripcion {
-  id: number;
-  idCur?: number;
-  Cursos?: {
-    id: number;
-    NombreCurso: string;
-  };
-  cursos?: {
-    id: number;
-    NombreCurso: string;
-  };
-  docInscr: string;
-  est: number;
-  fecreg: string;
+interface Curso {
+  id: number;                               
+  NombreCurso: string;                       
+  Valor: number;                             
+  Publico: number;                           
+  Periodo: string;                           
+  Inicio: string;                            
+  Fin: string;                               
+  Horas: number;                             
+  CupoMax: number;                           
+  Lugar: string;                             
+  Profesor: number;                           
+  Descripcion: string; 
 }
 
-interface InscripcionesModalProps {
-  onClose: () => void;
-}
-
-export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
-  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
-  const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
-  const [expandedCourses, setExpandedCourses] = useState<{ [key: number]: boolean }>({});
+export default function CatalogoModal({ onClose }: { onClose: () => void }) {
+  const [cursos, setCursos] = useState<Curso[]>([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
   useEffect(() => {
-    const fetchInscripciones = async () => {
+    const fetchCursos = async () => {
       try {
-        const response = await fetch("http://localhost:8090/api/inscripciones");
-        if (!response.ok) throw new Error("Error al obtener inscripciones");
+        const response = await fetch("http://localhost:8090/api/cursos");
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
 
-        const data: Inscripcion[] = await response.json();
-        console.log("Datos recibidos en el frontend:", data);
+        const data = await response.json();
+        const hoy = new Date();
 
-        setInscripciones(data);
-        setInscripcionesFiltradas(data);
+        const cursosActivos = data.filter((curso: Curso) => {
+          if (!curso.Fin) return true;
+          return new Date(curso.Fin) >= hoy;
+        });
+
+        setCursos(cursosActivos);
+        setCursosFiltrados(cursosActivos);
       } catch (error) {
-        console.error("Error al obtener inscripciones:", error);
+        console.error("Error al obtener los cursos:", error);
       }
     };
 
-    fetchInscripciones();
+    fetchCursos();
   }, []);
 
-  // Filtrar inscripciones en tiempo real
   const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const texto = e.target.value.toLowerCase();
     setBusqueda(texto);
-
-    const filtrados = inscripciones.filter((inscripcion) => {
-      const cursoNombre = inscripcion.Cursos?.NombreCurso || inscripcion.cursos?.NombreCurso || "";
-      const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
-
-      return (
-        inscripcion.idCur?.toString().includes(texto) ||
-        cursoNombre.toLowerCase().includes(texto) ||
-        fechaRegistro.includes(texto)
-      );
-    });
-
-    setInscripcionesFiltradas(filtrados);
+    setCursosFiltrados(
+      cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto))
+    );
   };
 
-  // Agrupar inscripciones por idCur
-  const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
-    const cursoId = inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.cursos?.id || 0;
-    if (!acc[cursoId]) {
-      acc[cursoId] = [];
-    }
-    acc[cursoId].push(inscripcion);
-    return acc;
-  }, {} as { [key: number]: Inscripcion[] });
+  const handleVerMas = (id: number) => {
+    setExpandedCursoId(expandedCursoId === id ? null : id);
+  };
 
-  // Alternar expansión de curso
-  const toggleExpand = (cursoId: number) => {
-    setExpandedCourses((prev) => ({ ...prev, [cursoId]: !prev[cursoId] }));
+  const handleInscribir = async (cursoId: number) => {
+    try {
+      const response = await fetch("http://localhost:8090/api/inscripciones", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_curso: cursoId,
+          usuario: "usuario@example.com", // Reemplaza esto con el email del usuario autenticado
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error en la inscripción: ${response.status}`);
+      }
+
+      alert("Inscripción exitosa!");
+    } catch (error) {
+      console.error("Error al inscribirse:", error);
+      alert("Hubo un error al inscribirse. Inténtelo de nuevo.");
+    }
   };
 
   return (
-    <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-8 px-10 rounded-lg shadow-md border-4 border-[#990000] min-h-[800px]">
-        
-        {/* BOTÓN CERRAR */}
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
+        {/* BARRA DE BÚSQUEDA */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative flex items-center"
+            onMouseEnter={() => setIsSearchActive(true)}
+            onMouseLeave={() => !busqueda && setIsSearchActive(false)}>
+            <button
+              onClick={() => setIsSearchActive(!isSearchActive)}
+              className="p-2 rounded-full bg-gray-200 transition-transform duration-500"
+            >
+              {isSearchActive ? (
+                <XMarkIcon className="h-6 w-6 text-[#990000] rotate-180" />
+              ) : (
+                <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
+              )}
+            </button>
+            <input
+              type="text"
+              placeholder="Busque el nombre del curso"
+              value={busqueda}
+              onChange={handleBuscar}
+              className={`px-4 py-2 border rounded-full transition-all duration-500 
+                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+            />
+          </div>
 
-        {/* TÍTULO */}
-        <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
-
-        {/* BARRA DE BÚSQUEDA ANIMADA */}
-        <div className="relative w-full flex items-center mb-4 transition-all duration-300">
-          <MagnifyingGlassIcon className="absolute left-3 h-5 w-5 text-gray-500 transition-all duration-300 transform scale-100" />
-          <input
-            type="text"
-            placeholder="Buscar por ID, Nombre o Fecha"
-            value={busqueda}
-            onChange={handleBuscar}
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-[#990000] focus:border-[#990000] transition-all duration-300"
-          />
+          {/* BOTÓN CERRAR */}
+          <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" onClick={onClose}>
+            <XMarkIcon className="w-6 h-6" />
+          </button>
         </div>
 
-        {/* LISTA DE INSCRIPCIONES */}
-        <div className="w-full max-h-[600px] overflow-auto border border-gray-300 rounded-md shadow-sm">
-          {Object.entries(groupedInscripciones).length > 0 ? (
-            <table className="w-full border-collapse border border-gray-300">
-              <thead className="bg-[#990000] text-white">
-                <tr>
-                  <th className="border border-gray-300 p-3">ID Curso</th>
-                  <th className="border border-gray-300 p-3">Nombre del Curso</th>
-                  <th className="border border-gray-300 p-3">Fecha Registro</th>
-                  <th className="border border-gray-300 p-3">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(groupedInscripciones).map(([cursoId, inscripciones], index) => {
-                  const curso = inscripciones[0];
-                  return (
-                    <React.Fragment key={cursoId}>
-                      <tr className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
-                        <td className="border border-gray-300 p-3">{cursoId}</td>
-                        <td className="border border-gray-300 p-3">{curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}</td>
-                        <td className="border border-gray-300 p-3">{new Date(curso.fecreg).toLocaleDateString()}</td>
-                        <td className="border border-gray-300 p-3">
-                          <button
-                            onClick={() => toggleExpand(Number(cursoId))}
-                            className="bg-[#990000] text-white px-4 py-1 rounded-md hover:bg-red-700 transition"
-                          >
-                            {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
-                          </button>
-                        </td>
-                      </tr>
+        {/* ENCABEZADOS */}
+        <div className="grid grid-cols-3 font-semibold border-b pb-2">
+          <span>Nombre del curso</span>
+          <span className="text-center">Fecha</span>
+          <span className="text-right w-16"></span>
+        </div>
 
-                      {expandedCourses[Number(cursoId)] && (
-                        <tr>
-                          <td colSpan={4}>
-                            <div className="p-4 bg-gray-50 border border-gray-300 rounded-md shadow-md mt-2">
-                              <h3 className="text-lg font-semibold text-[#990000]">Inscritos:</h3>
-                              <ul className="list-disc pl-5 mt-2 space-y-2">
-                                {inscripciones.map((inscripcion) => (
-                                  <li key={inscripcion.id} className="text-gray-700">
-                                    <strong>Documento:</strong> {inscripcion.docInscr} | 
-                                    <strong> Estado:</strong> {inscripcion.est}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
+        {/* CONTENIDO DE LOS CURSOS */}
+        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+          {cursosFiltrados.length > 0 ? (
+            cursosFiltrados.map((curso) => (
+              <div key={curso.id} className="border-b py-2">
+                <div className="grid grid-cols-3 items-center">
+                  <span className="text-left">{curso.NombreCurso}</span>
+                  <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
+
+                  {/* BOTÓN VER MÁS */}
+                  <button
+                    onClick={() => handleVerMas(curso.id)}
+                    className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
+                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+                  >
+                    {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+                  </button>
+                </div>
+
+                {/* CONTENIDO EXPANDIDO DEL CURSO */}
+                {expandedCursoId === curso.id && (
+                  <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
+                    <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
+                    
+                    <p><strong>Id:</strong> {curso.id}</p>
+                    <p><strong>Valor:</strong> {curso.Valor}</p>
+                    <p><strong>Fin:</strong> {curso.Fin}</p>
+                    <p><strong>Publico:</strong> {curso.Publico}</p>
+                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
+                    <p><strong>Horas:</strong> {curso.Horas}</p>
+                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
+                    <p><strong>Profesor:</strong> {curso.Profesor}</p>
+                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
+
+                    {/* BOTÓN INSCRIBIR */}
+                    <button 
+                      onClick={() => handleInscribir(curso.id)}
+                      className="mt-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
+                      duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+                    >
+                      Inscribir
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
           ) : (
-            <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
+            <p className="text-center py-4">No hay cursos disponibles.</p>
           )}
         </div>
       </div>
