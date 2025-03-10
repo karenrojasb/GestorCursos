@@ -19,20 +19,15 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     Horas: 0,
     CupoMax: 0,
     Lugar: "",
-    LunesIni: "",
-    LunesFin: "",
-    MartesIni: "",
-    MartesFin: "",
-    MiercolesIni: "",
-    MiercolesFin: "",
-    JuevesIni: "",
-    JuevesFin: "",
-    ViernesIni: "",
-    ViernesFin: "",
-    SabadoIni: "",
-    SabadoFin: "",
-    DomingoIni: "",
-    DomingoFin: "",
+    Horarios: {
+      Lunes: { Inicio: "", Fin: "" },
+      Martes: { Inicio: "", Fin: "" },
+      Miercoles: { Inicio: "", Fin: "" },
+      Jueves: { Inicio: "", Fin: "" },
+      Viernes: { Inicio: "", Fin: "" },
+      Sabado: { Inicio: "", Fin: "" },
+      Domingo: { Inicio: "", Fin: "" },
+    },
     Linea: 0,
     Estado: 0,
     Modalidad: 0,
@@ -45,10 +40,31 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+
+    let newValue: any = value;
+    if (type === "number") newValue = Number(value);
+    if (type === "time" || type === "date") newValue = value;
+
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: newValue,
+    }));
+  };
+
+  const handleHorarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const [dia, tipo] = name.split("_"); // Ejemplo: Lunes_Ini -> ["Lunes", "Ini"]
+
+    setFormData((prevData) => ({
+      ...prevData,
+      Horarios: {
+        ...prevData.Horarios,
+        [dia]: {
+          ...prevData.Horarios[dia],
+          [tipo]: value,
+        },
+      },
     }));
   };
 
@@ -92,20 +108,15 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
           {/* HORARIOS POR DÍA */}
           <div className="col-span-2 grid grid-cols-3 gap-4">
-            <input name="LunesIni" type="time" placeholder="Lunes Inicio" onChange={handleChange} className="border p-2 rounded" />
-            <input name="LunesFin" type="time" placeholder="Lunes Fin" onChange={handleChange} className="border p-2 rounded" />
-            <input name="MartesIni" type="time" placeholder="Martes Inicio" onChange={handleChange} className="border p-2 rounded" />
-            <input name="MartesFin" type="time" placeholder="Martes Fin" onChange={handleChange} className="border p-2 rounded" />
-            <input name="MiercolesIni" type="time" placeholder="Miércoles Inicio" onChange={handleChange} className="border p-2 rounded" />
-            <input name="MiercolesFin" type="time" placeholder="Miércoles Fin" onChange={handleChange} className="border p-2 rounded" />
-            <input name="JuevesIni" type="time" placeholder="Jueves Inicio" onChange={handleChange} className="border p-2 rounded" />
-            <input name="JuevesFin" type="time" placeholder="Jueves Fin" onChange={handleChange} className="border p-2 rounded" />
-            <input name="ViernesIni" type="time" placeholder="Viernes Inicio" onChange={handleChange} className="border p-2 rounded" />
-            <input name="ViernesFin" type="time" placeholder="Viernes Fin" onChange={handleChange} className="border p-2 rounded" />
-            <input name="SabadoIni" type="time" placeholder="Sábado Inicio" onChange={handleChange} className="border p-2 rounded" />
-            <input name="SabadoFin" type="time" placeholder="Sábado Fin" onChange={handleChange} className="border p-2 rounded" />
-            <input name="DomingoIni" type="time" placeholder="Domingo Inicio" onChange={handleChange} className="border p-2 rounded" />
-            <input name="DomingoFin" type="time" placeholder="Domingo Fin" onChange={handleChange} className="border p-2 rounded" />
+            {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+              <div key={dia} className="flex flex-col">
+                <label className="font-semibold">{dia}</label>
+                <div className="flex gap-2">
+                  <input name={`${dia}_Inicio`} type="time" onChange={handleHorarioChange} className="border p-2 rounded w-1/2" />
+                  <input name={`${dia}_Fin`} type="time" onChange={handleHorarioChange} className="border p-2 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* DATOS ADICIONALES */}
