@@ -3,21 +3,31 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ListasService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async obtenerEspecificaciones(): Promise<{ id: number; especificacion: string }[]> {
-    const resultados = await this.prisma.listas.findMany({
-      where: { Tipo: 1 },
+  async obtenerEspecificaciones() {
+    return this.prisma.listas.findMany({
+      where: { Tipo: 1 }, // Filtra solo los registros donde Tipo = 1
       select: {
         id: true,
-        Especificacion: true,
+        Especificacion: true, // Manteniendo la E mayúscula
       },
     });
+  }
+}
 
-    // Reemplazamos `null` con una cadena vacía para evitar errores de tipado
-    return resultados.map(item => ({
-      id: item.id,
-      especificacion: item.Especificacion ?? "", // Si `null`, se reemplaza por ""
-    }));
+
+
+
+import { Controller, Get } from '@nestjs/common';
+import { ListasService } from './listas.service';
+
+@Controller('listas')
+export class ListasController {
+  constructor(private readonly listasService: ListasService) {}
+
+  @Get('especificaciones')
+  async obtenerEspecificaciones() {
+    return this.listasService.obtenerEspecificaciones();
   }
 }
