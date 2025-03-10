@@ -1,3 +1,58 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
+import { InscripcionesService } from './inscripciones.service';
+import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
+import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
+
+@Controller('inscripciones')
+export class InscripcionesController {
+  constructor(private readonly inscripcionesService: InscripcionesService) {}
+
+  /**
+   * Método para crear una nueva inscripción.
+   * Se recibe un objeto con el `idCur` (curso) y `docInscr` (documento del inscrito).
+   */
+  @Post()
+  async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
+    console.log('Datos recibidos en el Controller:', createInscripcioneDto);
+    return this.inscripcionesService.createInscripcion(createInscripcioneDto);
+  }
+
+  /**
+   * Método para obtener todas las inscripciones.
+   * Se incluyen los datos del curso asociado a cada inscripción.
+   */
+  @Get()
+  async getInscripciones() {
+    return this.inscripcionesService.getInscripciones();
+  }
+
+  /**
+   * Método para actualizar una inscripción por ID.
+   */
+  @Put(':id')
+  async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
+    console.log('ID recibido para actualizar:', id);
+    console.log('Datos recibidos para actualización:', updateInscripcioneDto);
+
+    const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
+    if (!updatedInscripcion) {
+      throw new NotFoundException(`La inscripción con ID #${id} no fue encontrada`);
+    }
+    return updatedInscripcion;
+  }
+
+  /**
+   * Método para eliminar una inscripción por ID.
+   */
+  @Delete(':id')
+  async deleteInscripcion(@Param('id') id: string) {
+    return this.inscripcionesService.deleteInscripcion(Number(id));
+  }
+}
+
+
+
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
 import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
@@ -7,9 +62,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class InscripcionesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  //  MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
+  /**
+   * Método para crear una nueva inscripción.
+   * @param data Objeto con `idCur` (curso) y `docInscr` (documento del inscrito).
+   */
   async createInscripcion(data: CreateInscripcioneDto) {
-    console.log('Datos recibidos:', data);
+    console.log('Datos recibidos para crear inscripción:', data);
 
     try {
       const nuevaInscripcion = await this.prisma.inscripciones.create({
@@ -19,68 +77,60 @@ export class InscripcionesService {
           fecreg: new Date(),
         },
         include: {
-          curso: { select: { NombreCurso: true } }, // Incluir el curso asociado
+          Cursos: true, // Esto asegura que el curso relacionado también se retorne
         },
       });
 
-      console.log('Inscripción creada:', nuevaInscripcion);
-
-      return {
-        id: nuevaInscripcion.id,
-        idCur: nuevaInscripcion.idCur,
-        docInscr: nuevaInscripcion.docInscr,
-        fecreg: nuevaInscripcion.fecreg,
-        curso: nuevaInscripcion.curso?.NombreCurso || '⚠️ Curso no encontrado',
-      };
+      console.log('Inscripción creada exitosamente:', nuevaInscripcion);
+      return nuevaInscripcion;
     } catch (error) {
       console.error('Error al crear inscripción:', error);
       throw new Error('No se pudo registrar la inscripción.');
     }
   }
 
-  // MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES (INCLUYE EL CURSO)
+  /**
+   * Método para obtener todas las inscripciones con los nombres de los cursos.
+   */
   async getInscripciones() {
-    try {
-      const inscripciones = await this.prisma.inscripciones.findMany({
-        include: {
-          curso: { select: { NombreCurso: true } }, // Incluir el nombre del curso
-        },
-      });
+    return this.prisma.inscripciones.findMany({
+      include: {
+        Cursos: { select: { NombreCurso: true } }, // Se incluye el nombre del curso asociado
+      },
+    });
+  }
 
-      return inscripciones.map((inscripcion) => ({
-        id: inscripcion.id,
-        idCur: inscripcion.idCur,
-        docInscr: inscripcion.docInscr,
-        fecreg: inscripcion.fecreg,
-        curso: inscripcion.curso?.NombreCurso || '⚠️ Curso no encontrado',
-      }));
+  /**
+   * Método para actualizar una inscripción por ID.
+   * @param id Identificador de la inscripción a actualizar.
+   * @param data Datos a actualizar.
+   */
+  async updateInscripcion(id: number, data: UpdateInscripcioneDto) {
+    console.log('ID recibido para actualizar:', id);
+    console.log('Datos recibidos:', data);
+
+    try {
+      const updatedInscripcion = await this.prisma.inscripciones.update({
+        where: { id },
+        data,
+      });
+      console.log('Inscripción actualizada:', updatedInscripcion);
+      return updatedInscripcion;
     } catch (error) {
-      console.error('Error al obtener inscripciones:', error);
-      throw new Error('No se pudieron obtener las inscripciones.');
+      console.error('Error al actualizar inscripción:', error);
+      throw new NotFoundException(`No se pudo actualizar la inscripción con ID #${id}`);
     }
   }
-}
 
-
-
-import { Controller, Get, Post, Body, Param, Delete, Put, NotFoundException } from '@nestjs/common';
-import { InscripcionesService } from './inscripciones.service';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
-
-@Controller('inscripciones')
-export class InscripcionesController {
-  constructor(private readonly inscripcionesService: InscripcionesService) {}
-
-  // MÉTODO PARA CREAR UNA NUEVA INSCRIPCIÓN
-  @Post()
-  async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
-    return this.inscripcionesService.createInscripcion(createInscripcioneDto);
-  }
-
-  // MÉTODO PARA OBTENER TODAS LAS INSCRIPCIONES
-  @Get()
-  async getInscripciones() {
-    return this.inscripcionesService.getInscripciones();
+  /**
+   * Método para eliminar una inscripción por ID.
+   * @param id Identificador de la inscripción a eliminar.
+   */
+  async deleteInscripcion(id: number) {
+    try {
+      return await this.prisma.inscripciones.delete({ where: { id } });
+    } catch (error) {
+      throw new NotFoundException(`No se encontró la inscripción con ID #${id} para eliminar`);
+    }
   }
 }
