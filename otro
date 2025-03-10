@@ -113,24 +113,24 @@ const CursoModal: React.FC<CursoModalProps> = ({ onClose, onSave }) => {
       <div className="modal-content">
         <h2>Crear Curso</h2>
         <form onSubmit={handleSubmit}>
-          <input type="text" name="NombreCurso" placeholder="Nombre del curso" onChange={handleChange} required />
-          <input type="number" name="Valor" placeholder="Valor" onChange={handleChange} required />
-          <input type="number" name="Público" placeholder="Público" onChange={handleChange} required />
-          <input type="text" name="Periodo" placeholder="Periodo" onChange={handleChange} required />
-          <input type="text" name="Inicio" placeholder="Inicio" onChange={handleChange} required />
-          <input type="text" name="Fin" placeholder="Fin" onChange={handleChange} required />
-          <input type="number" name="Horas" placeholder="Horas" onChange={handleChange} required />
-          <input type="number" name="CupoMax" placeholder="Cupo Máximo" onChange={handleChange} required />
-          <input type="text" name="Lugar" placeholder="Lugar" onChange={handleChange} required />
-          <input type="number" name="Linea" placeholder="Línea" onChange={handleChange} required />
-          <input type="number" name="Estado" placeholder="Estado" onChange={handleChange} required />
-          <input type="number" name="Modalidad" placeholder="Modalidad" onChange={handleChange} required />
-          <input type="number" name="Unidad" placeholder="Unidad" onChange={handleChange} required />
-          <input type="number" name="Profesor" placeholder="Profesor" onChange={handleChange} required />
-          <input type="number" name="SegundoPto" placeholder="Segundo Pto" onChange={handleChange} required />
-          <input type="text" name="Proexterno" placeholder="Proexterno" onChange={handleChange} required />
-          <input type="text" name="Descripcion" placeholder="Descripción" onChange={handleChange} required />
-          <input type="number" name="IdTipoCurso" placeholder="Tipo de Curso" onChange={handleChange} required />
+          <input type="text" name="NombreCurso" placeholder="Ej: Programación en Java" onChange={handleChange} required />
+          <input type="number" name="Valor" placeholder="Costo del curso en pesos" onChange={handleChange} required />
+          <input type="number" name="Público" placeholder="Tipo de público (Ej: 1 para estudiantes)" onChange={handleChange} required />
+          <input type="text" name="Periodo" placeholder="Ej: Primer semestre 2025" onChange={handleChange} required />
+          <input type="text" name="Inicio" placeholder="Fecha de inicio (Ej: 10/03/2025)" onChange={handleChange} required />
+          <input type="text" name="Fin" placeholder="Fecha de finalización (Ej: 10/06/2025)" onChange={handleChange} required />
+          <input type="number" name="Horas" placeholder="Cantidad total de horas" onChange={handleChange} required />
+          <input type="number" name="CupoMax" placeholder="Máximo de estudiantes permitidos" onChange={handleChange} required />
+          <input type="text" name="Lugar" placeholder="Ubicación del curso (Ej: Aula 101)" onChange={handleChange} required />
+          <input type="number" name="Linea" placeholder="Código de la línea del curso" onChange={handleChange} required />
+          <input type="number" name="Estado" placeholder="Estado (Ej: 1 = Activo, 0 = Inactivo)" onChange={handleChange} required />
+          <input type="number" name="Modalidad" placeholder="Ej: 1 para presencial, 2 para virtual" onChange={handleChange} required />
+          <input type="number" name="Unidad" placeholder="Código de la unidad académica" onChange={handleChange} required />
+          <input type="number" name="Profesor" placeholder="ID del profesor asignado" onChange={handleChange} required />
+          <input type="number" name="SegundoPto" placeholder="Otro punto relacionado (opcional)" onChange={handleChange} required />
+          <input type="text" name="Proexterno" placeholder="Ej: Nombre del profesor externo (si aplica)" onChange={handleChange} required />
+          <input type="text" name="Descripcion" placeholder="Breve descripción del curso" onChange={handleChange} required />
+          <input type="number" name="IdTipoCurso" placeholder="Código del tipo de curso" onChange={handleChange} required />
 
           <button type="submit">Guardar</button>
           <button type="button" onClick={onClose}>Cancelar</button>
