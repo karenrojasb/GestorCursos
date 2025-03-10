@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid"; // Importamos el icono de cierre
 
 interface CursoModalProps {
   onClose: () => void;
@@ -8,154 +7,49 @@ interface CursoModalProps {
 }
 
 export default function CursoModal({ onClose, onSave }: CursoModalProps) {
-  const [formData, setFormData] = useState({
-    NombreCurso: "",
-    Valor: "",
-    Publico: "",
-    Periodo: "",
-    Inicio: "",
-    Fin: "",
-    Horas: "",
-    CupoMax: "",
-    Lugar: "",
-    LunesIni: "",
-    LunesFin: "",
-    MartesIni: "",
-    MartesFin: "",
-    MiercolesIni: "",
-    MiercolesFin: "",
-    JuevesIni: "",
-    JuevesFin: "",
-    ViernesIni: "",
-    ViernesFin: "",
-    SabadoIni: "",
-    SabadoFin: "",
-    DomingoIni: "",
-    DomingoFin: "",
-    Linea: "",
-    Estado: "",
-    Modalidad: "",
-    Unidad: "",
-    Profesor: "",
-    SegundoPro: "",
-    Proexterno: "",
-    Descripcion: "",
-    IdTipoCurso: "",
+  const [curso, setCurso] = useState({
+    nombre_curso: "",
+    valor: "",
   });
 
-  // Manejo de cambios en los inputs
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurso({ ...curso, [e.target.name]: e.target.value });
   };
 
-  // Validar formato HH:mm
-  const validateTime = (time: string) => {
-    const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
-    return time === "" || timeRegex.test(time);
-  };
-
-  // Manejo del envío del formulario
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validar formato de horarios
-    const horarios = ["LunesIni", "LunesFin", "MartesIni", "MartesFin", "MiercolesIni", "MiercolesFin",
-      "JuevesIni", "JuevesFin", "ViernesIni", "ViernesFin", "SabadoIni", "SabadoFin", "DomingoIni", "DomingoFin"];
-
-    for (const key of horarios) {
-      if (!validateTime(formData[key])) {
-        alert(`Error: El formato de ${key} debe ser HH:mm (Ejemplo: 14:30)`);
-        return;
-      }
-    }
-
-    // Filtrar los campos vacíos antes de enviarlos
-    const filteredData = Object.fromEntries(
-      Object.entries(formData).filter(([_, value]) => value !== "")
-    );
-
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...filteredData,
-          Valor: formData.Valor ? Number(formData.Valor) : null,
-          Publico: formData.Publico ? Number(formData.Publico) : null,
-          Horas: formData.Horas ? Number(formData.Horas) : null,
-          CupoMax: formData.CupoMax ? Number(formData.CupoMax) : null,
-          Linea: formData.Linea ? Number(formData.Linea) : null,
-          Estado: formData.Estado ? Number(formData.Estado) : null,
-          Modalidad: formData.Modalidad ? Number(formData.Modalidad) : null,
-          Unidad: formData.Unidad ? Number(formData.Unidad) : null,
-          Profesor: formData.Profesor ? Number(formData.Profesor) : null,
-          SegundoPro: formData.SegundoPro ? Number(formData.SegundoPro) : null,
-          Proexterno: formData.Proexterno ? formData.Proexterno.toString() : null,
-          IdTipoCurso: formData.IdTipoCurso ? Number(formData.IdTipoCurso) : null,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        alert(`Error al guardar: ${errorData.message || "Ocurrió un problema"}`);
-        return;
-      }
-
-      const result = await response.json();
-      alert("Curso guardado correctamente");
-      onSave(result);
-    } catch (error) {
-      alert("No se pudo conectar con el servidor");
-    }
+    onSave({
+      nombre_curso: curso.nombre_curso,
+      valor: Number(curso.valor),
+    });
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-        className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-4xl relative"
-      >
-        {/* BOTÓN CERRAR */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-red-600 transition-transform duration-300 transform hover:rotate-90"
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md transition-transform transform scale-95 opacity-0 animate-fade-in">
+        
+        {/* Botón de cerrar con animación de rotación */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90"
         >
-          <XMarkIcon className="h-6 w-6" />
+          <XMarkIcon className="w-6 h-6" />
         </button>
 
-        {/* TÍTULO */}
-        <h2 className="text-2xl font-bold text-[#990000] mb-4 text-center">
-          Crear Curso
-        </h2>
+        <h2 className="text-xl font-bold mb-4">Crear Curso</h2>
 
-        {/* SCROLL PARA EL FORMULARIO */}
-        <div className="max-h-[80vh] overflow-y-auto">
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-            <input name="NombreCurso" placeholder="Nombre del Curso" onChange={handleChange} className="border p-2 rounded" />
-            <input name="Valor" type="number" placeholder="Valor" onChange={handleChange} className="border p-2 rounded" />
-            <input name="Publico" type="number" placeholder="Público" onChange={handleChange} className="border p-2 rounded" />
-            <input name="Periodo" placeholder="Periodo" onChange={handleChange} className="border p-2 rounded" />
-            <input name="Inicio" type="date" onChange={handleChange} className="border p-2 rounded" />
-            <input name="Fin" type="date" onChange={handleChange} className="border p-2 rounded" />
-            <input name="Horas" type="number" placeholder="Horas" onChange={handleChange} className="border p-2 rounded" />
-            <input name="CupoMax" type="number" placeholder="Cupo Máximo" onChange={handleChange} className="border p-2 rounded" />
+        <form onSubmit={handleSubmit}>
+          <label className="block font-semibold">Nombre del Curso:</label>
+          <input type="text" name="nombre_curso" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
 
-            {/* BOTÓN GUARDAR */}
-            <button
-              type="submit"
-              className="col-span-2 bg-[#990000] text-white py-2 rounded-lg shadow-md transition-all hover:shadow-lg"
-            >
-              Guardar Curso
-            </button>
-          </form>
-        </div>
-      </motion.div>
+          <label className="block font-semibold">Valor:</label>
+          <input type="number" name="valor" className="w-full border p-2 rounded mb-3" onChange={handleChange} />
+
+          <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
+            Guardar
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
