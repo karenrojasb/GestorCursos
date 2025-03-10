@@ -1,33 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
-
-@Injectable()
-export class ListasService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async obtenerEspecificaciones() {
-    return this.prisma.listas.findMany({
-      where: { Tipo: 1 }, // Filtra solo los registros donde Tipo = 1
-      select: {
-        id: true,
-        Especificacion: true, // Manteniendo la E mayúscula
-      },
-    });
-  }
-}
-
-
-
-
-import { Controller, Get } from '@nestjs/common';
-import { ListasService } from './listas.service';
-
-@Controller('listas')
-export class ListasController {
-  constructor(private readonly listasService: ListasService) {}
-
-  @Get('especificaciones')
-  async obtenerEspecificaciones() {
-    return this.listasService.obtenerEspecificaciones();
-  }
-}
+useEffect(() => {
+  const fetchOpcionesPublico = async () => {
+    try {
+      const response = await fetch("http://localhost:8090/api/listas/tipo/1");
+      const data = await response.json();
+      console.log("Opciones obtenidas:", data); // Verificar qué datos llegan
+      setOpcionesPublico(data);
+    } catch (error) {
+      console.error("Error al obtener opciones de público:", error);
+    }
+  };
+  fetchOpcionesPublico();
+}, []);
