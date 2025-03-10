@@ -1,136 +1,190 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, NotFoundException } from '@nestjs/common';
-import { InscripcionesService } from './inscripciones.service';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
+import { useState, useEffect } from "react";
+import { XMarkIcon, CalendarIcon } from "@heroicons/react/24/solid";
 
-@Controller('inscripciones')
-export class InscripcionesController {
-  constructor(private readonly inscripcionesService: InscripcionesService) {}
-
-  /**
-   * Método para crear una nueva inscripción.
-   * Se recibe un objeto con el `idCur` (curso) y `docInscr` (documento del inscrito).
-   */
-  @Post()
-  async createInscripcion(@Body() createInscripcioneDto: CreateInscripcioneDto) {
-    console.log('Datos recibidos en el Controller:', createInscripcioneDto);
-    return this.inscripcionesService.createInscripcion(createInscripcioneDto);
-  }
-
-  /**
-   * Método para obtener todas las inscripciones.
-   * Se incluyen los datos del curso asociado a cada inscripción.
-   */
-  @Get()
-  async getInscripciones() {
-    return this.inscripcionesService.getInscripciones();
-  }
-
-  /**
-   * Método para actualizar una inscripción por ID.
-   */
-  @Put(':id')
-  async updateInscripcion(@Param('id') id: string, @Body() updateInscripcioneDto: UpdateInscripcioneDto) {
-    console.log('ID recibido para actualizar:', id);
-    console.log('Datos recibidos para actualización:', updateInscripcioneDto);
-
-    const updatedInscripcion = await this.inscripcionesService.updateInscripcion(Number(id), updateInscripcioneDto);
-    if (!updatedInscripcion) {
-      throw new NotFoundException(`La inscripción con ID #${id} no fue encontrada`);
-    }
-    return updatedInscripcion;
-  }
-
-  /**
-   * Método para eliminar una inscripción por ID.
-   */
-  @Delete(':id')
-  async deleteInscripcion(@Param('id') id: string) {
-    return this.inscripcionesService.deleteInscripcion(Number(id));
-  }
+interface CursoModalProps {
+  onClose: () => void;
+  onSave: (data: any) => void;
 }
 
+interface Opcion {
+  id: number;
+  Especificacion: string;
+  Tipo: number;
+}
 
+export default function CursoModal({ onClose, onSave }: CursoModalProps) {
+  const [curso, setCurso] = useState({
+    NombreCurso: "",
+    Valor: "",
+    Publico: "",
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
+    Horas: "",
+    CupoMax: "",
+    Lugar: "",
+    Linea: "",
+    Estado: "",
+    Modalidad: "",
+    Unidad: "",
+    Profesor: "",
+    SegundoPro: "",
+    Proexterno: "",
+    Descripcion: "",
+    IdTipoCurso: "",
+  });
 
+  const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
+  const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
+  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
+  const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
+  const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
 
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateInscripcioneDto } from './dto/create-inscripcione.dto';
-import { UpdateInscripcioneDto } from './dto/update-inscripcione.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+  useEffect(() => {
+    async function fetchOpciones() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+        if (!response.ok) throw new Error("Error al obtener las opciones");
 
-@Injectable()
-export class InscripcionesService {
-  constructor(private readonly prisma: PrismaService) {}
+        const data: Opcion[] = await response.json();
 
-  /**
-   * Método para crear una nueva inscripción.
-   * @param data Objeto con `idCur` (curso) y `docInscr` (documento del inscrito).
-   */
-  async createInscripcion(data: CreateInscripcioneDto) {
-    console.log('Datos recibidos para crear inscripción:', data);
-
-    try {
-      const nuevaInscripcion = await this.prisma.inscripciones.create({
-        data: {
-          idCur: data.idCur,
-          docInscr: data.docInscr,
-          fecreg: new Date(),
-        },
-        include: {
-          Cursos: true, // Esto asegura que el curso relacionado también se retorne
-        },
-      });
-
-      console.log('Inscripción creada exitosamente:', nuevaInscripcion);
-      return nuevaInscripcion;
-    } catch (error) {
-      console.error('Error al crear inscripción:', error);
-      throw new Error('No se pudo registrar la inscripción.');
+        setOpcionesPublico(data.filter((item) => item.Tipo === 1));
+        setOpcionesLinea(data.filter((item) => item.Tipo === 2));
+        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
+        setOpcionesEstado(data.filter((item) => item.Tipo === 4));
+        setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
+      } catch (error) {
+        console.error("Error cargando las opciones:", error);
+      }
     }
-  }
 
-  /**
-   * Método para obtener todas las inscripciones con los nombres de los cursos.
-   */
-  async getInscripciones() {
-    return this.prisma.inscripciones.findMany({
-      include: {
-        Cursos: { select: { NombreCurso: true } }, // Se incluye el nombre del curso asociado
-      },
-    });
-  }
+    fetchOpciones();
+  }, []);
 
-  /**
-   * Método para actualizar una inscripción por ID.
-   * @param id Identificador de la inscripción a actualizar.
-   * @param data Datos a actualizar.
-   */
-  async updateInscripcion(id: number, data: UpdateInscripcioneDto) {
-    console.log('ID recibido para actualizar:', id);
-    console.log('Datos recibidos:', data);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setCurso((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-    try {
-      const updatedInscripcion = await this.prisma.inscripciones.update({
-        where: { id },
-        data,
-      });
-      console.log('Inscripción actualizada:', updatedInscripcion);
-      return updatedInscripcion;
-    } catch (error) {
-      console.error('Error al actualizar inscripción:', error);
-      throw new NotFoundException(`No se pudo actualizar la inscripción con ID #${id}`);
-    }
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(curso);
+  };
 
-  /**
-   * Método para eliminar una inscripción por ID.
-   * @param id Identificador de la inscripción a eliminar.
-   */
-  async deleteInscripcion(id: number) {
-    try {
-      return await this.prisma.inscripciones.delete({ where: { id } });
-    } catch (error) {
-      throw new NotFoundException(`No se encontró la inscripción con ID #${id} para eliminar`);
-    }
-  }
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+        
+        {/* Botón de cerrar */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+
+        <h2 className="text-xl font-bold mb-4">Crear Curso</h2>
+
+        <form onSubmit={handleSubmit}>
+
+          {/* Campo NombreCurso */}
+          <div className="mb-3">
+            <label className="block font-semibold">Nombre del Curso:</label>
+            <input 
+              type="text" 
+              name="NombreCurso"
+              value={curso.NombreCurso}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+            />
+          </div>
+
+          {/* Campos Inicio y Fin con icono de calendario */}
+          <div className="mb-3">
+            <label className="block font-semibold">Fecha de Inicio:</label>
+            <div className="relative">
+              <input
+                type="date"
+                name="Inicio"
+                value={curso.Inicio}
+                onChange={handleChange}
+                className="w-full border p-2 rounded pl-10"
+              />
+              <CalendarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <label className="block font-semibold">Fecha de Fin:</label>
+            <div className="relative">
+              <input
+                type="date"
+                name="Fin"
+                value={curso.Fin}
+                onChange={handleChange}
+                className="w-full border p-2 rounded pl-10"
+              />
+              <CalendarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            </div>
+          </div>
+
+          {/* Desplegables */}
+          <div className="mb-3">
+            <label className="block font-semibold">Público:</label>
+            <select name="Publico" value={curso.Publico} onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="">Selecciona una opción</option>
+              {opcionesPublico.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="block font-semibold">Línea:</label>
+            <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="">Selecciona una opción</option>
+              {opcionesLinea.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="block font-semibold">Modalidad:</label>
+            <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="">Selecciona una opción</option>
+              {opcionesModalidad.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="block font-semibold">Estado:</label>
+            <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="">Selecciona una opción</option>
+              {opcionesEstado.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Botón de guardar */}
+          <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
+            Guardar
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }
