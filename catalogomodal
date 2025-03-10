@@ -4,32 +4,35 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 interface CursoModalProps {
   idCur: number; 
   onClose: () => void;
-  onSave: (data: { idCur: number; docInscr: string }) => void;
+  onSave: (data: { idCur: number; docInscr: number }) => void;
   onInscripcionExitosa: () => void;
 }
 
 export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitosa }: CursoModalProps) {
-  const [docInscr, setDocInscr] = useState(""); 
+  const [docInscr, setDocInscr] = useState<number | null>(null);
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [inscrito, setInscrito] = useState(false); 
 
-  // OBTENER ID DEL USUARIO
+  // OBTENER ID DEL USUARIO DESDE LOCALSTORAGE
   useEffect(() => {
-    const usuarioLogueado = localStorage.getItem("usuario"); 
+    const usuarioLogueado = localStorage.getItem("usuario");
     if (usuarioLogueado) {
       const usuario = JSON.parse(usuarioLogueado);
-      setDocInscr(usuario.id); 
+      setDocInscr(Number(usuario.id)); // Convertir el id a número
     }
   }, []);
 
-  // VERIFICA SI EL USUARIO YA ESTA INSCRITO
+  // VERIFICA SI EL USUARIO YA ESTÁ INSCRITO EN EL CURSO
   useEffect(() => {
     const verificarInscripcion = async () => {
-      if (!docInscr) return; 
+      if (!docInscr) return; // No ejecutar si no hay un usuario logueado
+
       try {
         const response = await fetch(`http://localhost:8090/api/inscripciones/${idCur}/${docInscr}`);
-        setInscrito(response.ok); 
+        if (response.ok) {
+          setInscrito(true);
+        }
       } catch (error) {
         console.error("Error al verificar inscripción:", error);
       }
@@ -44,6 +47,12 @@ export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitos
     setCargando(true);
     setMensaje("");
 
+    if (!docInscr) {
+      setMensaje("Error: No se pudo obtener el ID del usuario.");
+      setCargando(false);
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:8090/api/inscripciones", {
         method: "POST",
@@ -51,13 +60,17 @@ export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitos
         body: JSON.stringify({ idCur, docInscr }),
       });
 
-      if (!response.ok) throw new Error("Error al inscribir usuario.");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al inscribir usuario.");
+      }
 
       setMensaje("Inscripción realizada con éxito.");
-      setInscrito(true); 
+      setInscrito(true);
       onInscripcionExitosa();
       onSave({ idCur, docInscr });
     } catch (error) {
+      console.error("Error en la inscripción:", error);
       setMensaje("Hubo un problema al inscribir.");
     } finally {
       setCargando(false);
@@ -77,9 +90,10 @@ export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitos
       if (!response.ok) throw new Error("Error al cancelar la inscripción.");
 
       setMensaje("Inscripción cancelada.");
-      setInscrito(false); 
+      setInscrito(false);
       onInscripcionExitosa();
     } catch (error) {
+      console.error("Error al cancelar inscripción:", error);
       setMensaje("Hubo un problema al cancelar la inscripción.");
     } finally {
       setCargando(false);
@@ -102,7 +116,7 @@ export default function CursoModal({ idCur, onClose, onSave, onInscripcionExitos
           {inscrito ? "Cancelar Inscripción" : "Inscribir Usuario"}
         </h2>
 
-        {/* MENJASE ERROR O ÉXITO */}
+        {/* MENSAJE DE ERROR O ÉXITO */}
         {mensaje && (
           <p className={`text-center text-sm font-semibold ${mensaje.includes("éxito") ? "text-green-600" : "text-red-600"}`}>
             {mensaje}
