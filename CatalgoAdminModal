@@ -28,9 +28,9 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     Modalidad: "",
     Unidad: "",
     Profesor: "",
-    SegundoPro: "",
-    Proexterno: "",
-    Descripcion: "",
+    SegundoPro: "",  // Ahora es opcional
+    Proexterno: "",  // Ahora es opcional
+    Descripcion: "", // Ahora es opcional
     IdTipoCurso: "",
   });
 
@@ -70,12 +70,27 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(curso);
+
+    const cursoData = Object.keys(curso).reduce((acc, key) => {
+      const value = curso[key as keyof typeof curso];
+
+      if (value !== "") {
+        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key)
+          ? Number(value) || null // Convierte a número o deja null
+          : value; // Si es texto, lo deja como está
+      } else if (["SegundoPro", "Proexterno", "Descripcion"].includes(key)) {
+        acc[key] = null; // Si están vacíos, los envía como null
+      }
+
+      return acc;
+    }, {} as Record<string, any>);
+
+    onSave(cursoData);
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md transition-transform transform scale-95 opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
         
         {/* Botón de cerrar */}
         <button 
@@ -87,22 +102,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
         <h2 className="text-xl font-bold mb-4">Crear Curso</h2>
 
-        <form onSubmit={handleSubmit}>
-
-          {/* Campo NombreCurso */}
-          <div className="mb-3">
-            <label className="block font-semibold">Nombre del Curso:</label>
-            <input 
-              type="text" 
-              name="NombreCurso"
-              value={curso.NombreCurso}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            />
-          </div>
-
-          {/* Campos Inicio y Fin con icono de calendario */}
-          <div className="mb-3">
+        <div className="mb-3">
             <label className="block font-semibold">Inicio:</label>
             <div className="relative">
               <input
@@ -130,56 +130,68 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             </div>
           </div>
 
-          {/* Desplegables */}
-          <div className="mb-3">
-            <label className="block font-semibold">Público:</label>
-            <select name="Publico" value={curso.Publico} onChange={handleChange} className="w-full border p-2 rounded">
-              <option value="">Selecciona una opción</option>
-              {opcionesPublico.map((opcion) => (
-                <option key={opcion.id} value={opcion.id}>
-                  {opcion.Especificacion}
-                </option>
-              ))}
-            </select>
-          </div>
+        <form onSubmit={handleSubmit}>
+          {Object.keys(curso).map((key) => (
+            <div key={key} className="mb-3">
+              <label className="block font-semibold">{key}:</label>
 
-          <div className="mb-3">
-            <label className="block font-semibold">Línea:</label>
-            <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded">
-              <option value="">Selecciona una opción</option>
-              {opcionesLinea.map((opcion) => (
-                <option key={opcion.id} value={opcion.id}>
-                  {opcion.Especificacion}
-                </option>
-              ))}
-            </select>
-          </div>
+              {key === "Publico" ? (
+                <select name="Publico" value={curso.Publico} onChange={handleChange} className="w-full border p-2 rounded">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesPublico.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Linea" ? (
+                <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesLinea.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Modalidad" ? (
+                <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesModalidad.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Estado" ? (
+                <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesEstado.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "IdTipoCurso" ? (
+                <select name="IdTipoCurso" value={curso.IdTipoCurso} onChange={handleChange} className="w-full border p-2 rounded">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesTipoCurso.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input 
+                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
+                  name={key}
+                  value={curso[key as keyof typeof curso]}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded"
+                />
+              )}
+            </div>
+          ))}
 
-          <div className="mb-3">
-            <label className="block font-semibold">Modalidad:</label>
-            <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded">
-              <option value="">Selecciona una opción</option>
-              {opcionesModalidad.map((opcion) => (
-                <option key={opcion.id} value={opcion.id}>
-                  {opcion.Especificacion}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-3">
-            <label className="block font-semibold">Estado:</label>
-            <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded">
-              <option value="">Selecciona una opción</option>
-              {opcionesEstado.map((opcion) => (
-                <option key={opcion.id} value={opcion.id}>
-                  {opcion.Especificacion}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Botón de guardar */}
           <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
             Guardar
           </button>
