@@ -34,8 +34,9 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   });
 
   const [opcionesPublico, setOpcionesPublico] = useState<OpcionPublico[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Llamar al backend para obtener las opciones del desplegable (Tipo = 1)
   useEffect(() => {
     async function fetchOpcionesPublico() {
       try {
@@ -43,17 +44,16 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         if (!response.ok) throw new Error(`Error ${response.status}: No se pudo obtener las opciones`);
 
         const data = await response.json();
-
-        // Asegurar que data es un array
         if (Array.isArray(data)) {
           setOpcionesPublico(data);
         } else {
-          console.error("Error: La respuesta no es un array", data);
-          setOpcionesPublico([]);
+          throw new Error("Formato de datos incorrecto");
         }
       } catch (error) {
         console.error("Error cargando las opciones de público:", error);
-        setOpcionesPublico([]); // Evita el error de map si falla la API
+        setError("No se pudieron cargar las opciones.");
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -70,13 +70,11 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Convertir valores numéricos y limpiar datos vacíos
     const cursoData = Object.keys(curso).reduce((acc, key) => {
       const value = curso[key as keyof typeof curso];
-
       if (value !== "") {
         acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key)
-          ? Number(value) || null // Convierte a número o lo deja como null
+          ? Number(value) || null
           : value;
       }
       return acc;
@@ -87,7 +85,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md transition-transform transform scale-95 opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md transition-transform transform scale-100 opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto text-black">
         
         {/* Botón de cerrar */}
         <button 
@@ -97,41 +95,40 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
           <XMarkIcon className="w-6 h-6" />
         </button>
 
-        <h2 className="text-xl font-bold mb-4">Crear Curso</h2>
+        <h2 className="text-xl font-bold mb-4 text-black">Crear Curso</h2>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <form onSubmit={handleSubmit}>
-          {/* Campos del formulario */}
           {Object.keys(curso).map((key) => (
             <div key={key} className="mb-3">
-              <label className="block font-semibold">{key}:</label>
+              <label className="block font-semibold text-black">{key}:</label>
 
               {key === "Publico" ? (
-                // Desplegable para "Publico"
                 <select 
                   name="Publico" 
                   value={curso.Publico} 
                   onChange={handleChange} 
-                  className="w-full border p-2 rounded"
+                  className="w-full border border-gray-400 p-2 rounded text-black bg-white"
                 >
                   <option value="">Selecciona una opción</option>
-                  {opcionesPublico.length > 0 ? (
+                  {loading ? (
+                    <option disabled>Cargando opciones...</option>
+                  ) : (
                     opcionesPublico.map((opcion) => (
                       <option key={opcion.id} value={opcion.id}>
                         {opcion.especificacion}
                       </option>
                     ))
-                  ) : (
-                    <option disabled>Cargando opciones...</option>
                   )}
                 </select>
               ) : (
-                // Otros inputs normales
                 <input 
                   type={["Valor", "Horas", "CupoMax", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key) ? "number" : "text"} 
                   name={key}
                   value={curso[key as keyof typeof curso]}
                   onChange={handleChange}
-                  className="w-full border p-2 rounded"
+                  className="w-full border border-gray-400 p-2 rounded text-black bg-white"
                 />
               )}
             </div>
