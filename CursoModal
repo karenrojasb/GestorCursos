@@ -28,9 +28,9 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     Modalidad: "",
     Unidad: "",
     Profesor: "",
-    SegundoPro: "",
-    Proexterno: "",
-    Descripcion: "",
+    SegundoPro: "",  // Campo opcional
+    Proexterno: "",  // Campo opcional
+    Descripcion: "", // Campo opcional
     IdTipoCurso: "",
   });
 
@@ -49,11 +49,11 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         const data: Opcion[] = await response.json();
 
         // Filtrar opciones según el Tipo correspondiente
-        setOpcionesPublico(data.filter((item) => item.Tipo === 1));      // Público
-        setOpcionesLinea(data.filter((item) => item.Tipo === 2));        // Línea
-        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));    // Modalidad
-        setOpcionesEstado(data.filter((item) => item.Tipo === 4));       // Estado
-        setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));    // Tipo de Curso
+        setOpcionesPublico(data.filter((item) => item.Tipo === 1));
+        setOpcionesLinea(data.filter((item) => item.Tipo === 2));
+        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
+        setOpcionesEstado(data.filter((item) => item.Tipo === 4));
+        setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
       } catch (error) {
         console.error("Error cargando las opciones:", error);
       }
@@ -76,10 +76,10 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     const cursoData = Object.keys(curso).reduce((acc, key) => {
       const value = curso[key as keyof typeof curso];
 
-      if (value !== "") {
-        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"].includes(key)
-          ? Number(value) || null // Convierte a número o lo deja como null
-          : value;
+      if (value !== "" || ["SegundoPro", "Proexterno", "Descripcion"].includes(key)) {
+        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"].includes(key)
+          ? Number(value) || null
+          : value || null; // Si está vacío, lo deja como null
       }
       return acc;
     }, {} as Record<string, any>);
