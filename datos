@@ -1,187 +1,108 @@
-import { useState, useEffect } from "react";
-import { XMarkIcon, CalendarIcon } from "@heroicons/react/24/solid";
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { CreateCursoDto } from './dto/create-curso.dto';
 
-interface CursoModalProps {
-  onClose: () => void;
-  onSave: (data: any) => void;
-}
+@Injectable()
+export class CursosService {
+  constructor(private readonly prisma: PrismaService) {}
 
-interface Opcion {
-  id: number;
-  Especificacion: string;
-  Tipo: number;
-}
-
-export default function CursoModal({ onClose, onSave }: CursoModalProps) {
-  const [curso, setCurso] = useState({
-    NombreCurso: "",
-    Valor: "",
-    Publico: "",
-    Periodo: "",
-    Inicio: "",
-    Fin: "",
-    Horas: "",
-    CupoMax: "",
-    Lugar: "",
-    Linea: "",
-    Estado: "",
-    Modalidad: "",
-    Unidad: "",
-    Profesor: "",
-    SegundoPro: "",
-    Proexterno: "",
-    Descripcion: "",
-    IdTipoCurso: "",
-  });
-
-  const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
-  const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
-  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
-  const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
-  const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
-
-  useEffect(() => {
-    async function fetchOpciones() {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
-        if (!response.ok) throw new Error("Error al obtener las opciones");
-
-        const data: Opcion[] = await response.json();
-
-        setOpcionesPublico(data.filter((item) => item.Tipo === 1));
-        setOpcionesLinea(data.filter((item) => item.Tipo === 2));
-        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
-        setOpcionesEstado(data.filter((item) => item.Tipo === 4));
-        setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
-      } catch (error) {
-        console.error("Error cargando las opciones:", error);
-      }
+  // CREAR CURSO
+  async createCourses(data: CreateCursoDto) {
+    console.log("Data recibida:", data);
+    try {
+      return await this.prisma.cursos.create({ data });
+    } catch (error) {
+      console.error("Error al crear el curso en el backend", error);
+      throw new Error("Error al crear el curso");
     }
+  }
 
-    fetchOpciones();
-  }, []);
+  // OBTENER TODOS LOS CURSOS
+  async getCourses() {
+    return this.prisma.cursos.findMany();
+  }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setCurso((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  // OBTENER OPCIONES PARA EL DESPLEGABLE
+  async getEspecificaciones() {
+    try {
+      return await this.prisma.listas.findMany(); // Asegúrate de que 'listas' es la tabla correcta
+    } catch (error) {
+      console.error("Error al obtener las especificaciones:", error);
+      throw new Error("Error al obtener las especificaciones");
+    }
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(curso);
-  };
+  // OBTENER CURSO POR ID
+  async getCourseId(id: number) {
+    return this.prisma.cursos.findUnique({ where: { id } });
+  }
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-        
-        {/* Botón de cerrar */}
-        <button 
-          onClick={onClose} 
-          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90"
-        >
-          <XMarkIcon className="w-6 h-6" />
-        </button>
+  // ACTUALIZAR CURSO POR ID
+  async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
+    console.log('ID recibido:', id);
+    console.log('Datos recibidos:', data);
+    try {
+      return await this.prisma.cursos.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      console.error('Error al actualizar el curso:', error);
+      throw new Error('El curso no se pudo actualizar');
+    }
+  }
 
-        <h2 className="text-xl font-bold mb-4">Crear Curso</h2>
+  // ELIMINAR CURSO POR ID
+  async deleteCourse(id: number) {
+    return this.prisma.cursos.delete({ where: { id } });
+  }
+}
 
-        <form onSubmit={handleSubmit}>
 
-          {/* Campo NombreCurso */}
-          <div className="mb-3">
-            <label className="block font-semibold">Nombre del Curso:</label>
-            <input 
-              type="text" 
-              name="NombreCurso"
-              value={curso.NombreCurso}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            />
-          </div>
 
-          {/* Campos Inicio y Fin con icono de calendario */}
-          <div className="mb-3">
-            <label className="block font-semibold">Inicio:</label>
-            <div className="relative">
-              <input
-                type="date"
-                name="Inicio"
-                value={curso.Inicio}
-                onChange={handleChange}
-                className="w-full border p-2 rounded pl-10"
-              />
-              <CalendarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-            </div>
-          </div>
 
-          <div className="mb-3">
-            <label className="block font-semibold">Fin:</label>
-            <div className="relative">
-              <input
-                type="date"
-                name="Fin"
-                value={curso.Fin}
-                onChange={handleChange}
-                className="w-full border p-2 rounded pl-10"
-              />
-              <CalendarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-            </div>
-          </div>
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { CursosService } from './cursos.service';
+import { CreateCursoDto } from './dto/create-curso.dto';
+import { UpdateCursoDto } from './dto/update-curso.dto';
 
-          {/* Desplegables */}
-          {[
-            { label: "Público", name: "Publico", opciones: opcionesPublico },
-            { label: "Línea", name: "Linea", opciones: opcionesLinea },
-            { label: "Modalidad", name: "Modalidad", opciones: opcionesModalidad },
-            { label: "Estado", name: "Estado", opciones: opcionesEstado },
-            { label: "Tipo de Curso", name: "IdTipoCurso", opciones: opcionesTipoCurso },
-          ].map(({ label, name, opciones }) => (
-            <div key={name} className="mb-3">
-              <label className="block font-semibold">{label}:</label>
-              <select name={name} value={(curso as any)[name]} onChange={handleChange} className="w-full border p-2 rounded">
-                <option value="">Selecciona una opción</option>
-                {opciones.map((opcion) => (
-                  <option key={opcion.id} value={opcion.id}>
-                    {opcion.Especificacion}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+@Controller('cursos')
+export class CursosController {
+  constructor(private readonly cursosService: CursosService) {}
 
-          {/* Otros campos */}
-          {[
-            { label: "Valor", name: "Valor", type: "number" },
-            { label: "Periodo", name: "Periodo", type: "text" },
-            { label: "Horas", name: "Horas", type: "number" },
-            { label: "Cupo Máximo", name: "CupoMax", type: "number" },
-            { label: "Lugar", name: "Lugar", type: "text" },
-            { label: "Unidad", name: "Unidad", type: "text" },
-            { label: "Profesor", name: "Profesor", type: "text" },
-            { label: "Segundo Profesor", name: "SegundoPro", type: "text" },
-            { label: "Profesor Externo", name: "Proexterno", type: "text" },
-            { label: "Descripción", name: "Descripcion", type: "text" },
-          ].map(({ label, name, type }) => (
-            <div key={name} className="mb-3">
-              <label className="block font-semibold">{label}:</label>
-              <input 
-                type={type} 
-                name={name}
-                value={(curso as any)[name]}
-                onChange={handleChange}
-                className="w-full border p-2 rounded"
-              />
-            </div>
-          ))}
+  // CREAR CURSO
+  @Post()
+  async createCourses(@Body() data: CreateCursoDto) {
+    console.log("Recibiendo datos:", data);
+    return this.cursosService.createCourses(data);
+  }
 
-          {/* Botón de guardar */}
-          <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
-            Guardar
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+  // OBTENER TODOS LOS CURSOS
+  @Get() 
+  async getCourses() {
+    return this.cursosService.getCourses();
+  }
+
+  // OBTENER ESPECIFICACIONES PARA EL DESPLEGABLE
+  @Get('especificaciones')
+  async getEspecificaciones() {
+    return this.cursosService.getEspecificaciones();
+  }
+
+  // ACTUALIZAR CURSO POR ID
+  @Put(':id')
+  async updateCourse(@Param('id') id: string, @Body() updateCursoDto: UpdateCursoDto) {
+    const updateCourse = await this.cursosService.updateCourse(Number(id), updateCursoDto);
+    if (!updateCourse) {
+      throw new NotFoundException(`El id #${id} no fue encontrado`);
+    }
+    return updateCourse;
+  }
+
+  // ELIMINAR CURSO POR ID
+  @Delete(':id')
+  async deleteCourse(@Param('id') id: string) {
+    return this.cursosService.deleteCourse(Number(id));
+  }
 }
