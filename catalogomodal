@@ -39,6 +39,7 @@ interface Curso {
   Proexterno : string;                     
   Descripcion: string; 
   IdTipoCurso: number;
+  NombreProfesor?: string;
 
 
 }
@@ -146,9 +147,9 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* ENCABEZADOS */}
-        <div className="grid grid-cols-3 font-semibold border-b pb-2">
-          <span className="">Nombre del curso</span>
-          <span className="text-center">Fecha</span>
+        <div className="grid text-[#990000] grid-cols-3 font-semibold border-b pb-2">
+          <span className="text-[#990000]">Nombre del curso</span>
+          <span className="text-center text-[#990000]">Fecha</span>
           <span className="text-right w-16"></span>
         </div>
 
@@ -180,14 +181,13 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                      <h3 className="text-ig font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
                     
                     
-                    <p><strong>Id:</strong> {curso.id}</p>
+                   
                     <p><strong>Valor:</strong> {curso.Valor}</p>
                     <p><strong>Fin:</strong> {curso.Fin}</p>
-                    <p><strong>Publico:</strong> {curso.Publico}</p>
                     <p><strong>Periodo:</strong> {curso.Periodo}</p>
                     <p><strong>Horas:</strong> {curso.Horas}</p>
                     <p><strong>Lugar:</strong> {curso.Lugar}</p>
-                    <p><strong>Profesor:</strong> {curso.Profesor}</p>
+                    <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
                     <p><strong>Descripción:</strong> {curso.Descripcion}</p>
 
                      <button className="ml-72 bg-[#990000]  hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
