@@ -1,158 +1,47 @@
-"use client";
+import { Controller, Post, Body } from '@nestjs/common';
+import { UsuarioService } from './usuario.service';
 
-import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState, memo } from "react";
+@Controller('usuario')
+export class UsuarioController {
+  constructor(private readonly usuarioService: UsuarioService) {}
 
-interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: number;
-  Lugar: string;
-  NombreProfesor?: string;
-  Descripcion: string;
+  @Post('login')
+  async login(@Body() body: { id_emp: string }) {
+    return this.usuarioService.iniciarSesion(body.id_emp);
+  }
 }
 
-export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [page, setPage] = useState(1);
-  const pageSize = 10; // Número de cursos por página
 
-  useEffect(() => {
-    const fetchCursos = async () => {
-      try {
-        const response = await fetch(`http://localhost:8090/api/cursos?page=${page}&pageSize=${pageSize}`);
-        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-        
-        const data = await response.json();
-        const hoy = new Date();
 
-        const cursosActivos = data.filter((curso: Curso) => {
-          if (!curso.Fin) return true;
-          return new Date(curso.Fin) >= hoy;
-        });
 
-        setCursos(cursosActivos);
-        setCursosFiltrados(cursosActivos);
-      } catch (error) {
-        console.error("Error al obtener los cursos:", error);
-      }
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+@Injectable()
+export class UsuarioService {
+  constructor(private prisma: PrismaService) {}
+
+  async iniciarSesion(id_emp: string) {
+    // Consulta en emp_nomina
+    const usuario = await this.prisma.$queryRaw<any[]>`
+      SELECT id_emp, nombre, publico, e_mail 
+      FROM gescur.emp_nomina 
+      WHERE id_emp = TRIM(${id_emp})`;
+
+    if (usuario.length === 0) {
+      return { mensaje: 'Usuario no encontrado' };
+    }
+
+    // Extraemos el email del usuario encontrado
+    const { e_mail } = usuario[0];
+
+    // Verificamos si el usuario es administrador en gescur.rol_usuario
+    const esAdmin = await this.prisma.$queryRaw<any[]>`
+      SELECT 1 FROM gescur.rol_usuario WHERE usuario = ${e_mail}`;
+
+    return {
+      ...usuario[0],
+      esAdmin: esAdmin.length > 0, // Si encuentra un registro, es administrador
     };
-
-    fetchCursos();
-  }, [page]); // Se ejecuta solo cuando cambia la página
-
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-
-    const filtrados = cursos.filter((curso) =>
-      curso.NombreCurso.toLowerCase().includes(texto)
-    );
-    setCursosFiltrados(filtrados);
-  };
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
-        
-        {/* BARRA DE BÚSQUEDA */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="relative flex items-center">
-            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
-              {isSearchActive ? <XMarkIcon className="h-6 w-6 text-[#990000]" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />}
-            </button>
-            <input
-              type="text"
-              placeholder="Buscar curso"
-              value={busqueda}
-              onChange={handleBuscar}
-              className={`px-4 py-2 border rounded-full transition-all duration-500 
-                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />
-          </div>
-
-          {/* BOTÓN CERRAR */}
-          <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000]" onClick={onClose}>
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* ENCABEZADOS */}
-        <div className="grid text-[#990000] grid-cols-3 font-semibold border-b pb-2">
-          <span>Nombre del curso</span>
-          <span className="text-center">Fecha</span>
-          <span className="text-right w-16"></span>
-        </div>
-
-        {/* CONTENIDO DE LOS CURSOS */}
-        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
-          {cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map((curso) => (
-              <CursoItem key={curso.id} curso={curso} expandedCursoId={expandedCursoId} setExpandedCursoId={setExpandedCursoId} />
-            ))
-          ) : (
-            <p className="text-center py-4">No hay cursos disponibles.</p>
-          )}
-        </div>
-
-        {/* PAGINACIÓN */}
-        <div className="flex justify-between mt-4">
-          <button onClick={() => setPage(page - 1)} disabled={page === 1} className="px-4 py-2 bg-gray-200 rounded">
-            Anterior
-          </button>
-          <span>Página {page}</span>
-          <button onClick={() => setPage(page + 1)} className="px-4 py-2 bg-gray-200 rounded">
-            Siguiente
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  }
 }
-
-const CursoItem = memo(({ curso, expandedCursoId, setExpandedCursoId }: { curso: Curso; expandedCursoId: number | null; setExpandedCursoId: (id: number | null) => void }) => {
-  return (
-    <div className="border-b py-2">
-      <div className="grid grid-cols-3 items-center">
-        <span className="text-left">{curso.NombreCurso}</span>
-        <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-
-        {/* BOTÓN VER MÁS */}
-        <button
-          onClick={() => setExpandedCursoId(expandedCursoId === curso.id ? null : curso.id)}
-          className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all duration-300 transform hover:scale-110 active:scale-95"
-        >
-          {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
-        </button>
-      </div>
-
-      {/* CONTENIDO EXPANDIDO DEL CURSO */}
-      {expandedCursoId === curso.id && (
-        <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
-          <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
-          <p><strong>Valor:</strong> {curso.Valor}</p>
-          <p><strong>Fin:</strong> {curso.Fin}</p>
-          <p><strong>Periodo:</strong> {curso.Periodo}</p>
-          <p><strong>Horas:</strong> {curso.Horas}</p>
-          <p><strong>Lugar:</strong> {curso.Lugar}</p>
-          <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
-          <p><strong>Descripción:</strong> {curso.Descripcion}</p>
-
-          <button className="ml-72 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all duration-300 transform hover:scale-110 active:scale-95">
-            Inscribir
-          </button>
-        </div>
-      )}
-    </div>
-  );
-});
