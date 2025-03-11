@@ -1,17 +1,3 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { InscripcionService } from './inscripcion.service';
-
-@Controller('inscripcion')  // La URL será: http://localhost:8090/api/inscripcion
-export class InscripcionController {
-  constructor(private readonly inscripcionService: InscripcionService) {}
-
-  @Post()
-  async inscribir(@Body() body: { docInscr: string; idCur: number }) {
-    return this.inscripcionService.inscribirUsuario(body.docInscr, body.idCur);
-  }
-}
-
-
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -19,6 +5,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class InscripcionService {
   constructor(private prisma: PrismaService) {}
+
+  async getInscripciones() {
+    return this.prisma.inscripciones.findMany({
+      include: {
+        Cursos: { select: { NombreCurso: true } }, // Se incluye el nombre del curso asociado
+      },
+    });
+  }
 
   async inscribirUsuario(docInscr: string, idCur: number) {
     // Verificar si el usuario ya está inscrito en el curso
