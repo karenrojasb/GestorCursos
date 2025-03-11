@@ -1,13 +1,13 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { UsuarioService } from './usuario.service';
+import { InscripcionService } from './inscripcion.service';
 
-@Controller('usuario')
-export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService) {}
+@Controller('inscripcion')
+export class InscripcionController {
+  constructor(private readonly inscripcionService: InscripcionService) {}
 
-  @Post('login')
-  async login(@Body() body: { id_emp: string }) {
-    return this.usuarioService.iniciarSesion(body.id_emp);
+  @Post()
+  async inscribir(@Body() body: { id_emp: string, id_curso: number }) {
+    return this.inscripcionService.inscribirUsuario(body.id_emp, body.id_curso);
   }
 }
 
@@ -17,30 +17,24 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class UsuarioService {
+export class InscripcionService {
   constructor(private prisma: PrismaService) {}
 
-  async iniciarSesion(id_emp: string) {
-    // Consultar en emp_nomina
-    const usuario = await this.prisma.$queryRaw<any[]>`
-      SELECT id_emp, nombre, publico, e_mail 
-      FROM gescur.emp_nomina 
-      WHERE id_emp = TRIM(${id_emp})`;
+  async inscribirUsuario(id_emp: string, id_curso: number) {
+    // Verificar si ya está inscrito
+    const existente = await this.prisma.$queryRaw<any[]>`
+      SELECT * FROM gescur.inscripciones 
+      WHERE id_emp = ${id_emp} AND id_curso = ${id_curso}`;
 
-    if (usuario.length === 0) {
-      return { mensaje: 'Usuario no encontrado' };
+    if (existente.length > 0) {
+      return { mensaje: "Ya estás inscrito en este curso" };
     }
 
-    // Extraemos el email del usuario encontrado
-    const { e_mail } = usuario[0];
+    // Insertar la inscripción
+    await this.prisma.$executeRaw`
+      INSERT INTO gescur.inscripciones (id_emp, id_curso)
+      VALUES (${id_emp}, ${id_curso})`;
 
-    // Verificar si el usuario es administrador en gescur.rol_usuario
-    const esAdmin = await this.prisma.$queryRaw<any[]>`
-      SELECT 1 FROM gescur.rol_usuario WHERE usuario = ${e_mail}`;
-
-    return {
-      ...usuario[0],
-      esAdmin: esAdmin.length > 0, // Si encuentra un registro, es administrador
-    };
+    return { mensaje: "Inscripción exitosa" };
   }
 }
