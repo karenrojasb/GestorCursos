@@ -1,17 +1,60 @@
-[Nest] 15940  - 11/03/2025, 9:07:12 a. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
-Invalid `prisma.$queryRaw()` invocation:
+"NombreCurso": "prueejemksfb",
+        "Valor": 33,
+        "Publico": 3,
+        "Periodo": "1",
+        "Inicio": "lunes",
+        "Fin": "miercoles",
+        "Horas": 2,
+        "CupoMax": 3,
+        "Lugar": "bloque",
+        "LunesIni": "10:22",
+        "LunesFin": "11:22",
+        "MartesIni": "11:30",
+        "MartesFin": null,
+        "MiercolesIni": null,
+        "MiercolesFin": null,
+        "JuevesIni": null,
+        "JuevesFin": null,
+        "ViernesIni": null,
+        "ViernesFin": null,
+        "SabadoIni": null,
+        "SabadoFin": null,
+        "DomingoIni": null,
+        "DomingoFin": null,
+        "Linea": 4,
+        "Estado": 3,
+        "Modalidad": 3,
+        "Unidad": 4,
+        "Profesor": 106834787,
+        "SegundoPro": null,
+        "Proexterno": "",
+        "Descripcion": "",
+        "IdTipoCurso": 27
 
 
-Raw query failed. Code: `207`. Message: `Invalid column name 'NombreCursourso'.`
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.3.1',
-  meta: {
-    code: '207',
-    message: "Invalid column name 'NombreCursourso'."
-  }
+{
+    "message": [
+        "NombreCurso must be a string",
+        "NombreCurso should not be empty",
+        "Publico must be a number conforming to the specified constraints",
+        "Publico should not be empty",
+        "Periodo must be a string",
+        "Periodo should not be empty",
+        "Inicio must be a string",
+        "Inicio should not be empty",
+        "Fin must be a string",
+        "Fin should not be empty",
+        "Horas must be a number conforming to the specified constraints",
+        "Horas should not be empty",
+        "CupoMax must be a number conforming to the specified constraints",
+        "CupoMax should not be empty",
+        "Lugar must be a string",
+        "Lugar should not be empty",
+        "Profesor must be a number conforming to the specified constraints",
+        "Profesor should not be empty",
+        "IdTipoCurso must be a number conforming to the specified constraints",
+        "IdTipoCurso should not be empty"
+    ],
+    "error": "Bad Request",
+    "statusCode": 400
+}
