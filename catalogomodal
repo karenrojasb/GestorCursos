@@ -1,33 +1,17 @@
+import { Controller, Post, Get, Body } from '@nestjs/common';
+import { InscripcionService } from './inscripcion.service';
 
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+@Controller('inscripcion')  // URL base: http://localhost:8090/api/inscripcion
+export class InscripcionController {
+  constructor(private readonly inscripcionService: InscripcionService) {}
 
-@Injectable()
-export class InscripcionService {
-  constructor(private prisma: PrismaService) {}
-
-  async getInscripciones() {
-    return this.prisma.inscripciones.findMany({
-      include: {
-        Cursos: { select: { NombreCurso: true } }, // Se incluye el nombre del curso asociado
-      },
-    });
+  @Get()
+  async obtenerInscripciones() {
+    return this.inscripcionService.getInscripciones();
   }
 
-  async inscribirUsuario(docInscr: string, idCur: number) {
-    // Verificar si el usuario ya está inscrito en el curso
-    const existe = await this.prisma.$queryRaw<any[]>`
-      SELECT 1 FROM gescur.inscripciones WHERE docInscr = ${docInscr} AND idCur = ${idCur}`;
-
-    if (existe.length > 0) {
-      return { mensaje: "El usuario ya está inscrito en este curso" };
-    }
-
-    // Insertar la inscripción en la base de datos
-    await this.prisma.$executeRaw`
-      INSERT INTO gescur.inscripciones (docInscr, idCur)
-      VALUES (${docInscr}, ${idCur})`;
-
-    return { mensaje: "Inscripción exitosa" };
+  @Post()
+  async inscribir(@Body() body: { docInscr: string; idCur: number }) {
+    return this.inscripcionService.inscribirUsuario(body.docInscr, body.idCur);
   }
 }
