@@ -13,7 +13,6 @@ export class UsuarioController {
 
 
 
-
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -22,7 +21,7 @@ export class UsuarioService {
   constructor(private prisma: PrismaService) {}
 
   async iniciarSesion(id_emp: string) {
-    // Consulta en emp_nomina
+    // Consultar en emp_nomina
     const usuario = await this.prisma.$queryRaw<any[]>`
       SELECT id_emp, nombre, publico, e_mail 
       FROM gescur.emp_nomina 
@@ -35,7 +34,7 @@ export class UsuarioService {
     // Extraemos el email del usuario encontrado
     const { e_mail } = usuario[0];
 
-    // Verificamos si el usuario es administrador en gescur.rol_usuario
+    // Verificar si el usuario es administrador en gescur.rol_usuario
     const esAdmin = await this.prisma.$queryRaw<any[]>`
       SELECT 1 FROM gescur.rol_usuario WHERE usuario = ${e_mail}`;
 
