@@ -32,29 +32,50 @@
         "IdTipoCurso": 27
 
 
-{
-    "message": [
-        "NombreCurso should not be empty",
-        "NombreCurso must be a string",
-        "Publico should not be empty",
-        "Publico must be an integer number",
-        "Periodo should not be empty",
-        "Periodo must be a string",
-        "Inicio should not be empty",
-        "Inicio must be a string",
-        "Fin should not be empty",
-        "Fin must be a string",
-        "Horas should not be empty",
-        "Horas must be an integer number",
-        "CupoMax should not be empty",
-        "CupoMax must be an integer number",
-        "Lugar should not be empty",
-        "Lugar must be a string",
-        "Profesor should not be empty",
-        "Profesor must be an integer number",
-        "Descripcion must be a string",
-        "IdTipoCurso should not be empty",
-        "IdTipoCurso must be an integer number"
-    ],
-    "error": "Bad Request",
-    "statusCode": 400
+import { IsString, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
+
+export class CreateCursoDto {
+  @IsString()
+  @IsNotEmpty()
+  NombreCurso: string;
+
+  @IsInt()
+  @IsNotEmpty()
+  Publico: number;
+
+  @IsString()
+  @IsNotEmpty()
+  Periodo: string;
+
+  @IsString()
+  @IsNotEmpty()
+  Inicio: string;
+
+  @IsString()
+  @IsNotEmpty()
+  Fin: string;
+
+  @IsInt()
+  @IsNotEmpty()
+  Horas: number;
+
+  @IsInt()
+  @IsNotEmpty()
+  CupoMax: number;
+
+  @IsString()
+  @IsNotEmpty()
+  Lugar: string;
+
+  @IsInt()
+  @IsNotEmpty()
+  Profesor: number;
+
+  @IsString()
+  @IsOptional()
+  Descripcion?: string;
+
+  @IsInt()
+  @IsNotEmpty()
+  IdTipoCurso: number;
+}
