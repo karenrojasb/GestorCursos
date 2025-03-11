@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException } from '@nestjs/common';
 import { CursosService } from './cursos.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
@@ -14,8 +14,8 @@ export class CursosController {
     return this.cursosService.createCourses(data);
   }
 
-  // OBTENER TODOS LOS CURSOS
-  @Get() 
+  // OBTENER TODOS LOS CURSOS (YA CON EL NOMBRE DEL PROFESOR)
+  @Get()
   async getCourses() {
     return this.cursosService.getCourses();
   }
@@ -46,7 +46,8 @@ export class CursosController {
 
 
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateCursoDto } from './dto/create-curso.dto';
@@ -62,13 +63,36 @@ export class CursosService {
       return await this.prisma.cursos.create({ data });
     } catch (error) {
       console.error("Error al crear el curso en el backend", error);
-      throw new Error("Error al crear el curso");
+      throw new BadRequestException("Error al crear el curso");
     }
   }
 
-  // OBTENER TODOS LOS CURSOS
+  // OBTENER TODOS LOS CURSOS (CON COLUMNAS EN MAYÚSCULA)
   async getCourses() {
-    return this.prisma.cursos.findMany();
+    return this.prisma.$queryRaw`
+      SELECT 
+        c.id AS Id, 
+        c.nombre_curso AS NombreCurso, 
+        c.valor AS Valor, 
+        c.publico AS Publico, 
+        c.periodo AS Periodo, 
+        c.inicio AS Inicio, 
+        c.fin AS Fin, 
+        c.horas AS Horas, 
+        c.cupo_max AS CupoMax,
+        c.lugar AS Lugar, 
+        c.estado AS Estado, 
+        c.modalidad AS Modalidad, 
+        c.unidad AS Unidad, 
+        c.profesor AS Profesor, 
+        c.segundo_pro AS SegundoPro,
+        c.proexterno AS ProExterno,
+        c.descripcion AS Descripcion, 
+        c.id_tipo_curso AS IdTipoCurso,
+        e.nombre AS NombreProfesor  -- Se obtiene el nombre del profesor
+      FROM gescur.Cursos c
+      LEFT JOIN gescur.emp_nomina e ON c.profesor = e.id_emp
+    `;
   }
 
   // OBTENER OPCIONES PARA EL DESPLEGABLE
@@ -77,7 +101,7 @@ export class CursosService {
       return await this.prisma.listas.findMany(); // Asegúrate de que 'listas' es la tabla correcta
     } catch (error) {
       console.error("Error al obtener las especificaciones:", error);
-      throw new Error("Error al obtener las especificaciones");
+      throw new BadRequestException("Error al obtener las especificaciones");
     }
   }
 
@@ -97,7 +121,7 @@ export class CursosService {
       });
     } catch (error) {
       console.error('Error al actualizar el curso:', error);
-      throw new Error('El curso no se pudo actualizar');
+      throw new BadRequestException('El curso no se pudo actualizar');
     }
   }
 
