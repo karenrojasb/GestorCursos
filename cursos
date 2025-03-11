@@ -1,3 +1,47 @@
+model Cursos {
+  id                                Int             @id(map: "PK__Cursos__3213E83FF1A9718F") @default(autoincrement())
+  NombreCurso                       String?         @db.VarChar(100)
+  Valor                             Int?
+  Publico                           Int?
+  Periodo                           String?         @db.VarChar(10)
+  Inicio                            String?         @db.VarChar(15)
+  Fin                               String?         @db.VarChar(15)
+  Horas                             Int?
+  CupoMax                           Int?
+  Lugar                             String?         @db.VarChar(50)
+  LunesIni                          String?         @db.VarChar(15)
+  LunesFin                          String?         @db.VarChar(15)
+  MartesIni                         String?         @db.VarChar(15)
+  MartesFin                         String?         @db.VarChar(15)
+  MiercolesIni                      String?         @db.VarChar(15)
+  MiercolesFin                      String?         @db.VarChar(15)
+  JuevesIni                         String?         @db.VarChar(15)
+  JuevesFin                         String?         @db.VarChar(15)
+  ViernesIni                        String?         @db.VarChar(15)
+  ViernesFin                        String?         @db.VarChar(15)
+  SabadoIni                         String?         @db.VarChar(15)
+  SabadoFin                         String?         @db.VarChar(15)
+  DomingoIni                        String?         @db.VarChar(15)
+  DomingoFin                        String?         @db.VarChar(15)
+  Linea                             Int?
+  Estado                            Int?
+  Modalidad                         Int?
+  Unidad                            Int?
+  Profesor                          Int?
+  SegundoPro                        Int?
+  Proexterno                        String?         @db.VarChar(50)
+  Descripcion                       String?         @db.VarChar(400)
+  IdTipoCurso                       Int?
+  Listas_Cursos_EstadoToListas      Listas?         @relation("Cursos_EstadoToListas", fields: [Estado], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Estado__59063A47")
+  Listas_Cursos_IdTipoCursoToListas Listas?         @relation("Cursos_IdTipoCursoToListas", fields: [IdTipoCurso], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__IdTipoCu__59FA5E80")
+  Listas_Cursos_LineaToListas       Listas?         @relation("Cursos_LineaToListas", fields: [Linea], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Linea__5AEE82B9")
+  Listas_Cursos_ModalidadToListas   Listas?         @relation("Cursos_ModalidadToListas", fields: [Modalidad], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Modalida__5BE2A6F2")
+  Listas_Cursos_PublicoToListas     Listas?         @relation("Cursos_PublicoToListas", fields: [Publico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Publico__5CD6CB2B")
+  Inscripciones                     Inscripciones[]
+
+
+
+
 import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException } from '@nestjs/common';
 import { CursosService } from './cursos.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
