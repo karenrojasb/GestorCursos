@@ -1,47 +1,3 @@
-model Cursos {
-  id                                Int             @id(map: "PK__Cursos__3213E83FF1A9718F") @default(autoincrement())
-  NombreCurso                       String?         @db.VarChar(100)
-  Valor                             Int?
-  Publico                           Int?
-  Periodo                           String?         @db.VarChar(10)
-  Inicio                            String?         @db.VarChar(15)
-  Fin                               String?         @db.VarChar(15)
-  Horas                             Int?
-  CupoMax                           Int?
-  Lugar                             String?         @db.VarChar(50)
-  LunesIni                          String?         @db.VarChar(15)
-  LunesFin                          String?         @db.VarChar(15)
-  MartesIni                         String?         @db.VarChar(15)
-  MartesFin                         String?         @db.VarChar(15)
-  MiercolesIni                      String?         @db.VarChar(15)
-  MiercolesFin                      String?         @db.VarChar(15)
-  JuevesIni                         String?         @db.VarChar(15)
-  JuevesFin                         String?         @db.VarChar(15)
-  ViernesIni                        String?         @db.VarChar(15)
-  ViernesFin                        String?         @db.VarChar(15)
-  SabadoIni                         String?         @db.VarChar(15)
-  SabadoFin                         String?         @db.VarChar(15)
-  DomingoIni                        String?         @db.VarChar(15)
-  DomingoFin                        String?         @db.VarChar(15)
-  Linea                             Int?
-  Estado                            Int?
-  Modalidad                         Int?
-  Unidad                            Int?
-  Profesor                          Int?
-  SegundoPro                        Int?
-  Proexterno                        String?         @db.VarChar(50)
-  Descripcion                       String?         @db.VarChar(400)
-  IdTipoCurso                       Int?
-  Listas_Cursos_EstadoToListas      Listas?         @relation("Cursos_EstadoToListas", fields: [Estado], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Estado__59063A47")
-  Listas_Cursos_IdTipoCursoToListas Listas?         @relation("Cursos_IdTipoCursoToListas", fields: [IdTipoCurso], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__IdTipoCu__59FA5E80")
-  Listas_Cursos_LineaToListas       Listas?         @relation("Cursos_LineaToListas", fields: [Linea], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Linea__5AEE82B9")
-  Listas_Cursos_ModalidadToListas   Listas?         @relation("Cursos_ModalidadToListas", fields: [Modalidad], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Modalida__5BE2A6F2")
-  Listas_Cursos_PublicoToListas     Listas?         @relation("Cursos_PublicoToListas", fields: [Publico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Publico__5CD6CB2B")
-  Inscripciones                     Inscripciones[]
-
-
-
-
 import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException } from '@nestjs/common';
 import { CursosService } from './cursos.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
@@ -58,16 +14,26 @@ export class CursosController {
     return this.cursosService.createCourses(data);
   }
 
-  // OBTENER TODOS LOS CURSOS (YA CON EL NOMBRE DEL PROFESOR)
+  // OBTENER TODOS LOS CURSOS (FILTRANDO SOLO A LOS PROFESORES)
   @Get()
   async getCourses() {
     return this.cursosService.getCourses();
   }
 
-  // OBTENER ESPECIFICACIONES PARA EL DESPLEGABLE
+  // OBTENER OPCIONES PARA EL DESPLEGABLE
   @Get('especificaciones')
   async getEspecificaciones() {
     return this.cursosService.getEspecificaciones();
+  }
+
+  // OBTENER CURSO POR ID
+  @Get(':id')
+  async getCourseById(@Param('id') id: string) {
+    const curso = await this.cursosService.getCourseById(Number(id));
+    if (!curso) {
+      throw new NotFoundException(`El curso con id #${id} no fue encontrado`);
+    }
+    return curso;
   }
 
   // ACTUALIZAR CURSO POR ID
@@ -75,7 +41,7 @@ export class CursosController {
   async updateCourse(@Param('id') id: string, @Body() updateCursoDto: UpdateCursoDto) {
     const updateCourse = await this.cursosService.updateCourse(Number(id), updateCursoDto);
     if (!updateCourse) {
-      throw new NotFoundException(`El id #${id} no fue encontrado`);
+      throw new NotFoundException(`El curso con id #${id} no fue encontrado`);
     }
     return updateCourse;
   }
@@ -95,6 +61,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateCursoDto } from './dto/create-curso.dto';
+import { UpdateCursoDto } from './dto/update-curso.dto';
 
 @Injectable()
 export class CursosService {
@@ -111,32 +78,34 @@ export class CursosService {
     }
   }
 
-  // OBTENER TODOS LOS CURSOS (CON COLUMNAS EN MAYÚSCULA)
+  // OBTENER TODOS LOS CURSOS (FILTRANDO SOLO PROFESORES)
   async getCourses() {
-    return this.prisma.$queryRaw`
-      SELECT 
-        c.id AS Id, 
-        c.nombre_curso AS NombreCurso, 
-        c.valor AS Valor, 
-        c.publico AS Publico, 
-        c.periodo AS Periodo, 
-        c.inicio AS Inicio, 
-        c.fin AS Fin, 
-        c.horas AS Horas, 
-        c.cupo_max AS CupoMax,
-        c.lugar AS Lugar, 
-        c.estado AS Estado, 
-        c.modalidad AS Modalidad, 
-        c.unidad AS Unidad, 
-        c.profesor AS Profesor, 
-        c.segundo_pro AS SegundoPro,
-        c.proexterno AS ProExterno,
-        c.descripcion AS Descripcion, 
-        c.id_tipo_curso AS IdTipoCurso,
-        e.nombre AS NombreProfesor  -- Se obtiene el nombre del profesor
-      FROM gescur.Cursos c
-      LEFT JOIN gescur.emp_nomina e ON c.profesor = e.id_emp
-    `;
+    try {
+      return await this.prisma.$queryRaw`
+        SELECT 
+          c.id AS Id, 
+          c.nombre_curso AS NombreCurso, 
+          c.valor AS Valor, 
+          c.publico AS Publico, 
+          c.periodo AS Periodo, 
+          c.inicio AS Inicio, 
+          c.fin AS Fin, 
+          c.horas AS Horas, 
+          c.cupo_max AS CupoMax,
+          c.lugar AS Lugar, 
+          c.estado AS Estado, 
+          c.modalidad AS Modalidad, 
+          c.unidad AS Unidad, 
+          c.profesor AS Profesor, 
+          e.nombre AS NombreProfesor  -- Se obtiene el nombre solo si es profesor
+        FROM gescur.Cursos c
+        LEFT JOIN gescur.emp_nomina e ON c.profesor = e.id_emp
+        WHERE e.publico = 2; -- Solo profesores
+      `;
+    } catch (error) {
+      console.error("Error al obtener cursos:", error);
+      throw new BadRequestException("Error al obtener cursos");
+    }
   }
 
   // OBTENER OPCIONES PARA EL DESPLEGABLE
@@ -150,27 +119,35 @@ export class CursosService {
   }
 
   // OBTENER CURSO POR ID
-  async getCourseId(id: number) {
-    return this.prisma.cursos.findUnique({ where: { id } });
+  async getCourseById(id: number) {
+    try {
+      return await this.prisma.cursos.findUnique({ where: { id } });
+    } catch (error) {
+      console.error("Error al obtener el curso:", error);
+      throw new BadRequestException("Error al obtener el curso");
+    }
   }
 
   // ACTUALIZAR CURSO POR ID
-  async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
-    console.log('ID recibido:', id);
-    console.log('Datos recibidos:', data);
+  async updateCourse(id: number, data: UpdateCursoDto) {
     try {
       return await this.prisma.cursos.update({
         where: { id },
         data,
       });
     } catch (error) {
-      console.error('Error al actualizar el curso:', error);
-      throw new BadRequestException('El curso no se pudo actualizar');
+      console.error("Error al actualizar el curso:", error);
+      throw new BadRequestException("El curso no se pudo actualizar");
     }
   }
 
   // ELIMINAR CURSO POR ID
   async deleteCourse(id: number) {
-    return this.prisma.cursos.delete({ where: { id } });
+    try {
+      return await this.prisma.cursos.delete({ where: { id } });
+    } catch (error) {
+      console.error("Error al eliminar el curso:", error);
+      throw new BadRequestException("El curso no se pudo eliminar");
+    }
   }
 }
