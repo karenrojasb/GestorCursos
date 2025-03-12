@@ -1,6 +1,68 @@
-Type 'CreateInscripcionDto' is not assignable to type '(Without<InscripcionesCreateInput, InscripcionesUncheckedCreateInput> & InscripcionesUncheckedCreateInput) | (Without<...> & InscripcionesCreateInput) | undefined'.
-  Type 'CreateInscripcionDto' is not assignable to type 'Without<InscripcionesCreateInput, InscripcionesUncheckedCreateInput> & InscripcionesUncheckedCreateInput'.
-    Type 'CreateInscripcionDto' is not assignable to type 'InscripcionesUncheckedCreateInput'.
-      Types of property 'docInscr' are incompatible.
-        Type 'string' is not assignable to type 'number'.ts(2322)
-index.d.ts(3702, 5): The expected type comes from property 'data' which is declared here on type '{ select?: InscripcionesSelect<DefaultArgs> | null | undefined; omit?: InscripcionesOmit<DefaultArgs> | null | undefined; include?: InscripcionesInclude<...> | ... 1 more ... | undefined; data?: (Without<...> & InscripcionesUncheckedCreateInput) | ... 1 more ... | undefined; }'
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
+import { CreateInscripcionDto } from './dto/create-inscripcion.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
+
+@Injectable()
+export class InscripcionesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async crearInscripcion(data: CreateInscripcionDto) {
+    return this.prisma.inscripciones.create({ data });
+  }
+
+  async obtenerTodas() {
+    return this.prisma.inscripciones.findMany();
+  }
+
+  async obtenerPorId(id: number) {
+    const inscripcion = await this.prisma.inscripciones.findUnique({ where: { id } });
+    if (!inscripcion) throw new NotFoundException('Inscripción no encontrada');
+    return inscripcion;
+  }
+
+  async actualizarEstado(id: number, data: UpdateInscripcionDto) {
+    return this.prisma.inscripciones.update({ where: { id }, data });
+  }
+
+  async eliminarInscripcion(id: number) {
+    return this.prisma.inscripciones.delete({ where: { id } });
+  }
+}
+
+
+
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { InscripcionesService } from './inscripciones.service';
+import { CreateInscripcionDto } from './dto/create-inscripcion.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
+
+@Controller('inscripciones')
+export class InscripcionesController {
+  constructor(private readonly inscripcionesService: InscripcionesService) {}
+
+  @Post()
+  crear(@Body() createInscripcionDto: CreateInscripcionDto) {
+    return this.inscripcionesService.crearInscripcion(createInscripcionDto);
+  }
+
+  @Get()
+  obtenerTodas() {
+    return this.inscripcionesService.obtenerTodas();
+  }
+
+  @Get(':id')
+  obtenerPorId(@Param('id') id: string) {
+    return this.inscripcionesService.obtenerPorId(Number(id));
+  }
+
+  @Patch(':id')
+  actualizarEstado(@Param('id') id: string, @Body() updateInscripcionDto: UpdateInscripcionDto) {
+    return this.inscripcionesService.actualizarEstado(Number(id), updateInscripcionDto);
+  }
+
+  @Delete(':id')
+  eliminar(@Param('id') id: string) {
+    return this.inscripcionesService.eliminarInscripcion(Number(id));
+  }
+}
