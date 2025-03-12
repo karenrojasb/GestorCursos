@@ -21,7 +21,7 @@ export class InscripcionesService {
   async getInscripciones() {
     return this.prisma.inscripciones.findMany({
       include: {
-        curso: { select: { id: true, nombre_curso: true } }, // Asegura que el nombre de la relación sea correcto
+        Cursos: { select: { id: true, NombreCurso: true } }, // Asegura que el nombre de la relación sea correcto
       },
     });
   }
