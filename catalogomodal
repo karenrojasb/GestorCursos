@@ -1,45 +1,419 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
-import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
 
-@Injectable()
-export class InscripcionesService {
-  constructor(private readonly prisma: PrismaService) {}
+"use client";
 
-  async crearInscripcion(dto: CreateInscripcionDto) {
-    return this.prisma.inscripciones.create({
-      data: {
-        idCur: dto.idCur,
-        docInscr: dto.docInscr,
-        est: Boolean(dto.est), // Aseguramos que est sea booleano
-        fecreg: new Date(dto.fecreg), // Convertimos la fecha a un objeto Date
-      },
-    });
-  }
+import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { useEffect, useState } from "react";
 
-  async getInscripciones() {
-    return this.prisma.inscripciones.findMany({
-      include: {
-        Cursos: { select: { id: true, NombreCurso: true } }, // Asegura que el nombre de la relación sea correcto
-      },
-    });
-  }
-
-  async obtenerPorId(id: number) {
-    const inscripcion = await this.prisma.inscripciones.findUnique({ where: { id } });
-    if (!inscripcion) throw new NotFoundException('Inscripción no encontrada');
-    return inscripcion;
-  }
-
-  async actualizarEstado(id: number, dto: UpdateInscripcionDto) {
-    return this.prisma.inscripciones.update({
-      where: { id },
-      data: { est: Boolean(dto.est) }, // Aseguramos que est sea booleano
-    });
-  }
-
-  async eliminarInscripcion(id: number) {
-    return this.prisma.inscripciones.delete({ where: { id } });
-  }
+interface Curso {
+  id: number;                               
+  NombreCurso: string;                       
+  Valor: number;                             
+  Publico: number;                           
+  Periodo: string;                           
+  Inicio: string;                            
+  Fin: string;                               
+  Horas: number;                             
+  CupoMax: number;                           
+  Lugar: string;                             
+  LunesIni?: string;                          
+  LunesFin? : string;                         
+  MartesIni?  : string;                       
+  MartesFin? : string;                        
+  MiercolesIni?: string;                      
+  MiercolesFin? : string;                     
+  JuevesIni?: string;                         
+  JuevesFin?: string;                        
+  ViernesIni?: string;                       
+  ViernesFin?: string;                      
+  SabadoIni?: string;                       
+  SabadoFin?: string;                        
+  DomingoIni?: string;                        
+  DomingoFin? : string;                      
+  Linea: number;                             
+  Estado: number;                             
+  Modalidad: number;                          
+  Unidad: number;                             
+  Profesor: number;                           
+  SegundoPro : string;                       
+  Proexterno : string;                     
+  Descripcion: string; 
+  IdTipoCurso: number;
+  NombreProfesor?: string;
 }
+
+export default function CatalogoModal({ onClose }: { onClose: () => void }) {
+  const [cursos, setCursos] = useState<Curso[]>([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Estado de carga
+
+  useEffect(() => {
+    const fetchCursos = async () => {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos");
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Filtrar solo los cursos activos (con fecha de fin válida)
+        const hoy = new Date();
+        const cursosActivos = data.filter((curso: Curso) => {
+          if (!curso.Fin) return true;
+          const fechaFin = new Date(curso.Fin);
+          return fechaFin >= hoy;
+        });
+
+        // Simular carga con un retraso de 3 segundos
+        setTimeout(() => {
+          setCursos(cursosActivos);
+          setCursosFiltrados(cursosActivos);
+          setIsLoading(false);
+        }, 3000);
+
+      } catch (error) {
+        console.error("Error al obtener los cursos:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchCursos();
+  }, []);
+
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+
+    const filtrados = cursos.filter((curso) =>
+      curso.NombreCurso.toLowerCase().includes(texto)
+    );
+    setCursosFiltrados(filtrados);
+  };
+
+  const handleVerMas = (id: number) => {
+    setExpandedCursoId(expandedCursoId === id ? null : id);
+  };
+
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
+        
+        {/* BARRA DE BÚSQUEDA */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative flex items-center" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <button
+              onClick={() => setIsSearchActive(!isSearchActive)}
+              className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out"
+            >
+              {isSearchActive ? (
+                <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" />
+              ) : (
+                <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />
+              )}
+            </button>
+
+            <input
+              type="text"
+              placeholder="Busque el nombre del curso"
+              value={busqueda}
+              onChange={handleBuscar}
+              className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+            />
+          </div>
+
+          {/* BOTÓN CERRAR */}
+          <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" onClick={onClose}>
+            <XMarkIcon className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* ENCABEZADOS */}
+        <div className="grid text-[#990000] grid-cols-3 font-semibold border-b pb-2">
+          <span className="text-[#990000]">Nombre del curso</span>
+          <span className="text-center text-[#990000]">Fecha</span>
+          <span className="text-right w-16"></span>
+        </div>
+
+        {/* CONTENIDO DE LOS CURSOS */}
+        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+          {isLoading ? (
+            <div className="flex justify-center py-4">
+              <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+            </div>
+          ) : cursosFiltrados.length > 0 ? (
+            cursosFiltrados.map((curso) => (
+              <div key={curso.id} className="border-b py-2">
+                <div className="grid grid-cols-3 items-center">
+                  <span className="text-left">{curso.NombreCurso}</span>
+                  <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
+
+                  {/* BOTÓN VER MÁS */}
+                  <button
+                    onClick={() => handleVerMas(curso.id)}
+                    className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
+                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+                  >
+                    {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+                  </button>
+                </div>
+
+                {/* DETALLES DEL CURSO */}
+                {expandedCursoId === curso.id && (
+                  <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
+                    <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
+                    <p><strong>Valor:</strong> {curso.Valor}</p>
+                    <p><strong>Fin:</strong> {curso.Fin}</p>
+                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
+                    <p><strong>Horas:</strong> {curso.Horas}</p>
+                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
+                    <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
+                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
+                  
+                    <button className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
+                    duration-300 ease-in-out transform hover:scale-110 active:scale-95">
+                    Inscribir
+                    </button>
+                  </div>
+                  
+                )}
+                
+              </div>
+            ))
+          ) : (
+            <p className="text-center py-4">No hay cursos disponibles.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+
+
+// "use client";
+
+
+
+// import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+// import { useEffect, useState } from "react";
+
+// interface Curso {
+//   id: number;                               
+//   NombreCurso: string;                       
+//   Valor: number;                             
+//   Publico: number;                           
+//   Periodo: string;                           
+//   Inicio: string;                            
+//   Fin: string;                               
+//   Horas: number;                             
+//   CupoMax: number;                           
+//   Lugar: string;                             
+//   LunesIni?: string;                          
+//   LunesFin? : string;                         
+//   MartesIni?  : string;                       
+//   MartesFin? : string;                        
+//   MiercolesIni?: string;                      
+//   MiercolesFin? : string;                     
+//   JuevesIni?: string;                         
+//   JuevesFin?: string;                        
+//   ViernesIni?: string;                       
+//   ViernesFin?: string;                      
+//   SabadoIni?: string;                       
+//   SabadoFin?: string;                        
+//   DomingoIni?: string;                        
+//   DomingoFin? : string;                      
+//   Linea: number;                             
+//   Estado: number;                             
+//   Modalidad: number;                          
+//   Unidad: number;                             
+//   Profesor: number;                           
+//   SegundoPro : string;                       
+//   Proexterno : string;                     
+//   Descripcion: string; 
+//   IdTipoCurso: number;
+//   NombreProfesor?: string;
+
+
+// }
+
+// export default function CatalogoModal({ onClose }: { onClose: () => void }) {
+//   const [cursos, setCursos] = useState<Curso[]>([]);
+//   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+//   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
+//   const [busqueda, setBusqueda] = useState("");
+//   const [isSearchActive, setIsSearchActive] = useState(false);
+
+//   useEffect(() => {
+//     const fetchCursos = async () => {
+//       try {
+//         const response = await fetch("http://localhost:8090/api/cursos");
+//         if (!response.ok) {
+//           throw new Error(`Error HTTP: ${response.status}`);
+//         }
+//         {/* */}
+//         const data = await response.json();
+//         setCursos(data);
+//         setCursosFiltrados(data);
+
+//         const hoy = new Date();
+
+//         const cursosActivos = data.filter((curso: Curso) => {
+//           if (!curso.Fin) return true;
+          
+//           const fechaFin = new Date(curso.Fin);
+//           return fechaFin >= hoy;
+//         });
+
+//         setCursos(cursosActivos);
+//         setCursosFiltrados(cursosActivos);
+
+//       } catch (error) {
+//         console.error("Error al obtener los cursos:", error);
+//       }
+//     };
+
+//     fetchCursos();
+//   }, []);
+
+//   const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const texto = e.target.value.toLowerCase();
+//     setBusqueda(texto);
+
+//    const filtrados = cursos.filter((curso) =>
+//       curso.NombreCurso.toLowerCase().includes(texto)
+//     );
+//     setCursosFiltrados(filtrados);
+//   };
+
+
+//   const handleVerMas = (id: number) => {
+//     setExpandedCursoId(expandedCursoId === id ? null : id);
+//   };
+
+
+
+//   const handleMouseEnter = () => {
+//     setIsSearchActive(true);
+//   };
+
+//   const handleMouseLeave = () => {
+//     if (busqueda === "") {
+//       setIsSearchActive(false);
+//     }
+//   };
+
+//   return (
+//     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+//       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
+//         {/* BARRA DE BUSQUEDA */}
+//         <div className="flex justify-between items-center mb-4">
+//           <div className="relative flex items-center"
+//           onMouseEnter={handleMouseEnter}
+//           onMouseLeave={handleMouseLeave}>
+//             <button
+//               onClick={() => setIsSearchActive(!isSearchActive)}
+//               className="p-2 rounded-full bg-gray-200 transition-transform duration-500 ease-in-out"
+              
+//               >
+//               {isSearchActive ? (
+//                 <XMarkIcon className="h-6 w-6 text-[#990000] transition-transform rotate-180" />
+//               ) : (
+//                 <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] transition-transform" />
+//               )}
+//             </button>
+
+//             <input
+//               type="text"
+//               placeholder="Busque el nombre del curso"
+//               value={busqueda}
+//               onChange={handleBuscar}
+//               className={` px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+//                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+//             />
+//           </div>
+
+//           {/* BOTÓN CERRAR */}
+//           <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" onClick={onClose}>
+//                     <XMarkIcon className="w-6 h-6" />
+//                   </button>
+//         </div>
+
+//         {/* ENCABEZADOS */}
+//         <div className="grid text-[#990000] grid-cols-3 font-semibold border-b pb-2">
+//           <span className="text-[#990000]">Nombre del curso</span>
+//           <span className="text-center text-[#990000]">Fecha</span>
+//           <span className="text-right w-16"></span>
+//         </div>
+
+//         {/* CONTENIDO DE LOS CURSOS*/}
+//         <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+//           {cursosFiltrados.length > 0 ? (
+//             cursosFiltrados.map((curso) => (
+//               <div key={curso.id} className="border-b py-2">
+//                 <div className="grid grid-cols-3 items-center">
+//                   <span className="text-left">{curso.NombreCurso}</span>
+//                   <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
+
+//                  {/* BOTÓN VER MÁS */}
+//                   <button
+//                     onClick={() => handleVerMas(curso.id)}
+//                     className="ml-4 bg-[#990000]  hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
+//                     duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+//                   >
+//                     {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+//                   </button>
+//                 </div>
+
+//                {/* CONTENIDO EXPANDIDO DEL CURSO*/}
+//                 {expandedCursoId === curso.id && (
+                  
+
+
+//                   <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
+//                      <h3 className="text-ig font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
+                    
+                    
+                   
+//                     <p><strong>Valor:</strong> {curso.Valor}</p>
+//                     <p><strong>Fin:</strong> {curso.Fin}</p>
+//                     <p><strong>Periodo:</strong> {curso.Periodo}</p>
+//                     <p><strong>Horas:</strong> {curso.Horas}</p>
+//                     <p><strong>Lugar:</strong> {curso.Lugar}</p>
+//                     <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
+//                     <p><strong>Descripción:</strong> {curso.Descripcion}</p>
+
+//                      <button className="ml-72 bg-[#990000]  hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
+//                     duration-300 ease-in-out transform hover:scale-110 active:scale-95">
+//                       Inscribir
+//                       </button>
+             
+//                   </div>
+//                 )}
+//               </div>
+//             ))
+//           ) : (
+//             <p className="text-center py-4">No hay cursos disponibles.</p>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
