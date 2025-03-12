@@ -21,7 +21,7 @@ export class InscripcionesService {
   async getInscripciones() {
     return this.prisma.inscripciones.findMany({
       include: {
-        curso: { select: { id: true, nombre_curso: true } }, // Ajusta "curso" según el esquema en `prisma.schema`
+        Cursos: { select: { id: true, NombreCurso: true } }, // Ajusta "curso" según el esquema en `prisma.schema`
       },
     });
   }
@@ -41,44 +41,5 @@ export class InscripcionesService {
 
   async eliminarInscripcion(id: number) {
     return this.prisma.inscripciones.delete({ where: { id } });
-  }
-}
-
-
-
-
-
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
-import { InscripcionesService } from './inscripciones.service';
-import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
-import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
-
-@Controller('inscripciones')
-export class InscripcionesController {
-  constructor(private readonly inscripcionesService: InscripcionesService) {}
-
-  @Post()
-  crear(@Body() dto: CreateInscripcionDto) {
-    return this.inscripcionesService.crearInscripcion(dto);
-  }
-
-  @Get()
-  obtenerTodas() {
-    return this.inscripcionesService.getInscripciones();
-  }
-
-  @Get(':id')
-  obtenerPorId(@Param('id') id: string) {
-    return this.inscripcionesService.obtenerPorId(Number(id));
-  }
-
-  @Patch(':id')
-  actualizarEstado(@Param('id') id: string, @Body() dto: UpdateInscripcionDto) {
-    return this.inscripcionesService.actualizarEstado(Number(id), dto);
-  }
-
-  @Delete(':id')
-  eliminar(@Param('id') id: string) {
-    return this.inscripcionesService.eliminarInscripcion(Number(id));
   }
 }
