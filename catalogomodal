@@ -37,9 +37,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         const data = await response.json();
         const hoy = new Date();
 
-        const cursosActivos = data.filter((curso: Curso) => {
-          return !curso.Fin || new Date(curso.Fin) >= hoy;
-        });
+        const cursosActivos = data.filter((curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy);
 
         setTimeout(() => {
           setCursos(cursosActivos);
@@ -76,7 +74,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     // Obtener el usuario autenticado desde localStorage
     const docInscr = localStorage.getItem("docInscr");
 
-    if (!docInscr) {
+    if (!docInscr || docInscr === "undefined" || docInscr === "null") {
       alert("Error: No se encontró el usuario autenticado. Inicie sesión nuevamente.");
       setInscribiendo(false);
       return;
