@@ -17,14 +17,14 @@ interface Usuario {
 
 export default function RootLayout({ children }: LayoutProps) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [id_emp, setIdEmp] = useState("");
+  const [e_mail, setEmail] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     // Recuperar docInscr del localStorage al iniciar la aplicación
     const storedDocInscr = localStorage.getItem("docInscr");
     if (storedDocInscr) {
-      console.log("Documento de inscripción recuperado:", storedDocInscr);
+      console.log("Email de inscripción recuperado:", storedDocInscr);
     }
   }, []);
 
@@ -32,8 +32,8 @@ export default function RootLayout({ children }: LayoutProps) {
   const iniciarSesion = async () => {
     setError("");
 
-    if (id_emp.trim() === "") {
-      setError("Ingrese su Documento.");
+    if (e_mail.trim() === "") {
+      setError("Ingrese su email.");
       return;
     }
 
@@ -41,14 +41,14 @@ export default function RootLayout({ children }: LayoutProps) {
       const response = await fetch("http://localhost:8090/api/usuario/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_emp }),
+        body: JSON.stringify({ e_mail }),
       });
 
       const data = await response.json();
       console.log("Datos recibidos del backend:", data);
 
       if (!response.ok) {
-        throw new Error(data.message || "El documento no es correcto.");
+        throw new Error(data.message || "El email no es correcto.");
       }
 
       // VERIFICAR SI EL USUARIO ESTA EN LA TABLA GESCUR.EMP_NOMINA
@@ -93,9 +93,9 @@ export default function RootLayout({ children }: LayoutProps) {
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Iniciar Sesión</h2>
             <input
               type="text"
-              placeholder="Ingrese su Documento"
-              value={id_emp}
-              onChange={(e) => setIdEmp(e.target.value)}
+              placeholder="Ingrese su email"
+              value={e_mail}
+              onChange={(e) => setEmail(e.target.value)}
               className="border p-2 w-full mb-3 rounded"
             />
             <button
@@ -160,6 +160,7 @@ export default function RootLayout({ children }: LayoutProps) {
     </html>
   );
 }
+
 
 
 
