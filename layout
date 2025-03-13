@@ -21,6 +21,7 @@ export default function RootLayout({ children }: LayoutProps) {
   const [e_mail, setEmail] = useState("");
   const [error, setError] = useState("");
 
+  // Cargar usuario desde localStorage al iniciar
   useEffect(() => {
     const storedUsuario = localStorage.getItem("usuario");
     if (storedUsuario) {
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
+      // Guardar usuario autenticado
       const nuevoUsuario: Usuario = {
         nombre: data.nombre,
         publico: data.publico,
@@ -73,6 +75,7 @@ export default function RootLayout({ children }: LayoutProps) {
     localStorage.removeItem("usuario");
   };
 
+  // Si el usuario NO ha iniciado sesión, mostrar pantalla de login
   if (!usuario) {
     return (
       <html lang="es">
@@ -129,6 +132,7 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
+          {/* PASAMOS EL USUARIO AUTENTICADO A LOS COMPONENTES */}
           <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
 
           {children}
