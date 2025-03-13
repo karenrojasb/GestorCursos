@@ -27,16 +27,13 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [isLoading, setIsLoading] = useState(true);
   const [inscribiendo, setInscribiendo] = useState(false);
   const [errorInscripcion, setErrorInscripcion] = useState<string | null>(null);
-  const [idEmp, setIdEmp] = useState<string | null>(null); // Estado para almacenar el id_emp del usuario autenticado
+  const [idEmp, setIdEmp] = useState<string | null>(null); // Estado para almacenar el id_emp
 
   useEffect(() => {
-    // Obtener id_emp del usuario autenticado desde localStorage
+    // Obtener el id_emp de localStorage cuando se abre el modal
     const storedIdEmp = localStorage.getItem("id_emp");
     if (storedIdEmp) {
       setIdEmp(storedIdEmp);
-      console.log("id_emp recuperado:", storedIdEmp);
-    } else {
-      console.warn("No se encontró id_emp en localStorage");
     }
 
     const fetchCursos = async () => {
@@ -62,56 +59,17 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     fetchCursos();
   }, []);
 
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-
-    const filtrados = cursos.filter((curso) =>
-      curso.NombreCurso.toLowerCase().includes(texto)
-    );
-    setCursosFiltrados(filtrados);
-  };
-
-  const handleVerMas = (id: number) => {
-    setExpandedCursoId(expandedCursoId === id ? null : id);
-  };
-
-  const handleInscribir = async (idCur: number) => {
-    setInscribiendo(true);
-    setErrorInscripcion(null);
-
-    if (!idEmp) {
-      alert("Error: No se encontró el usuario autenticado. Inicie sesión nuevamente.");
-      setInscribiendo(false);
-      return;
-    }
-
-    const fecreg = new Date().toISOString().split("T")[0];
-
-    try {
-      const response = await fetch("http://localhost:8090/api/inscripciones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error al inscribirse en el curso");
-      }
-
-      alert("Inscripción realizada con éxito.");
-    } catch (error) {
-      console.error("Error en la inscripción:", error);
-      setErrorInscripcion("No se pudo completar la inscripción, inténtelo nuevamente.");
-    } finally {
-      setInscribiendo(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
         
+        {/* Mostrar el id_emp en la esquina superior derecha */}
+        {idEmp && (
+          <div className="absolute top-2 right-4 text-gray-500 text-sm font-semibold">
+            ID: {idEmp}
+          </div>
+        )}
+
         {/* BARRA DE BÚSQUEDA */}
         <div className="flex justify-between items-center mb-4">
           <div className="relative flex items-center">
@@ -130,7 +88,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
               type="text"
               placeholder="Busque el nombre del curso"
               value={busqueda}
-              onChange={handleBuscar}
+              onChange={(e) => setBusqueda(e.target.value.toLowerCase())}
               className={`px-4 py-2 border rounded-full transition-all duration-500 
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
             />
@@ -142,7 +100,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {/* CONTENIDO DE LOS CURSOS */}
+        {/* CONTENIDO DEL MODAL */}
         <div className="flex-1 overflow-y-auto mt-2 space-y-2">
           {isLoading ? (
             <div className="flex justify-center py-4">
@@ -154,33 +112,12 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                 <div className="grid grid-cols-3 items-center">
                   <span>{curso.NombreCurso}</span>
                   <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-
-                  {/* BOTÓN VER MÁS */}
                   <button
-                    onClick={() => handleVerMas(curso.id)}
                     className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 transition-all hover:scale-110 active:scale-95"
                   >
-                    {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+                    Ver más
                   </button>
                 </div>
-
-                {/* DETALLES DEL CURSO */}
-                {expandedCursoId === curso.id && (
-                  <div className="p-4 border bg-gray-50 rounded-lg mt-2">
-                    <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
-                    <p><strong>Valor:</strong> {curso.Valor}</p>
-                    <p><strong>Fin:</strong> {curso.Fin}</p>
-                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
-                    <p><strong>Horas:</strong> {curso.Horas}</p>
-                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
-                    <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
-                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
-
-                    <button onClick={() => handleInscribir(curso.id)} disabled={inscribiendo} className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24">
-                      {inscribiendo ? "Inscribiendo..." : "Inscribirse"}
-                    </button>
-                  </div>
-                )}
               </div>
             ))
           ) : (
