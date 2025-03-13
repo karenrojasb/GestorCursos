@@ -11,8 +11,9 @@ interface LayoutProps {
 
 interface Usuario {
   nombre: string;
-  publico: number; // 1 = Profesor, 2 = Administración
-  esAdmin: boolean; // true si es administrador
+  publico: number;
+  esAdmin: boolean;
+  docInscr: string;
 }
 
 export default function RootLayout({ children }: LayoutProps) {
@@ -21,14 +22,12 @@ export default function RootLayout({ children }: LayoutProps) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Recuperar docInscr del localStorage al iniciar la aplicación
-    const storedDocInscr = localStorage.getItem("docInscr");
-    if (storedDocInscr) {
-      console.log("Email de inscripción recuperado:", storedDocInscr);
+    const storedUsuario = localStorage.getItem("usuario");
+    if (storedUsuario) {
+      setUsuario(JSON.parse(storedUsuario));
     }
   }, []);
 
-  // FUNCIÓN PARA INICIAR SESIÓN Y OBTENER DATOS DEL USUARIO
   const iniciarSesion = async () => {
     setError("");
 
@@ -44,47 +43,36 @@ export default function RootLayout({ children }: LayoutProps) {
         body: JSON.stringify({ e_mail }),
       });
 
+      if (!response.ok) {
+        throw new Error("El email no es correcto o no tiene permisos.");
+      }
+
       const data = await response.json();
       console.log("Datos recibidos del backend:", data);
 
-      if (!response.ok) {
-        throw new Error(data.message || "El email no es correcto.");
-      }
-
-      // VERIFICAR SI EL USUARIO ESTA EN LA TABLA GESCUR.EMP_NOMINA
-      if (data.publico === null || data.publico === undefined) {
+      if (!data.publico) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      // Verificar si el usuario tiene un rol permitido
-      const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
-      if (!esUsuarioValido) {
-        throw new Error("No tiene permisos para ingresar al sistema.");
-      }
-
-      // Guardar `docInscr` en localStorage
-      if (data.docInscr) {
-        localStorage.setItem("docInscr", data.docInscr);
-      }
-
-      // Guardar usuario en el estado
-      setUsuario({
+      const nuevoUsuario: Usuario = {
         nombre: data.nombre,
         publico: data.publico,
         esAdmin: Boolean(data.esAdmin),
-      });
+        docInscr: data.docInscr || "",
+      };
+
+      setUsuario(nuevoUsuario);
+      localStorage.setItem("usuario", JSON.stringify(nuevoUsuario));
     } catch (error: any) {
       setError(error.message);
     }
   };
 
-  // FUNCIÓN PARA CERRAR SESIÓN
   const cerrarSesion = () => {
     setUsuario(null);
-    localStorage.removeItem("docInscr"); // Eliminar docInscr del localStorage al cerrar sesión
+    localStorage.removeItem("usuario");
   };
 
-  // RENDERIZA EL FORMULARIO DE LOGIN SI NO HAY USUARIO
   if (!usuario) {
     return (
       <html lang="es">
@@ -111,7 +99,6 @@ export default function RootLayout({ children }: LayoutProps) {
     );
   }
 
-  // SI EL USUARIO YA ESTÁ AUTENTICADO, MUESTRA LA INTERFAZ PRINCIPAL
   return (
     <html lang="es">
       <body className="bg-gray-100 flex flex-col min-h-screen">
@@ -142,7 +129,6 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
-          {/* PASAMOS LOS ROLES AL COMPONENTE DE BOTONES */}
           <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
 
           {children}
