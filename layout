@@ -1,3 +1,7 @@
+Object literal may only specify known properties, and 'id_emp' does not exist in type 'Usuario'.ts(2353)
+
+
+
 const iniciarSesion = async () => {
   setError("");
 
