@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
 interface Usuario {
-  id_emp: string; // Número de empleado
+  id_emp: string;
   nombre: string;
   publico: number;
   email: string;
