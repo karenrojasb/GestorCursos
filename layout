@@ -1,105 +1,164 @@
-Object literal may only specify known properties, and 'id_emp' does not exist in type 'Usuario'.ts(2353)
 
 
+"use client";
+import { ReactNode, useState, useEffect } from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import MainButtonsProps from "./components/mainbuttons";
+import "./globals.css";
 
-const iniciarSesion = async () => {
-  setError("");
-
-  if (e_mail.trim() === "") {
-    setError("Ingrese su email.");
-    return;
-  }
-
-  try {
-    const response = await fetch("http://localhost:8090/api/usuario/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ e_mail }),
-    });
-
-    if (!response.ok) {
-      throw new Error("El email no es correcto o no tiene permisos.");
-    }
-
-    const data = await response.json();
-    console.log("Datos recibidos del backend:", data);
-
-    if (!data.publico) {
-      throw new Error("No tiene permisos para ingresar al sistema.");
-    }
-
-    // Guardar usuario autenticado con id_emp
-    const nuevoUsuario: Usuario = {
-      nombre: data.nombre,
-      publico: data.publico,
-      esAdmin: Boolean(data.esAdmin),
-      docInscr: data.docInscr || "",
-      id_emp: data.id_emp, // Guardar el ID del empleado
-    };
-
-    setUsuario(nuevoUsuario);
-    localStorage.setItem("usuario", JSON.stringify(nuevoUsuario));
-  } catch (error: any) {
-    setError(error.message);
-  }
-};
-
-
-
-
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-
-@Injectable()
-export class UsuarioService {
-  constructor(private prisma: PrismaService) {}
-
-  async iniciarSesion(e_mail: string) {
-    // Buscar usuario en la vista gescur.emp_nomina
-    const usuario = await this.prisma.$queryRaw<
-      { id_emp: number; nombre: string; publico: number; e_mail: string }[]
-    >`
-      SELECT id_emp, nombre, publico, e_mail 
-      FROM gescur.emp_nomina 
-      WHERE TRIM(e_mail) = TRIM(${e_mail})`;
-
-    if (!usuario || usuario.length === 0) {
-      throw new NotFoundException('Usuario no encontrado en la base de datos.');
-    }
-
-    const usuarioEncontrado = usuario[0];
-
-    // Buscar si el usuario es administrador en gescur.rol_usuario
-    const adminRecord = await this.prisma.rol_usuario.findFirst({
-      where: { usuario: usuarioEncontrado.e_mail },
-    });
-
-    return {
-      id_emp: usuarioEncontrado.id_emp,
-      nombre: usuarioEncontrado.nombre,
-      publico: usuarioEncontrado.publico,
-      e_mail: usuarioEncontrado.e_mail,
-      esAdmin: !!adminRecord, // True si es administrador
-    };
-  }
+interface LayoutProps {
+  children: ReactNode;
 }
 
-
-import { Controller, Post, Body } from '@nestjs/common';
-import { UsuarioService } from './usuario.service';
-
-@Controller('usuario')
-export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService) {}
-
-  @Post('login')
-  async login(@Body() body: { e_mail: string }) {
-    if (!body.e_mail || body.e_mail.trim() === '') {
-      throw new Error('El email es obligatorio');
-    }
-
-    return this.usuarioService.iniciarSesion(body.e_mail);
-  }
+interface Usuario {
+  nombre: string;
+  publico: number; // 1 = Profesor, 2 = Administración
+  esAdmin: boolean; // true si es administrador
 }
 
+export default function RootLayout({ children }: LayoutProps) {
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [e_mail, setEmail] = useState("");
+  const [error, setError] = useState("");
 
+  useEffect(() => {
+    // Recuperar docInscr del localStorage al iniciar la aplicación
+    const storedDocInscr = localStorage.getItem("docInscr");
+    if (storedDocInscr) {
+      console.log("Email de inscripción recuperado:", storedDocInscr);
+    }
+  }, []);
+
+  // FUNCIÓN PARA INICIAR SESIÓN Y OBTENER DATOS DEL USUARIO
+  const iniciarSesion = async () => {
+    setError("");
+
+    if (e_mail.trim() === "") {
+      setError("Ingrese su email.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8090/api/usuario/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ e_mail }),
+      });
+
+      const data = await response.json();
+      console.log("Datos recibidos del backend:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || "El email no es correcto.");
+      }
+
+      // VERIFICAR SI EL USUARIO ESTA EN LA TABLA GESCUR.EMP_NOMINA
+      if (data.publico === null || data.publico === undefined) {
+        throw new Error("No tiene permisos para ingresar al sistema.");
+      }
+
+      // Verificar si el usuario tiene un rol permitido
+      const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
+      if (!esUsuarioValido) {
+        throw new Error("No tiene permisos para ingresar al sistema.");
+      }
+
+      // Guardar `docInscr` en localStorage
+      if (data.docInscr) {
+        localStorage.setItem("docInscr", data.docInscr);
+      }
+
+      // Guardar usuario en el estado
+      setUsuario({
+        nombre: data.nombre,
+        publico: data.publico,
+        esAdmin: Boolean(data.esAdmin),
+      });
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
+
+  // FUNCIÓN PARA CERRAR SESIÓN
+  const cerrarSesion = () => {
+    setUsuario(null);
+    localStorage.removeItem("docInscr"); // Eliminar docInscr del localStorage al cerrar sesión
+  };
+
+  // RENDERIZA EL FORMULARIO DE LOGIN SI NO HAY USUARIO
+  if (!usuario) {
+    return (
+      <html lang="es">
+        <body className="flex items-center justify-center h-screen bg-gray-200">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Iniciar Sesión</h2>
+            <input
+              type="text"
+              placeholder="Ingrese su email"
+              value={e_mail}
+              onChange={(e) => setEmail(e.target.value)}
+              className="border p-2 w-full mb-3 rounded"
+            />
+            <button
+              onClick={iniciarSesion}
+              className="bg-[#990000] text-white px-4 py-2 rounded w-full hover:bg-red-700 transition"
+            >
+              Entrar
+            </button>
+            {error && <p className="text-red-600 mt-2">{error}</p>}
+          </div>
+        </body>
+      </html>
+    );
+  }
+
+  // SI EL USUARIO YA ESTÁ AUTENTICADO, MUESTRA LA INTERFAZ PRINCIPAL
+  return (
+    <html lang="es">
+      <body className="bg-gray-100 flex flex-col min-h-screen">
+        <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+          <img
+            src="/img/ecijg126.png"
+            alt="Logo"
+            className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
+          />
+          <div className="flex flex-col items-center ml-auto">
+            <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
+            <button
+              className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
+              onClick={cerrarSesion}
+            >
+              Cerrar Sesión
+            </button>
+          </div>
+        </header>
+
+        <main className="flex flex-col items-center justify-center flex-1 p-6">
+          <motion.h1
+            className="text-3xl font-bold text-[#990000] mb-6 text-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Bienvenido a Gestión de Cursos
+          </motion.h1>
+
+          {/* PASAMOS LOS ROLES AL COMPONENTE DE BOTONES */}
+          <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
+
+          {children}
+        </main>
+
+        <footer className="bg-white text-center py-4 shadow-inner w-full">
+          <div className="flex items-center justify-between px-6">
+            <p className="text-gray-700">
+              &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
+            </p>
+            <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
+          </div>
+        </footer>
+      </body>
+    </html>
+  );
+}
