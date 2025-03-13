@@ -14,30 +14,8 @@ interface Curso {
   Horas: number;
   CupoMax: number;
   Lugar: string;
-  LunesIni?: string;
-  LunesFin?: string;
-  MartesIni?: string;
-  MartesFin?: string;
-  MiercolesIni?: string;
-  MiercolesFin?: string;
-  JuevesIni?: string;
-  JuevesFin?: string;
-  ViernesIni?: string;
-  ViernesFin?: string;
-  SabadoIni?: string;
-  SabadoFin?: string;
-  DomingoIni?: string;
-  DomingoFin?: string;
-  Linea: number;
-  Estado: number;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
   NombreProfesor?: string;
+  Descripcion: string;
 }
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
@@ -60,8 +38,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         const hoy = new Date();
 
         const cursosActivos = data.filter((curso: Curso) => {
-          if (!curso.Fin) return true;
-          return new Date(curso.Fin) >= hoy;
+          return !curso.Fin || new Date(curso.Fin) >= hoy;
         });
 
         setTimeout(() => {
@@ -96,7 +73,15 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setInscribiendo(true);
     setErrorInscripcion(null);
 
-    const docInscr = "1032402874";
+    // Obtener el usuario autenticado desde localStorage
+    const docInscr = localStorage.getItem("docInscr");
+
+    if (!docInscr) {
+      alert("Error: No se encontró el usuario autenticado. Inicie sesión nuevamente.");
+      setInscribiendo(false);
+      return;
+    }
+
     const fecreg = new Date().toISOString().split("T")[0];
 
     try {
@@ -108,9 +93,9 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
       if (!response.ok) throw new Error("Error al inscribirse en el curso");
 
-      alert("Inscripción exitosa");
+      alert("Inscripción realizada con éxito.");
     } catch (error) {
-      setErrorInscripcion("No se pudo completar la inscripción, inténtelo nuevamente");
+      setErrorInscripcion("No se pudo completar la inscripción, inténtelo nuevamente.");
     } finally {
       setInscribiendo(false);
     }
