@@ -159,30 +159,34 @@ export class UsuarioService {
   constructor(private prisma: PrismaService) {}
 
   async iniciarSesion(e_mail: string) {
-    // Consultar en la tabla emp_nomina
-    const usuario = await this.prisma.$queryRaw<any[]>`
+    // Buscar usuario en la vista gescur.emp_nomina
+    const usuario = await this.prisma.$queryRaw<
+      { id_emp: number; nombre: string; publico: number; e_mail: string }[]
+    >`
       SELECT id_emp, nombre, publico, e_mail 
       FROM gescur.emp_nomina 
       WHERE TRIM(e_mail) = TRIM(${e_mail})`;
 
-    if (usuario.length === 0) {
-      throw new NotFoundException('Usuario no encontrado');
+    if (!usuario || usuario.length === 0) {
+      throw new NotFoundException('Usuario no encontrado en la base de datos.');
     }
 
     const usuarioEncontrado = usuario[0];
 
-    // Verificar si el usuario es administrador en gescur.rol_usuario
-    const esAdmin = await this.prisma.rol_usuario.count({
+    // Buscar si el usuario es administrador en gescur.rol_usuario
+    const adminRecord = await this.prisma.rol_usuario.findFirst({
       where: { usuario: usuarioEncontrado.e_mail },
     });
 
     return {
-      ...usuarioEncontrado,
-      esAdmin: esAdmin > 0, // Si hay registros, es administrador
+      id_emp: usuarioEncontrado.id_emp,
+      nombre: usuarioEncontrado.nombre,
+      publico: usuarioEncontrado.publico,
+      e_mail: usuarioEncontrado.e_mail,
+      esAdmin: !!adminRecord, // True si es administrador
     };
   }
 }
-
 
 
 import { Controller, Post, Body } from '@nestjs/common';
@@ -194,6 +198,12 @@ export class UsuarioController {
 
   @Post('login')
   async login(@Body() body: { e_mail: string }) {
+    if (!body.e_mail || body.e_mail.trim() === '') {
+      throw new Error('El email es obligatorio');
+    }
+
     return this.usuarioService.iniciarSesion(body.e_mail);
   }
 }
+
+
