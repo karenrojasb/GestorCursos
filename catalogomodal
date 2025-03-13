@@ -203,3 +203,27 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 }
 
 
+[Nest] 18604  - 13/03/2025, 9:44:08 a. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
+Invalid `this.prisma.inscripciones.create()` invocation in
+C:\Users\desarrollador5\Documents\gestor_cursos\src\inscripciones\inscripciones.service.ts:11:38
+
+   8 constructor(private readonly prisma: PrismaService) {}
+   9
+  10 async crearInscripcion(data: CreateInscripcionDto) {
+→ 11   return this.prisma.inscripciones.create(
+Foreign key constraint violated: `FK__Inscripci__idCur__76969D2E (index)`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2003',
+  clientVersion: '6.3.1',
+  meta: {
+    modelName: 'Inscripciones',
+    field_name: 'FK__Inscripci__idCur__76969D2E (index)'
+  }
+}
+
+
