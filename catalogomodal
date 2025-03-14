@@ -112,10 +112,13 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const handleInscribir = async (idCur: number) => {
     setInscribiendo(true);
     setErrorInscripcion(null);
-    
-    const docInscr = "1032402874";
-    const fecreg = new Date ().toISOString().split("T")[0];
 
+    if (!idEmp) {
+      setErrorInscripcion("Error: No se encuentra el documento de usuario,");
+      setInscribiendo(false);
+      return;
+    }
+    const fecreg = new Date().toISOString().split("T")[0];
 
     try {
       const response = await fetch("http://localhost:8090/api/inscripciones", {
@@ -123,8 +126,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         headers: { "Content-Type": "application/json"},
         body: JSON.stringify ({
           idCur,
-          docInscr,
-          est: true,
+          docInscr: idEmp,
+          est: 1,
           fecreg,
         }),
       });
@@ -219,6 +222,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                 {expandedCursoId === curso.id && (
                   <div className="p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-md mt-2">
                     <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
+                    <p><strong>Id:</strong> {curso.id}</p>
                     <p><strong>Valor:</strong> {curso.Valor}</p>
                     <p><strong>Fin:</strong> {curso.Fin}</p>
                     <p><strong>Periodo:</strong> {curso.Periodo}</p>
