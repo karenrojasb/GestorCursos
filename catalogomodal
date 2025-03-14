@@ -110,6 +110,15 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
 //  INCRIBIR
   const handleInscribir = async (idCur: number) => {
+    console.log("Intentando inscribir con  datos:",
+      {
+        idCur,
+        docInscr: idEmp,
+        est: 1,
+        fecreg: new Date().toISOString().split("T")[0]
+      }
+    );
+    
     setInscribiendo(true);
     setErrorInscripcion(null);
 
