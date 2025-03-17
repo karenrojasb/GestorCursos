@@ -1,7 +1,6 @@
 "use client";
 import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
 interface Opcion {
   id: number;
@@ -39,27 +38,29 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
 
 
-    useEffect(() => {
-      async function fetchOpciones() {
-        try {
-          const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
-          if (!response.ok) throw new Error("Error al obtener las opciones");
-  
-          const data: Opcion[] = await response.json();
-  
-          setOpcionesPublico(data.filter((item) => item.Tipo === 1));
-          setOpcionesLinea(data.filter((item) => item.Tipo === 2));
-          setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
-          setOpcionesEstado(data.filter((item) => item.Tipo === 4));
-          setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
-        } catch (error) {
-          console.error("Error cargando las opciones:", error);
-        }
+
+  useEffect(() => {
+    async function fetchOpciones() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+        if (!response.ok) throw new Error("Error al obtener las opciones");
+
+        const data: Opcion[] = await response.json();
+
+        setOpcionesPublico(data.filter((item) => item.Tipo === 1));
+        setOpcionesLinea(data.filter((item) => item.Tipo === 2));
+        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
+        setOpcionesEstado(data.filter((item) => item.Tipo === 4));
+        setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
+      } catch (error) {
+        console.error("Error cargando las opciones:", error);
       }
-  
-      fetchOpciones();
-    }, []);
-    
+    }
+
+    fetchOpciones();
+  }, []);
+
+
   // Obtener cursos del backend
   const fetchCursos = async () => {
     setIsLoading(true);
@@ -298,15 +299,7 @@ const handleGuardarEdicion = async () => {
  {editandoCurso && (
    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
      <div className="relative bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
-     <motion.div
-        className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-lg overflow-y-auto"
-        initial={{ opacity: 0, scale: 0.95}}
-        animate={{ opacity: 1, scale: 1}}
-        exit={{ opacity: 0, scale: 0.95}}
-        transition={{ duration: 0.3}}
-        >
-
-
+      
        {/* BOTÓN PARA CERRAR */}
        <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" 
          onClick={() => setEditandoCurso(null)}>
@@ -320,89 +313,31 @@ const handleGuardarEdicion = async () => {
            {mensajeExito}
          </div>
        )}
-    
-    <form onSubmit={handleSubmit} className="space-y-4">
-{Object.keys(editandoCurso).map((key) => (
-  key !== "id" && (
-  <div key={key} className="mb-3">
-    <label className="block font-semibold text-gray-700">{key}:</label>
-    { key === "Inicio" || key === "Fin" ? (
-      <input 
-      type="date"
-      name={key}
-      value={curso[key as keyof typeof curso]}
-      onChange={handleChange}
-      className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-      />
-    )
-    : key === "Publico" ? (
-      <select name="Publico" 
-      value={curso.Publico} 
-      onChange={handleChange} 
-      className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-        <option value="">Selecciona una opción</option>
-        {opcionesPublico.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>
-            {opcion.Especificacion}
-          </option>
-        ))}
-      </select>
-    ) : key === "Linea" ? (
-      <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-        <option value="">Selecciona una opción</option>
-        {opcionesLinea.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>
-            {opcion.Especificacion}
-          </option>
-        ))}
-      </select>
-    ) : key === "Modalidad" ? (
-      <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-        <option value="">Selecciona una opción</option>
-        {opcionesModalidad.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>
-            {opcion.Especificacion}
-          </option>
-        ))}
-      </select>
-    ) : key === "Estado" ? (
-      <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-        <option value="">Selecciona una opción</option>
-        {opcionesEstado.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>
-            {opcion.Especificacion}
-          </option>
-        ))}
-      </select>
-    ) : key === "IdTipoCurso" ? (
-      <select name="IdTipoCurso" value={curso.IdTipoCurso} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-        <option value="">Selecciona una opción</option>
-        {opcionesTipoCurso.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>
-            {opcion.Especificacion}
-          </option>
-        ))}
-      </select>
-    ) : (
-      <input 
-        type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
-        name={key}
-        value={curso[key as keyof typeof curso]}
-        onChange={handleChange}
-        className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-      />
-    )} 
-  </div>
-)))}
 
+       {/* FORMULARIO DE EDICIÓN */}
+       {Object.keys(editandoCurso).map((key) => (
+         key !== "id" && (
+           <div key={key} className="mt-2">
+             <label className="block text-sm font-bold">{key}</label>
+
+             
+             <input
+               type="text"
+               name={key}
+               value={editandoCurso ? (editandoCurso as any)[key] ?? "" : ""}
+               onChange={handleChange}
+               className="border p-2 w-full rounded"
+             />
+           </div>
+         )
+       ))}
     
 
        {/* BOTONES */}
        <div className="mt-4 flex space-x-4 ">
          <button onClick={handleGuardarEdicion} className="bg-[#990000] text-white px-4 py-2 rounded">Guardar</button>
          <button onClick={() => setEditandoCurso(null)} className="bg-gray-700 text-white px-4 py-2 rounded">Cancelar</button>
-       </div> 
-       </motion.div>
+       </div>
             
            </div>
          </div>
