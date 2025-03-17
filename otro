@@ -1,19 +1,6 @@
-[Nest] 14168  - 17/03/2025, 1:38:51 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
-Invalid `prisma.$queryRaw()` invocation:
+OLE DB provider "MSOLEDBSQL" for linked server "10.1.30.20" returned message "Login timeout expired".
+OLE DB provider "MSOLEDBSQL" for linked server "10.1.30.20" returned message "A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.".
+Msg 53, Level 16, State 1, Line 7
+Named Pipes Provider: Could not open a connection to SQL Server [53]. 
 
-
-Raw query failed. Code: `53`. Message: `Named Pipes Provider: Could not open a connection to SQL Server [53]. `
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async UsuarioService.iniciarSesion (C:\Users\desarrollador5\Documents\gestor_cursos\src\usuario\usuario.service.ts:9:21)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.3.1',
-  meta: {
-    code: '53',
-    message: 'Named Pipes Provider: Could not open a connection to SQL Server [53]. '      
-  }
-}
+Completion time: 2025-03-17T13:44:20.2178391-05:00
