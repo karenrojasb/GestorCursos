@@ -12,8 +12,7 @@ interface Opcion {
   Tipo: number;
 }
 
-export default function CatalogoModal({ onClose, onSave }: CursoModalProps) {
-  // Se agregan los campos 'est' (boolean) y 'fecreg' (fecha en ISO) en el estado inicial
+export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [curso, setCurso] = useState({
     NombreCurso: "",
     Valor: "",
@@ -29,12 +28,10 @@ export default function CatalogoModal({ onClose, onSave }: CursoModalProps) {
     Modalidad: "",
     Unidad: "",
     Profesor: "",
-    SegundoPro: "",  // Opcional
-    Proexterno: "",  // Opcional
-    Descripcion: "", // Opcional
+    SegundoPro: "",  
+    Proexterno: "",  
+    Descripcion: "", 
     IdTipoCurso: "",
-    est: true, // Se define por defecto como true
-    fecreg: new Date().toISOString(), // Fecha actual en formato ISO 8601
   });
 
   const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
@@ -48,6 +45,7 @@ export default function CatalogoModal({ onClose, onSave }: CursoModalProps) {
       try {
         const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
         if (!response.ok) throw new Error("Error al obtener las opciones");
+
         const data: Opcion[] = await response.json();
 
         setOpcionesPublico(data.filter((item) => item.Tipo === 1));
@@ -59,41 +57,31 @@ export default function CatalogoModal({ onClose, onSave }: CursoModalProps) {
         console.error("Error cargando las opciones:", error);
       }
     }
+
     fetchOpciones();
   }, []);
 
-  // Para campos numéricos, se convierte el valor a número; para demás se toma el string.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
     setCurso((prev) => ({
       ...prev,
-      [name]:
-        ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(name)
-          ? (value === "" ? "" : Number(value))
-          : value,
+      [e.target.name]: e.target.value,
     }));
   };
 
-  // Al enviar, se procesa cada campo. Se asegura que:
-  // - Los campos numéricos se conviertan a número (o queden null si están vacíos).
-  // - Los campos opcionales se asignen como null si están vacíos.
-  // - Se sobreescribe fecreg con la fecha actual.
-  // - El campo est se asegura que sea booleano.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     const cursoData = Object.keys(curso).reduce((acc, key) => {
       const value = curso[key as keyof typeof curso];
-      if (key === "est") {
-        acc[key] = Boolean(value);
-      } else if (key === "fecreg") {
-        acc[key] = new Date().toISOString(); // Se asigna la fecha actual en el envío
-      } else if (value !== "") {
+
+      if (value !== "") {
         acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key)
-          ? Number(value) || null
-          : value;
+          ? Number(value) || null // Convierte a número o deja null
+          : value; // Si es texto, lo deja como está
       } else if (["SegundoPro", "Proexterno", "Descripcion"].includes(key)) {
-        acc[key] = null;
+        acc[key] = null; // Si están vacíos, los envía como null
       }
+
       return acc;
     }, {} as Record<string, any>);
 
@@ -103,10 +91,11 @@ export default function CatalogoModal({ onClose, onSave }: CursoModalProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md transition-transform transform scale-95 opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+        
         {/* Botón de cerrar */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-transform duration-300 hover:rotate-90"
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
         >
           <XMarkIcon className="w-6 h-6" />
         </button>
@@ -117,6 +106,7 @@ export default function CatalogoModal({ onClose, onSave }: CursoModalProps) {
           {Object.keys(curso).map((key) => (
             <div key={key} className="mb-3">
               <label className="block font-semibold">{key}:</label>
+
               {key === "Publico" ? (
                 <select name="Publico" value={curso.Publico} onChange={handleChange} className="w-full border p-2 rounded">
                   <option value="">Selecciona una opción</option>
@@ -163,12 +153,8 @@ export default function CatalogoModal({ onClose, onSave }: CursoModalProps) {
                   ))}
                 </select>
               ) : (
-                <input
-                  type={
-                    ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key)
-                      ? "number"
-                      : "text"
-                  }
+                <input 
+                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
                   name={key}
                   value={curso[key as keyof typeof curso]}
                   onChange={handleChange}
