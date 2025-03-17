@@ -37,9 +37,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         const data: Inscripcion[] = await response.json();
         console.log("Datos recibidos en el frontend:", data);
 
-        const InscripcionesActivas = data.filter((inscripcion) => inscripcion.est === 1);
-
-        setInscripciones(InscripcionesActivas);
+        setInscripciones(data);
         setInscripcionesFiltradas(data);
       } catch (error) {
         console.error("Error al obtener inscripciones:", error);
@@ -147,7 +145,9 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                             <div className="p-4 bg-gray-50 border border-gray-300 rounded-md shadow-md mt-2">
                               <h3 className="text-lg font-semibold text-[#990000]">Inscritos:</h3>
                               <ul className="list-disc pl-5 mt-2 space-y-2">
-                                {inscripciones.map((inscripcion) => (
+                                {inscripciones
+                                .filter((inscripcion) => Number(inscripcion.est) === 1)
+                                .map((inscripcion) => (
                                   <li key={inscripcion.id} className="text-gray-700">
                                     <strong>Documento:</strong> {inscripcion.docInscr} | 
                                     
