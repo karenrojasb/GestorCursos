@@ -1,5 +1,3 @@
-
-
 "use client";
 import { ReactNode, useState, useEffect } from "react";
 import Image from "next/image";
@@ -13,8 +11,8 @@ interface LayoutProps {
 
 interface Usuario {
   nombre: string;
-  publico: number; // 1 = Profesor, 2 = Administración
-  esAdmin: boolean; // true si es administrador
+  publico: number;
+  esAdmin: boolean; 
 }
 
 export default function RootLayout({ children }: LayoutProps) {
@@ -23,10 +21,10 @@ export default function RootLayout({ children }: LayoutProps) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Recuperar docInscr del localStorage al iniciar la aplicación
-    const storedDocInscr = localStorage.getItem("docInscr");
-    if (storedDocInscr) {
-      console.log("Email de inscripción recuperado:", storedDocInscr);
+    // Recuperar id_emp del localStorage al iniciar la aplicación
+    const storedIdEmp = localStorage.getItem("id_emp");
+    if (storedIdEmp) {
+      console.log("ID de empleado recuperado:", storedIdEmp);
     }
   }, []);
 
@@ -53,9 +51,9 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error(data.message || "El email no es correcto.");
       }
 
-      // VERIFICAR SI EL USUARIO ESTA EN LA TABLA GESCUR.EMP_NOMINA
-      if (data.publico === null || data.publico === undefined) {
-        throw new Error("No tiene permisos para ingresar al sistema.");
+      // Verificar si el usuario tiene un ID válido
+      if (!data.id_emp) {
+        throw new Error("No se encontró el documento del usuario.");
       }
 
       // Verificar si el usuario tiene un rol permitido
@@ -64,10 +62,8 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      // Guardar `docInscr` en localStorage
-      if (data.docInscr) {
-        localStorage.setItem("docInscr", data.docInscr);
-      }
+      // Guardar `id_emp` en localStorage
+      localStorage.setItem("id_emp", data.id_emp);
 
       // Guardar usuario en el estado
       setUsuario({
@@ -83,7 +79,7 @@ export default function RootLayout({ children }: LayoutProps) {
   // FUNCIÓN PARA CERRAR SESIÓN
   const cerrarSesion = () => {
     setUsuario(null);
-    localStorage.removeItem("docInscr"); // Eliminar docInscr del localStorage al cerrar sesión
+    localStorage.removeItem("id_emp"); 
   };
 
   // RENDERIZA EL FORMULARIO DE LOGIN SI NO HAY USUARIO
@@ -136,9 +132,9 @@ export default function RootLayout({ children }: LayoutProps) {
 
         <main className="flex flex-col items-center justify-center flex-1 p-6">
           <motion.h1
-            className="text-3xl font-bold text-[#990000] mb-6 text-center"
+            className="text-4xl font-bold text-[#990000] mb-6 text-center"
             initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 3, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             Bienvenido a Gestión de Cursos
@@ -149,13 +145,18 @@ export default function RootLayout({ children }: LayoutProps) {
 
           {children}
         </main>
+        
+        <div className="ml-4 bg-blue-800 text-white rounded w-52 h-20 flex justify-center items-center "> 
+          <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={200} height={60} />
+          </div>
 
-        <footer className="bg-white text-center py-4 shadow-inner w-full">
+        <footer className="bg-white items-center text-center py-4 shadow-inner w-full">
+        
           <div className="flex items-center justify-between px-6">
-            <p className="text-gray-700">
+            <p className="text-gray-700 text-center">
               &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
             </p>
-            <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={160} height={60} />
+           
           </div>
         </footer>
       </body>
