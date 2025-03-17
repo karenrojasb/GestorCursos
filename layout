@@ -10,117 +10,34 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-// Interfaz para definir la estructura del usuario autenticado
+// Interfaz del usuario autenticado
 interface Usuario {
   nombre: string;
   publico: number;
-  esAdmin: boolean; 
+  esAdmin: boolean;
 }
 
-// Componente principal de la aplicación
 export default function RootLayout({ children }: LayoutProps) {
-  const [usuario, setUsuario] = useState<Usuario | null>(null); // Estado para almacenar el usuario autenticado
-  const [e_mail, setEmail] = useState(""); // Estado para el email ingresado en el login
-  const [error, setError] = useState(""); // Estado para almacenar errores de autenticación
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
 
   useEffect(() => {
-    // Recuperar id_emp del localStorage al iniciar la aplicación
-    const storedIdEmp = localStorage.getItem("id_emp");
-    if (storedIdEmp) {
-      console.log("ID de empleado recuperado:", storedIdEmp);
-    }
+    // Simula un usuario administrador sin necesidad de login
+    const usuarioAdmin: Usuario = {
+      nombre: "Administrador",
+      publico: 2, // Público 2 representa Administrativos
+      esAdmin: true, // Se define como administrador
+    };
+
+    setUsuario(usuarioAdmin);
   }, []);
-
-  /**
-   * FUNCIÓN PARA INICIAR SESIÓN Y OBTENER DATOS DEL USUARIO
-   * - Realiza una petición `POST` al backend con el email ingresado.
-   * - Si la autenticación es exitosa, almacena la información del usuario.
-   */
-  const iniciarSesion = async () => {
-    setError(""); // Limpiar errores previos
-
-    if (e_mail.trim() === "") {
-      setError("Ingrese su email.");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:8090/api/usuario/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ e_mail }),
-      });
-
-      const data = await response.json();
-      console.log("Datos recibidos del backend:", data);
-
-      if (!response.ok) {
-        throw new Error(data.message || "El email no es correcto.");
-      }
-
-      // Verificar si el usuario tiene un ID válido
-      if (!data.id_emp) {
-        throw new Error("No se encontró el documento del usuario.");
-      }
-
-      // Verificar si el usuario tiene un rol permitido (profesor, administrativo o admin)
-      const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
-      if (!esUsuarioValido) {
-        throw new Error("No tiene permisos para ingresar al sistema.");
-      }
-
-      // Guardar `id_emp` en localStorage para futuras consultas
-      localStorage.setItem("id_emp", data.id_emp);
-
-      // Guardar usuario en el estado para mantener la sesión
-      setUsuario({
-        nombre: data.nombre,
-        publico: data.publico,
-        esAdmin: Boolean(data.esAdmin), // Convertir a booleano en caso de ser necesario
-      });
-    } catch (error: any) {
-      setError(error.message);
-    }
-  };
 
   /**
    * FUNCIÓN PARA CERRAR SESIÓN
    * - Borra la información del usuario en el estado.
-   * - Elimina `id_emp` del localStorage.
    */
   const cerrarSesion = () => {
     setUsuario(null);
-    localStorage.removeItem("id_emp");
   };
-
-  /**
-   * SI EL USUARIO NO ESTÁ AUTENTICADO, MOSTRAR FORMULARIO DE LOGIN
-   */
-  if (!usuario) {
-    return (
-      <html lang="es">
-        <body className="flex items-center justify-center h-screen bg-gray-200">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Iniciar Sesión</h2>
-            <input
-              type="text"
-              placeholder="Ingrese su email"
-              value={e_mail}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border p-2 w-full mb-3 rounded"
-            />
-            <button
-              onClick={iniciarSesion}
-              className="bg-[#990000] text-white px-4 py-2 rounded w-full hover:bg-red-700 transition"
-            >
-              Entrar
-            </button>
-            {error && <p className="text-red-600 mt-2">{error}</p>}
-          </div>
-        </body>
-      </html>
-    );
-  }
 
   /**
    * SI EL USUARIO YA ESTÁ AUTENTICADO, MOSTRAR LA INTERFAZ PRINCIPAL
@@ -136,7 +53,7 @@ export default function RootLayout({ children }: LayoutProps) {
             className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
           />
           <div className="flex flex-col items-center ml-auto">
-            <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
+            <span className="text-xl font-medium text-gray-700">{usuario?.nombre}</span>
             <button
               className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
               onClick={cerrarSesion}
@@ -151,14 +68,16 @@ export default function RootLayout({ children }: LayoutProps) {
           <motion.h1
             className="text-4xl font-bold text-[#990000] mb-6 text-center"
             initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }} // Corrección de opacity
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
           {/* PASAMOS LOS ROLES AL COMPONENTE DE BOTONES */}
-          <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
+          {usuario && (
+            <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
+          )}
 
           {children}
         </main>
