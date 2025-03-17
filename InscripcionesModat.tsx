@@ -9,9 +9,7 @@ interface Curso {
 
 interface Inscripcion {
   id: number;
-  idCur?: number;
-  Cursos?: Curso;
-  cursos?: Curso;
+  idCur: number;
   docInscr: string;
   est: number;
   fecreg: string;
@@ -40,8 +38,9 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         const responseInscripciones = await fetch("http://localhost:8090/api/inscripciones");
         if (!responseInscripciones.ok) throw new Error("Error al obtener inscripciones");
         const inscripcionesData: Inscripcion[] = await responseInscripciones.json();
-        const inscripcionesActivas = inscripcionesData.filter((ins) => ins.est === 1);
 
+        // Filtrar solo inscripciones activas
+        const inscripcionesActivas = inscripcionesData.filter((ins) => ins.est === 1);
         setInscripciones(inscripcionesActivas);
       } catch (error) {
         console.error("Error al obtener datos:", error);
