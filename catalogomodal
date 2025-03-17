@@ -1,45 +1,182 @@
-const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
-  setInscribiendo(true);
-  setErrorInscripcion(null);
+"use client";
 
-  if (!idEmp) {
-    setErrorInscripcion("Error: No se encuentra el documento de usuario.");
-    setInscribiendo(false);
-    return;
-  }
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import { useEffect, useState } from "react";
 
-  try {
-    if (estaInscrito && inscripcionId) {
-      // **CANCELAR INSCRIPCIÓN**
-      const response = await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ est: false }),
-      });
+interface Curso {
+  id: number;
+  NombreCurso: string;
+  Inicio: string;
+  Fin: string;
+}
 
-      if (!response.ok) throw new Error("Error al cancelar inscripción");
+interface Inscripcion {
+  id: number;
+  idCur: number;
+  docInscr: number;
+  est: boolean;
+}
 
-    } else {
-      // **INSCRIBIRSE**
-      const fecreg = new Date().toISOString().split("T")[0];
-      const response = await fetch("http://localhost:8090/api/inscripciones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg }),
-      });
+export default function CatalogoModal({ onClose }: { onClose: () => void }) {
+  const [cursos, setCursos] = useState<Curso[]>([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [inscribiendo, setInscribiendo] = useState(false);
+  const [errorInscripcion, setErrorInscripcion] = useState<string | null>(null);
+  const [idEmp, setIdEmp] = useState<number | null>(null);
+  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
 
-      if (!response.ok) throw new Error("Error al inscribirse");
+  useEffect(() => {
+    const fetchCursos = async () => {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos");
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+        const data = await response.json();
+        setCursos(data);
+        setCursosFiltrados(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error al obtener los cursos:", error);
+        setIsLoading(false);
+      }
+    };
+
+    const storedIdEmp = localStorage.getItem("id_emp");
+    if (storedIdEmp) setIdEmp(Number(storedIdEmp));
+
+    fetchCursos();
+  }, []);
+
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      if (!idEmp) return;
+      try {
+        const response = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
+        if (!response.ok) throw new Error("Error al obtener inscripciones");
+        const data = await response.json();
+
+        // Filtrar solo inscripciones activas
+        setInscripciones(data.filter((ins: Inscripcion) => ins.est === true));
+      } catch (error) {
+        console.error("Error al obtener inscripciones:", error);
+      }
+    };
+
+    if (idEmp) fetchInscripciones();
+  }, [idEmp]);
+
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+    setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
+  };
+
+  const handleVerMas = (id: number) => {
+    setExpandedCursoId(expandedCursoId === id ? null : id);
+  };
+
+  const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
+    setInscribiendo(true);
+    setErrorInscripcion(null);
+
+    if (!idEmp) {
+      setErrorInscripcion("Error: No se encuentra el documento de usuario.");
+      setInscribiendo(false);
+      return;
     }
 
-    // 🔄 **Actualizar lista de inscripciones después de la acción**
-    const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
-    if (!updatedResponse.ok) throw new Error("Error al obtener inscripciones actualizadas");
-    const updatedData = await updatedResponse.json();
-    setInscripciones(updatedData);
+    try {
+      if (estaInscrito && inscripcionId) {
+        // **CANCELAR INSCRIPCIÓN**
+        const response = await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ est: false }),
+        });
 
-  } catch (error) {
-    setErrorInscripcion("Ocurrió un error. Inténtalo de nuevo.");
-  }
+        if (!response.ok) throw new Error("Error al cancelar inscripción");
 
-  setInscribiendo(false);
-};
+      } else {
+        // **INSCRIBIRSE**
+        const fecreg = new Date().toISOString().split("T")[0];
+
+        const response = await fetch("http://localhost:8090/api/inscripciones", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg }),
+        });
+
+        if (!response.ok) throw new Error("Error al inscribirse");
+      }
+
+      // Recargar inscripciones después de inscribirse o cancelar
+      const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
+      const updatedData = await updatedResponse.json();
+      setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
+
+    } catch (error) {
+      setErrorInscripcion("No se pudo completar la acción.");
+    }
+
+    setInscribiendo(false);
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
+        
+        {/* Barra de búsqueda */}
+        <div className="flex justify-between items-center mb-4">
+          <input
+            type="text"
+            placeholder="Busque el nombre del curso"
+            value={busqueda}
+            onChange={handleBuscar}
+            className="px-4 py-2 border rounded-full w-96 focus:outline-none"
+          />
+          <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-[#990000]">
+            <XMarkIcon className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Lista de cursos */}
+        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+          {isLoading ? (
+            <p className="text-center py-4">Cargando cursos...</p>
+          ) : cursosFiltrados.length > 0 ? (
+            cursosFiltrados.map((curso) => {
+              const inscripcion = inscripciones.find(ins => ins.idCur === curso.id);
+
+              return (
+                <div key={curso.id} className="border-b py-2">
+                  <div className="grid grid-cols-3 items-center">
+                    <span>{curso.NombreCurso}</span>
+                    <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
+                    <button onClick={() => handleVerMas(curso.id)} className="ml-4 bg-[#990000] text-white px-4 py-1 rounded w-24">
+                      {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
+                    </button>
+                  </div>
+
+                  {expandedCursoId === curso.id && (
+                    <div className="p-4 border bg-gray-50 rounded-lg mt-2">
+                      <button
+                        onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
+                        className={`px-4 py-1 rounded w-32 ${inscripcion ? "bg-red-500" : "bg-green-500"} text-white`}
+                      >
+                        {inscripcion ? "Cancelar inscripción" : "Inscribirse"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-center py-4">No hay cursos disponibles.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
