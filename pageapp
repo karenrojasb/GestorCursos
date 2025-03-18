@@ -1,41 +1,34 @@
 import { useState, useEffect } from "react";
 
-interface Curso {
-  id: number;
-  nombre_curso: string;
-  valor: number;
-  publico: number;
-  periodo: string;
-  inicio: string;
-  fin: string;
-  horas: number;
-}
-
-export default function CatalogoModal({ onClose, id_emp }: { onClose: () => void, id_emp: number }) {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export default function CatalogoModal({ onClose }: { onClose: () => void }) {
+  const [cursos, setCursos] = useState([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [id_emp, setIdEmp] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!id_emp) {
-      setError("ID de usuario no válido");
+    // Intentar recuperar id_emp desde localStorage
+    const storedIdEmp = localStorage.getItem("id_emp");
+    if (storedIdEmp) {
+      setIdEmp(parseInt(storedIdEmp, 10));
+    } else {
+      setError("Usuario no válido");
       setIsLoading(false);
-      return;
     }
+  }, []);
+
+  useEffect(() => {
+    if (!id_emp) return;
 
     const fetchCursos = async () => {
       try {
         const response = await fetch(`http://localhost:8090/api/cursos/usuario/${id_emp}`);
-
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
         const data = await response.json();
-
-        if (!Array.isArray(data)) {
-          throw new Error("Respuesta inesperada del servidor");
-        }
+        if (!Array.isArray(data)) throw new Error("Respuesta inesperada del servidor");
 
         setCursos(data);
         setCursosFiltrados(data);
@@ -51,29 +44,15 @@ export default function CatalogoModal({ onClose, id_emp }: { onClose: () => void
     fetchCursos();
   }, [id_emp]);
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const term = event.target.value.toLowerCase();
-    setSearchTerm(term);
-    setCursosFiltrados(cursos.filter((curso) => curso.nombre_curso.toLowerCase().includes(term)));
-  };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] md:w-[60%] lg:w-[50%]">
         <h2 className="text-2xl font-bold text-[#990000] mb-4">Catálogo de Cursos</h2>
 
-        <input
-          type="text"
-          placeholder="Buscar curso..."
-          value={searchTerm}
-          onChange={handleSearch}
-          className="w-full p-2 border border-gray-300 rounded mb-4"
-        />
-
-        {isLoading ? (
-          <p className="text-center text-blue-600 font-semibold">Cargando cursos...</p>
-        ) : error ? (
+        {error ? (
           <p className="text-center text-red-500">{error}</p>
+        ) : isLoading ? (
+          <p className="text-center text-blue-600 font-semibold">Cargando cursos...</p>
         ) : cursosFiltrados.length === 0 ? (
           <p className="text-center text-gray-500">No hay cursos disponibles</p>
         ) : (
