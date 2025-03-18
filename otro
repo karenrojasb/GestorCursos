@@ -1,29 +1,7 @@
-async obtenerCursosParaUsuario(idEmp: number) {
-  // Obtener el "publico" del usuario desde la tabla emp_nomina
-  const usuario = await this.prisma.emp_nomina.findUnique({
-    where: { id_emp: idEmp },
-    select: { publico: true },
-  });
-
-  if (!usuario) {
-    throw new NotFoundException("Usuario no encontrado.");
-  }
-
-  let cursos;
-  if (usuario.publico === 1) {
-    // Solo cursos donde el idEmp es igual al del usuario
-    cursos = await this.prisma.cursos.findMany({
-      where: { idEmp: idEmp },
-    });
-  } else if (usuario.publico === 2) {
-    // Cursos donde el público es 2
-    cursos = await this.prisma.cursos.findMany({
-      where: { publico: 2 },
-    });
-  } else {
-    // Público 3: Puede ver todos los cursos
-    cursos = await this.prisma.cursos.findMany();
-  }
-
-  return cursos;
-}
+[Nest] 3492  - 18/03/2025, 9:34:52 a. m.   ERROR [ExceptionsHandler] TypeError: Cannot read properties of undefined (reading 'findUnique')
+    at CursosService.obtenerCursosParaUsuario (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.service.ts:110:50)
+    at CursosController.obtenerCursos (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.controller.ts:49:31)
+    at C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17
