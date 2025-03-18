@@ -66,7 +66,9 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     };
 
     const storedIdEmp = localStorage.getItem("id_emp");
-    if (storedIdEmp) setIdEmp(Number(storedIdEmp));
+    if (storedIdEmp) {
+      setIdEmp(Number(storedIdEmp));
+    }
 
     fetchCursos();
   }, []);
@@ -142,29 +144,17 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
     setInscribiendo(false);
   };
-  const handleMouseEnter = () => {
-    setIsSearchActive(true);
-  };
-
-  const handleMouseLeave = () => {
-    if (busqueda === "") {
-      setIsSearchActive(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
-        
-        {/* BARRA DE BUSQUEDA*/}
         <div className="flex justify-between items-center mb-4">
-          <div className="relative flex items-center"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}>
+          <div className="relative flex items-center">
             <button 
-            
-            onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
-              {isSearchActive ? <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />}
+              onClick={() => setIsSearchActive(!isSearchActive)} 
+              className="p-2 rounded-full bg-gray-200"
+            >
+              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
             </button>
             <input
               type="text"
@@ -175,70 +165,36 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
             />
           </div>
-           {/* BOTÓN CERRAR */}
-                  <button
-                    onClick={onClose}
-                    className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-                  >
-                    <XMarkIcon className="h-6 w-6" />
-                  </button>
+          <button
+            onClick={onClose}
+            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
         </div>
 
-        {/* LISTA DE CURSOS */}
         <div className="flex-1 overflow-y-auto mt-2 space-y-2">
           {isLoading ? (
-             <div className="flex justify-center py-4">
-             <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
-           </div>
-          ) : cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map((curso) => {
-              const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
-              return (
-                <div key={curso.id} className="border-b py-2">
-                  <div className="grid grid-cols-3 items-center">
-                    <span>{curso.NombreCurso}</span>
-                    <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-                   
-                    <button
+            <div className="flex justify-center py-4">
+              <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            cursosFiltrados.map((curso) => (
+              <div key={curso.id} className="border-b py-2">
+                <div className="grid grid-cols-3 items-center">
+                  <span>{curso.NombreCurso}</span>
+                  <button
                     onClick={() => handleVerMas(curso.id)}
-                    className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
-                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
+                    className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded"
                   >
                     {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
                   </button>
-                  </div>
-
-                  {expandedCursoId === curso.id && (
-                    <div className="p-4 border bg-gray-50 rounded-lg mt-2">
-                       <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
-                    
-                    <p><strong>Valor:</strong> {curso.Valor}</p>
-                    <p><strong>Fin:</strong> {curso.Fin}</p>
-                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
-                    <p><strong>Horas:</strong> {curso.Horas}</p>
-                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
-                    <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
-                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
-
-                      <button
-                        onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
-                        className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
-                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-                      >
-                        {inscripcion ? "Cancelar inscripción" : "Inscribirse"}
-                      </button>
-                    </div>
-                  )}
                 </div>
-              );
-            })
-          ) : (
-            <p className="text-center py-4">No hay cursos disponibles.</p>
+              </div>
+            ))
           )}
         </div>
       </div>
     </div>
   );
 }
-
-
