@@ -1,19 +1,36 @@
-[Nest] 3132  - 18/03/2025, 9:48:41 a. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
-Invalid `prisma.$queryRaw()` invocation:
+async obtenerCursosParaUsuario(idEmp: string) {
+    try {
+      // Buscar el usuario en la vista `gescur.emp_nomina` para obtener el valor de `publico`
+      const usuario = await this.prisma.$queryRaw<
+        { publico: number }[]
+      >`SELECT publico FROM gescur.emp_nomina WHERE idEmp = ${idEmp}`;
 
+      if (!usuario || usuario.length === 0) {
+        throw new Error('Usuario no encontrado en gescur.emp_nomina');
+      }
 
-Raw query failed. Code: `102`. Message: `Incorrect syntax near 'LIMIT'.`
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async CursosService.obtenerCursosParaUsuario (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.service.ts:110:21)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.3.1',
-  meta: {
-    code: '102',
-    message: "Incorrect syntax near 'LIMIT'."
+      const publico = usuario[0].publico;
+
+      // Obtener los cursos según el valor de `publico`
+      let cursos;
+
+      if (publico === 3) {
+        // Si es 3, obtiene todos los cursos
+        cursos = await this.prisma.$queryRaw`
+          SELECT * FROM gescur.Cursos ORDER BY id OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+        `;
+      } else {
+        // Si es 1 o 2, solo muestra los cursos que coinciden con su `publico`
+        cursos = await this.prisma.$queryRaw`
+          SELECT * FROM gescur.Cursos 
+          WHERE publico = ${publico}
+          ORDER BY id OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+        `;
+      }
+
+      return cursos;
+    } catch (error) {
+      console.error('Error al obtener cursos:', error.message);
+      throw new Error('No se pudieron obtener los cursos.');
+    }
   }
-}
