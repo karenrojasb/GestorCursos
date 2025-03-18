@@ -1,6 +1,29 @@
-OLE DB provider "MSOLEDBSQL" for linked server "10.1.30.20" returned message "Login timeout expired".
-OLE DB provider "MSOLEDBSQL" for linked server "10.1.30.20" returned message "A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.".
-Msg 53, Level 16, State 1, Line 7
-Named Pipes Provider: Could not open a connection to SQL Server [53]. 
+async obtenerCursosParaUsuario(idEmp: number) {
+  // Obtener el "publico" del usuario desde la tabla emp_nomina
+  const usuario = await this.prisma.emp_nomina.findUnique({
+    where: { id_emp: idEmp },
+    select: { publico: true },
+  });
 
-Completion time: 2025-03-17T13:44:20.2178391-05:00
+  if (!usuario) {
+    throw new NotFoundException("Usuario no encontrado.");
+  }
+
+  let cursos;
+  if (usuario.publico === 1) {
+    // Solo cursos donde el idEmp es igual al del usuario
+    cursos = await this.prisma.cursos.findMany({
+      where: { idEmp: idEmp },
+    });
+  } else if (usuario.publico === 2) {
+    // Cursos donde el público es 2
+    cursos = await this.prisma.cursos.findMany({
+      where: { publico: 2 },
+    });
+  } else {
+    // Público 3: Puede ver todos los cursos
+    cursos = await this.prisma.cursos.findMany();
+  }
+
+  return cursos;
+}
