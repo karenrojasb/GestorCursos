@@ -46,10 +46,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     const fetchCursos = async () => {
-      if (!idEmp) return;
-
       try {
-        const response = await fetch(`http://localhost:8090/api/cursos?id_emp=${idEmp}`);
+        const response = await fetch("http://localhost:8090/api/cursos");
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
 
@@ -68,10 +66,10 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     };
 
     const storedIdEmp = localStorage.getItem("id_emp");
-    if (storedIdEmp) {
-      setIdEmp(Number(storedIdEmp));
-    }
-  }, [idEmp]);
+    if (storedIdEmp) setIdEmp(Number(storedIdEmp));
+
+    fetchCursos();
+  }, []);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -119,6 +117,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         });
 
         if (!response.ok) throw new Error("Error al cancelar inscripción");
+
       } else {
         // **INSCRIBIRSE**
         const fecreg = new Date().toISOString().split("T")[0];
@@ -148,29 +147,22 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
         
-        {/* BARRA DE BÚSQUEDA */}
+        {/* BARRA DE BUSQUEDA*/}
         <div className="flex justify-between items-center mb-4">
           <div className="relative flex items-center">
-            <button 
-              onClick={() => setIsSearchActive(!isSearchActive)} 
-              className="p-2 rounded-full bg-gray-200"
-            >
+            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
               <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
             </button>
             <input
               type="text"
-              placeholder="Busque el nombre del curso"
+              placeholder="Buscar curso"
               value={busqueda}
               onChange={handleBuscar}
               className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
             />
           </div>
-          {/* BOTÓN CERRAR */}
-          <button
-            onClick={onClose}
-            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-          >
+          <button onClick={onClose} className="text-gray-500 hover:text-[#990000]">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
@@ -178,7 +170,9 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         {/* LISTA DE CURSOS */}
         <div className="flex-1 overflow-y-auto mt-2 space-y-2">
           {isLoading ? (
-            <p className="text-center py-4">Cargando cursos...</p>
+            <div className="flex justify-center py-4">
+              <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+            </div>
           ) : cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso) => (
               <div key={curso.id} className="border-b py-2">
