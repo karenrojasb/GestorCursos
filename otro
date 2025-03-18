@@ -1,36 +1,49 @@
-async obtenerCursosParaUsuario(idEmp: string) {
-    try {
-      // Buscar el usuario en la vista `gescur.emp_nomina` para obtener el valor de `publico`
-      const usuario = await this.prisma.$queryRaw<
-        { publico: number }[]
-      >`SELECT publico FROM gescur.emp_nomina WHERE idEmp = ${idEmp}`;
-
-      if (!usuario || usuario.length === 0) {
-        throw new Error('Usuario no encontrado en gescur.emp_nomina');
-      }
-
-      const publico = usuario[0].publico;
-
-      // Obtener los cursos según el valor de `publico`
-      let cursos;
-
-      if (publico === 3) {
-        // Si es 3, obtiene todos los cursos
-        cursos = await this.prisma.$queryRaw`
-          SELECT * FROM gescur.Cursos ORDER BY id OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
-        `;
-      } else {
-        // Si es 1 o 2, solo muestra los cursos que coinciden con su `publico`
-        cursos = await this.prisma.$queryRaw`
-          SELECT * FROM gescur.Cursos 
-          WHERE publico = ${publico}
-          ORDER BY id OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
-        `;
-      }
-
-      return cursos;
-    } catch (error) {
-      console.error('Error al obtener cursos:', error.message);
-      throw new Error('No se pudieron obtener los cursos.');
+useEffect(() => {
+  const fetchCursos = async () => {
+    if (!idEmp) {
+      console.log("⛔ No hay idEmp, no se hace la petición.");
+      return;
     }
+
+    try {
+      console.log(`📡 Haciendo petición a: http://localhost:8090/api/cursos/usuario/${idEmp}`);
+      const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
+      
+      console.log("🔄 Estado de la respuesta:", response.status);
+      
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      
+      const data = await response.json();
+      console.log("📩 Respuesta del backend:", data);
+
+      if (data.success) {
+        const hoy = new Date();
+        const cursosActivos = data.cursos.filter((curso: Curso) => 
+          !curso.Fin || new Date(curso.Fin) >= hoy
+        );
+
+        console.log("📚 Cursos activos:", cursosActivos);
+
+        setTimeout(() => {
+          setCursos(cursosActivos);
+          setCursosFiltrados(cursosActivos);
+          setIsLoading(false);
+        }, 1000);
+      } else {
+        throw new Error("No se pudieron obtener los cursos.");
+      }
+    } catch (error) {
+      console.error("❌ Error al obtener los cursos:", error);
+      setIsLoading(false);
+    }
+  };
+
+  const storedIdEmp = localStorage.getItem("id_emp");
+  console.log("📌 ID del usuario guardado en localStorage:", storedIdEmp);
+
+  if (storedIdEmp) {
+    setIdEmp(Number(storedIdEmp));
   }
+
+  if (idEmp) fetchCursos();
+}, [idEmp]);
