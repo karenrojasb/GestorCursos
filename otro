@@ -1,7 +1,41 @@
-[Nest] 3492  - 18/03/2025, 9:34:52 a. m.   ERROR [ExceptionsHandler] TypeError: Cannot read properties of undefined (reading 'findUnique')
-    at CursosService.obtenerCursosParaUsuario (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.service.ts:110:50)
-    at CursosController.obtenerCursos (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.controller.ts:49:31)
-    at C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:38:29
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17
+async obtenerCursosParaUsuario(idEmp: number) {
+    // 1. Consultar la vista gescur.emp_nomina con SQL crudo
+    const usuario = await this.prisma.$queryRaw<{ publico: number }[]>`
+      SELECT publico FROM gescur.emp_nomina WHERE idEmp = ${idEmp} LIMIT 1
+    `;
+
+    if (!usuario || usuario.length === 0) {
+      throw new NotFoundException("Usuario no encontrado");
+    }
+
+    const publico = usuario[0].publico;
+
+    //  2. Obtener los cursos según el valor de `publico`
+    return this.prisma.cursos.findMany({
+      where: {
+        OR: [
+          { publico: 3 }, // Cursos para todos
+          { publico: publico }, // Cursos específicos según `publico`
+        ],
+      },
+    });
+  }
+
+
+
+  @Get("usuario")
+  async obtenerCursos(@Query("idEmp") idEmp: string) {
+    // Validar si idEmp está presente
+    if (!idEmp) {
+      throw new NotFoundException("El idEmp es requerido");
+    }
+
+    // Convertir idEmp a número
+    const idEmpNumber = parseInt(idEmp, 10);
+    if (isNaN(idEmpNumber)) {
+      throw new NotFoundException("El idEmp debe ser un número válido");
+    }
+
+    // Llamar al servicio para obtener los cursos
+    return await this.cursosService.obtenerCursosParaUsuario(idEmpNumber);
+  }
