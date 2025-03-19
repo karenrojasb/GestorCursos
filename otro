@@ -1,27 +1,200 @@
-useEffect(() => {
-  const storedIdEmp = localStorage.getItem("id_emp");
-  if (storedIdEmp) {
-    setIdEmp(Number(storedIdEmp));
-    fetchCursos(Number(storedIdEmp)); // Llamar la función con el ID
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
+import { CursosService } from './cursos.service';
+import { CreateCursoDto } from './dto/create-curso.dto';
+import { UpdateCursoDto } from './dto/update-curso.dto';
+
+@Controller('cursos')
+export class CursosController {
+  constructor(private readonly cursosService: CursosService) {}
+
+  // CREAR CURSO
+  @Post()
+  async createCourses(@Body() data: CreateCursoDto) {
+    console.log("Recibiendo datos:", data);
+    return this.cursosService.createCourses(data);
   }
-}, []);
 
-const fetchCursos = async (idEmp: number) => {
-  try {
-    const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
-
-    const hoy = new Date();
-    const cursosActivos = data.cursos.filter((curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy);
-
-    setTimeout(() => {
-      setCursos(cursosActivos);
-      setCursosFiltrados(cursosActivos);
-      setIsLoading(false);
-    }, 1000);
-  } catch (error) {
-    console.error("Error al obtener los cursos:", error);
-    setIsLoading(false);
+  // OBTENER TODOS LOS CURSOS
+  @Get() 
+  async getCourses() {
+    return this.cursosService.getCourses();
   }
-};
+
+  // OBTENER ESPECIFICACIONES PARA EL DESPLEGABLE
+  @Get('especificaciones')
+  async getEspecificaciones() {
+    return this.cursosService.getEspecificaciones();
+  }
+
+
+
+  // ACTUALIZAR CURSO POR ID
+  @Put(':id')
+  async updateCourse(@Param('id') id: string, @Body() updateCursoDto: UpdateCursoDto) {
+    const updateCourse = await this.cursosService.updateCourse(Number(id), updateCursoDto);
+    if (!updateCourse) {
+      throw new NotFoundException(`El id #${id} no fue encontrado`);
+    }
+    return updateCourse;
+  }
+
+  // ELIMINAR CURSO POR ID
+  @Delete(':id')
+  async deleteCourse(@Param('id') id: string) {
+    return this.cursosService.deleteCourse(Number(id));
+  }
+  
+  @Get ('usuario/:id_emp')
+  async obtenerCursos(@Param('id_emp') id_emp: string) {
+    try {
+      const cursos = await this.cursosService.obtenerCursosParaUsuario(id_emp);
+      return { success: true, cursos};
+
+    } catch (error) {
+      return {success: false, message: error.message};
+    }
+  }
+}
+
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { CreateCursoDto } from './dto/create-curso.dto';
+
+@Injectable()
+export class CursosService {
+  constructor(private readonly prisma: PrismaService) {}
+
+
+  async getCourses() {
+    return this.prisma.$queryRaw`
+    SELECT 
+    c.id,
+    c.NombreCurso,
+    c.Valor,
+    c.Publico,
+    c.Periodo,
+    c.Inicio,
+    c.Fin,
+    c.Horas,
+    c.CupoMax,
+    c.Lugar,                          
+    c.LunesIni,                          
+    c.LunesFin,                         
+    c.MartesIni,                       
+    c.MartesFin,                        
+    c.MiercolesIni,                      
+    c.MiercolesFin,                      
+    c.JuevesIni,                         
+    c.JuevesFin,                         
+    c.ViernesIni,                        
+    c.ViernesFin,                        
+    c.SabadoIni,                         
+    c.SabadoFin,                         
+    c.DomingoIni,                        
+    c.DomingoFin,                        
+    c.Linea,                             
+    c.Estado,                            
+    c.Modalidad,                         
+    c.Unidad,                            
+    c.Profesor,                          
+    c.SegundoPro,                        
+    c.Proexterno,                       
+    c.Descripcion,                       
+    c.IdTipoCurso,
+    e.nombre AS NombreProfesor
+    FROM gescur.cursos c
+    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp
+    ;                       
+
+    `
+  }
+
+  // CREAR CURSO
+  async createCourses(data: CreateCursoDto) {
+    console.log("Data recibida:", data);
+    try {
+      return await this.prisma.cursos.create({ data });
+    } catch (error) {
+      console.error("Error al crear el curso en el backend", error);
+      throw new Error("Error al crear el curso");
+    }
+  }
+
+
+  // OBTENER OPCIONES PARA EL DESPLEGABLE
+  async getEspecificaciones() {
+    try {
+      return await this.prisma.listas.findMany(); // Asegúrate de que 'listas' es la tabla correcta
+    } catch (error) {
+      console.error("Error al obtener las especificaciones:", error);
+      throw new Error("Error al obtener las especificaciones");
+    }
+  }
+
+  // OBTENER CURSO POR ID
+  async getCourseId(id: number) {
+    return this.prisma.cursos.findUnique({ where: { id } });
+  }
+
+  // ACTUALIZAR CURSO POR ID
+  async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
+    console.log('ID recibido:', id);
+    console.log('Datos recibidos:', data);
+    try {
+      return await this.prisma.cursos.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      console.error('Error al actualizar el curso:', error);
+      throw new Error('El curso no se pudo actualizar');
+    }
+  }
+
+  // ELIMINAR CURSO POR ID
+  async deleteCourse(id: number) {
+    return this.prisma.cursos.delete({ where: { id } });
+  }
+
+
+  async obtenerCursosParaUsuario(id_emp: string) {
+    try {
+      // Buscar el usuario en la vista `gescur.emp_nomina` para obtener el valor de `publico`
+      const usuario = await this.prisma.$queryRaw<
+        { publico: number }[]
+      >`SELECT publico FROM gescur.emp_nomina WHERE id_emp = ${id_emp}`;
+
+      if (!usuario || usuario.length === 0) {
+        throw new Error('Usuario no encontrado en gescur.emp_nomina');
+      }
+
+      const publico = usuario[0].publico;
+
+      // Obtener los cursos según el valor de `publico`
+      let cursos;
+
+      if (publico === 3) {
+        // Si es 3, obtiene todos los cursos
+        cursos = await this.prisma.$queryRaw`
+          SELECT * FROM gescur.Cursos ORDER BY id OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+        `;
+      } else {
+        // Si es 1 o 2, solo muestra los cursos que coinciden con su `publico`
+        cursos = await this.prisma.$queryRaw`
+          SELECT * FROM gescur.Cursos 
+          WHERE publico = ${publico}
+          ORDER BY id OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+        `;
+      }
+
+      return cursos;
+    } catch (error) {
+      console.error('Error al obtener cursos:', error.message);
+      throw new Error('No se pudieron obtener los cursos.');
+    }
+  }
+
+
+}
