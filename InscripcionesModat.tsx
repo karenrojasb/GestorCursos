@@ -1,3 +1,8 @@
+<td className="border border-gray-300 p-3 ">
+  {curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}
+</td>
+
+
 import { useState, useEffect } from "react";
 import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import React from "react";
