@@ -1,3 +1,11 @@
+useEffect(() => {
+  const storedIdEmp = localStorage.getItem("id_emp");
+  if (storedIdEmp) {
+    setIdEmp(Number(storedIdEmp));
+    fetchCursos(Number(storedIdEmp)); // Llamar la función con el ID
+  }
+}, []);
+
 const fetchCursos = async (idEmp: number) => {
   try {
     const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
