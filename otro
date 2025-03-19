@@ -1,81 +1,69 @@
-Error: The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
+import { CursosService } from './cursos.service';
+import { CreateCursoDto } from './dto/create-curso.dto';
+import { UpdateCursoDto } from './dto/update-curso.dto';
 
-Previous: []
-Incoming: []
-    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
-    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
-    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
-    at areHookInputsEqual (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2961:56)
-    at updateEffectImpl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:3644:50)
-    at Object.useEffect (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:12860:13)
-    at exports.useEffect (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:1852:36)
-    at CatalogoModal (http://localhost:3000/_next/static/chunks/app_94355b._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252Fcatalogomodal.tsx+%255Bapp-client%255D+%2528ecmascript%2529:30:180)
-    at react-stack-bottom-frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:13403:24)
-    at renderWithHooksAgain (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:3032:24)
-    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2983:28)
-    at updateFunctionComponent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:4732:21)
-    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:5364:24)
-    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
-    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7955:97)
-    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
-    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
-    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7565:211)
-    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8402:9)
-    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8326:245)
-    at flushSyncWork$1 (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7709:86)
-    at Object.scheduleRefresh (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:298:13)
-    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:395:33
-    at Set.forEach (<anonymous>)
-    at Object.performReactRefresh (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:388:38)
-    at applyUpdate (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:885:31)
-    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:893:13
-
-useEffect(() => {
-  const fetchCursos = async () => {
-    if (!idEmp) {
-      console.log("No hay idEmp, no se hace la petición.");
-      return;
-    }
-
+@Controller('cursos')
+export class CursosController {
+  constructor(private readonly cursosService: CursosService) {}
+@Get ('usuario/:id_emp')
+  async obtenerCursos(@Param('id_emp') id_emp: string) {
     try {
-      console.log(`Haciendo petición a: http://localhost:8090/api/cursos/usuario/${idEmp}`);
-      const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
-      
-      console.log("Estado de la respuesta:", response.status);
-      
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      
-      const data = await response.json();
-      console.log("Respuesta del backend:", data);
+      const cursos = await this.cursosService.obtenerCursosParaUsuario(id_emp);
+      return { success: true, cursos};
 
-      if (data.success) {
-        const hoy = new Date();
-        const cursosActivos = data.cursos.filter((curso: Curso) => 
-          !curso.Fin || new Date(curso.Fin) >= hoy
-        );
-
-        console.log("Cursos activos:", cursosActivos);
-
-        setTimeout(() => {
-          setCursos(cursosActivos);
-          setCursosFiltrados(cursosActivos);
-          setIsLoading(false);
-        }, 1000);
-      } else {
-        throw new Error("No se pudieron obtener los cursos.");
-      }
     } catch (error) {
-      console.error("Error al obtener los cursos:", error);
-      setIsLoading(false);
+      return {success: false, message: error.message};
     }
-  };
+  }
+}
 
-  const storedIdEmp = localStorage.getItem("id_emp");
-  console.log("ID del usuario guardado en localStorage:", storedIdEmp);
 
-  if (storedIdEmp) {
-    setIdEmp(Number(storedIdEmp));
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { CreateCursoDto } from './dto/create-curso.dto';
+
+@Injectable()
+export class CursosService {
+  constructor(private readonly prisma: PrismaService) {}
+  async obtenerCursosParaUsuario(id_emp: string) {
+    try {
+      // Buscar el usuario en la vista `gescur.emp_nomina` para obtener el valor de `publico`
+      const usuario = await this.prisma.$queryRaw<
+        { publico: number }[]
+      >`SELECT publico FROM gescur.emp_nomina WHERE id_emp = ${id_emp}`;
+
+      if (!usuario || usuario.length === 0) {
+        throw new Error('Usuario no encontrado en gescur.emp_nomina');
+      }
+
+      const publico = usuario[0].publico;
+
+      // Obtener los cursos según el valor de `publico`
+      let cursos;
+
+      if (publico === 3) {
+        // Si es 3, obtiene todos los cursos
+        cursos = await this.prisma.$queryRaw`
+          SELECT * FROM gescur.Cursos ORDER BY id OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+        `;
+      } else {
+        // Si es 1 o 2, solo muestra los cursos que coinciden con su `publico`
+        cursos = await this.prisma.$queryRaw`
+          SELECT * FROM gescur.Cursos 
+          WHERE publico = ${publico}
+          ORDER BY id OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+        `;
+      }
+
+      return cursos;
+    } catch (error) {
+      console.error('Error al obtener cursos:', error.message);
+      throw new Error('No se pudieron obtener los cursos.');
+    }
   }
 
-  if (idEmp) fetchCursos();
-}, [idEmp]);
+
+}
