@@ -1,40 +1,84 @@
-async obtenerCursosParaUsuario(id_emp: string) {
-    try {
-        // Obtener el valor de 'publico' del usuario
-        const usuario = await this.prisma.$queryRaw<{ publico: number }[]>`
-            SELECT publico FROM gescur.emp_nomina WHERE id_emp = ${id_emp}
-        `;
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
 
-        if (!usuario || usuario.length === 0) {
-            throw new Error('Usuario no encontrado en gescur.emp_nomina');
-        }
+@Injectable()
+export class InscripcionesService {
+  constructor(private readonly prisma: PrismaService) {}
 
-        const publico = usuario[0].publico;
+  async crearInscripcion(data: CreateInscripcionDto) {
+    return this.prisma.inscripciones.create({
+      data: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+        est: data.est, 
+        fecreg: new Date(), 
+      },
+    });
+  }
 
-        console.log(`Usuario ${id_emp} tiene publico: ${publico}`);
+  async getInscripciones() {
+    return this.prisma.inscripciones.findMany({
+      include: {
+        Cursos: { select: { id: true, NombreCurso: true } }, // Asegura que el nombre de la relación sea correcto
+      },
+    });
+  }
 
-        // Obtener cursos según el público
-        let cursos;
-        if (publico === 3) {
-            // Si es '3', debe ver todos los cursos (incluyendo público 1 y 2)
-            cursos = await this.prisma.$queryRaw`
-                SELECT * FROM gescur.Cursos 
-                ORDER BY id
-            `;
-        } else {
-            // Si es '1' o '2', debe ver los cursos de su público y los de público 3 (abiertos para todos)
-            cursos = await this.prisma.$queryRaw`
-                SELECT * FROM gescur.Cursos 
-                WHERE publico = ${publico} OR publico = 3
-                ORDER BY id
-            `;
-        }
+  async obtenerPorId(id: number) {
+    const inscripcion = await this.prisma.inscripciones.findUnique({ where: { id } });
+    if (!inscripcion) throw new NotFoundException('Inscripción no encontrada');
+    return inscripcion;
+  }
 
-        console.log(`Cursos obtenidos para usuario ${id_emp}:`, cursos);
+  async actualizarEstado(id: number, dto: UpdateInscripcionDto) {
+    return this.prisma.inscripciones.update({
+      where: { id },
+      data: { est: Boolean(dto.est) }, // Aseguramos que est sea booleano
+    });
+  }
 
-        return cursos;
-    } catch (error) {
-        console.error('Error al obtener cursos:', error.message);
-        throw new Error('No se pudieron obtener los cursos.');
-    }
+  async eliminarInscripcion(id: number) {
+    return this.prisma.inscripciones.delete({ where: { id } });
+  }
 }
+
+
+
+
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { InscripcionesService } from './inscripciones.service';
+import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
+
+@Controller('inscripciones')
+export class InscripcionesController {
+  constructor(private readonly inscripcionesService: InscripcionesService) {}
+
+  @Post()
+  crear(@Body() dto: CreateInscripcionDto) {
+    return this.inscripcionesService.crearInscripcion(dto);
+  }
+
+  @Get()
+  obtenerTodas() {
+    return this.inscripcionesService.getInscripciones();
+  }
+
+  @Get(':id')
+  obtenerPorId(@Param('id') id: string) {
+    return this.inscripcionesService.obtenerPorId(Number(id));
+  }
+
+  @Patch(':id')
+  actualizarEstado(@Param('id') id: string, @Body() dto: UpdateInscripcionDto) {
+    return this.inscripcionesService.actualizarEstado(Number(id), dto);
+  }
+
+  @Delete(':id')
+  eliminar(@Param('id') id: string) {
+    return this.inscripcionesService.eliminarInscripcion(Number(id));
+  }
+}
+
