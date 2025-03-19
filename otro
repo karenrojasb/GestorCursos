@@ -1,8 +1,6 @@
-Argument of type 'string' is not assignable to parameter of type 'TemplateStringsArray | Sql'.ts(2345)
-
-
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client'; // Importamos Prisma para consultas SQL crudas
 import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
 import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
 
@@ -22,8 +20,8 @@ export class InscripcionesService {
   }
 
   async getInscripciones() {
-    // Consulta SQL cruda para obtener inscripciones junto con el nombre del empleado desde la vista gescur.emp_nomina
-    const inscripciones = await this.prisma.$queryRaw<
+    // Consulta SQL cruda usando parámetros seguros
+    const inscripciones = await this.prisma.$queryRawUnsafe<
       Array<{
         id: number;
         idCur: number;
@@ -33,8 +31,8 @@ export class InscripcionesService {
         est: number;
         fecreg: Date;
       }>
-    >(`
-      SELECT 
+    >(
+      `SELECT 
         i.id, 
         i.idCur, 
         c.NombreCurso, 
@@ -44,8 +42,8 @@ export class InscripcionesService {
         i.fecreg
       FROM gescur.Inscripciones i
       LEFT JOIN gescur.Cursos c ON i.idCur = c.id
-      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
-    `);
+      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp`
+    );
 
     return inscripciones;
   }
