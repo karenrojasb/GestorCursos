@@ -14,6 +14,7 @@ interface Inscripcion {
     NombreCurso: string;
   };
   docInscr: string;
+  nombre: string;
   est: number;
   fecreg: string;
 }
@@ -27,6 +28,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
   const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
   const [expandedCourses, setExpandedCourses] = useState<{ [key: number]: boolean }>({});
   const [busqueda, setBusqueda] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -37,10 +39,14 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         const data: Inscripcion[] = await response.json();
         console.log("Datos recibidos en el frontend:", data);
 
+        setTimeout(()  => {
         setInscripciones(data);
         setInscripcionesFiltradas(data);
+        setIsLoading(false);
+      }, 1000);
       } catch (error) {
         console.error("Error al obtener inscripciones:", error);
+        setIsLoading(false);
       }
     };
 
@@ -110,7 +116,13 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
 
         {/* LISTA DE INSCRIPCIONES */}
         <div className="w-full max-h-[600px] overflow-auto border border-gray-300 rounded-md shadow-sm">
-          {Object.entries(groupedInscripciones).length > 0 ? (
+        
+          {isLoading ? (
+             <div className="flex justify-center py-4">
+             <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+           </div>
+          )
+          : Object.entries(groupedInscripciones).length > 0 ? (
             <table className="w-full border-collapse border border-gray-300">
               <thead className="bg-[#990000] text-white">
                 <tr>
@@ -150,6 +162,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                                 .map((inscripcion) => (
                                   <li key={inscripcion.id} className="text-gray-700">
                                     <strong>Documento:</strong> {inscripcion.docInscr} | 
+                                    <strong>Nombre:</strong> {inscripcion.nombre}
                                     
                                   </li>
                                 ))}
@@ -162,10 +175,10 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                   );
                 })}
               </tbody>
-            </table>
+                  </table>
           ) : (
             <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
-          )}
+          )} 
         </div>
       </div>
     </div>
