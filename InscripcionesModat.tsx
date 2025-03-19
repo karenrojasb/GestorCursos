@@ -47,7 +47,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
     fetchInscripciones();
   }, []);
 
-  // Filtrar inscripciones en tiempo real
+  // FILTRAR INSCRIPCIONES EN TIEMPO REAL
   const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const texto = e.target.value.toLowerCase();
     setBusqueda(texto);
@@ -66,7 +66,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
     setInscripcionesFiltradas(filtrados);
   };
 
-  // Agrupar inscripciones por idCur
+  // AGRUPAR INSCRIPCIONES POR IDCUR
   const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
     const cursoId = inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.cursos?.id || 0;
     if (!acc[cursoId]) {
@@ -76,7 +76,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
     return acc;
   }, {} as { [key: number]: Inscripcion[] });
 
-  // Alternar expansión de curso
+  // AALTERAR EXPANSIÓN DE CURSO
   const toggleExpand = (cursoId: number) => {
     setExpandedCourses((prev) => ({ ...prev, [cursoId]: !prev[cursoId] }));
   };
