@@ -1,3 +1,6 @@
+Argument of type 'string' is not assignable to parameter of type 'TemplateStringsArray | Sql'.ts(2345)
+
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
