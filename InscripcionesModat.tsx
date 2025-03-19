@@ -1,8 +1,3 @@
-<td className="border border-gray-300 p-3 ">
-  {curso.Cursos?.NombreCurso || curso.cursos?.NombreCurso || "Desconocido"}
-</td>
-
-
 import { useState, useEffect } from "react";
 import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import React from "react";
@@ -14,7 +9,7 @@ interface Inscripcion {
     id: number;
     NombreCurso: string;
   };
-  cursos?: {
+  curso?: {
     id: number;
     NombreCurso: string;
   };
@@ -42,7 +37,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         if (!response.ok) throw new Error("Error al obtener inscripciones");
 
         const data: Inscripcion[] = await response.json();
-        console.log("Datos recibidos en el frontend:", data);
+        console.log("Datos recibidos en el frontend:", JSON.stringify(data, null, 2 ));
 
         setTimeout(()  => {
         setInscripciones(data);
@@ -64,7 +59,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
     setBusqueda(texto);
 
     const filtrados = inscripciones.filter((inscripcion) => {
-      const cursoNombre = inscripcion.Cursos?.NombreCurso || inscripcion.cursos?.NombreCurso || "";
+      const cursoNombre = inscripcion.Cursos?.NombreCurso || inscripcion.curso?.NombreCurso || "";
       const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
 
       return (
@@ -79,7 +74,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
 
   // AGRUPAR INSCRIPCIONES POR IDCUR
   const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
-    const cursoId = inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.cursos?.id || 0;
+    const cursoId = inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.curso?.id || 0;
     if (!acc[cursoId]) {
       acc[cursoId] = [];
     }
@@ -144,7 +139,9 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                     <React.Fragment key={cursoId}>
                       <tr className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
                         <td className="border border-gray-300 p-3">{cursoId}</td>
-                        <td className="border border-gray-300 p-3 ">{curso.Cursos?.NombreCurso || curso.Cursos?.NombreCurso || "Desconocido"}</td>
+                        <td className="border border-gray-300 p-3 ">
+                          {curso.Cursos?.NombreCurso || curso.curso?.NombreCurso || "Desconocido"}
+                             </td>
                         <td className="border border-gray-300 p-3">{new Date(curso.fecreg).toLocaleDateString()}</td>
                         <td className="border border-gray-300 p-3">
                           <button
