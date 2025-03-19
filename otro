@@ -19,11 +19,32 @@ export class InscripcionesService {
   }
 
   async getInscripciones() {
-    return this.prisma.inscripciones.findMany({
-      include: {
-        Cursos: { select: { id: true, NombreCurso: true } }, // Asegura que el nombre de la relación sea correcto
-      },
-    });
+    // Consulta SQL cruda para obtener inscripciones junto con el nombre del empleado desde la vista gescur.emp_nomina
+    const inscripciones = await this.prisma.$queryRaw<
+      Array<{
+        id: number;
+        idCur: number;
+        NombreCurso: string;
+        docInscr: string;
+        nom_emp: string | null; // Puede ser null si el empleado no existe
+        est: number;
+        fecreg: Date;
+      }>
+    >(`
+      SELECT 
+        i.id, 
+        i.idCur, 
+        c.NombreCurso, 
+        i.docInscr, 
+        e.nom_emp, 
+        i.est, 
+        i.fecreg
+      FROM gescur.Inscripciones i
+      LEFT JOIN gescur.Cursos c ON i.idCur = c.id
+      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
+    `);
+
+    return inscripciones;
   }
 
   async obtenerPorId(id: number) {
@@ -43,42 +64,3 @@ export class InscripcionesService {
     return this.prisma.inscripciones.delete({ where: { id } });
   }
 }
-
-
-
-
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
-import { InscripcionesService } from './inscripciones.service';
-import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
-import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
-
-@Controller('inscripciones')
-export class InscripcionesController {
-  constructor(private readonly inscripcionesService: InscripcionesService) {}
-
-  @Post()
-  crear(@Body() dto: CreateInscripcionDto) {
-    return this.inscripcionesService.crearInscripcion(dto);
-  }
-
-  @Get()
-  obtenerTodas() {
-    return this.inscripcionesService.getInscripciones();
-  }
-
-  @Get(':id')
-  obtenerPorId(@Param('id') id: string) {
-    return this.inscripcionesService.obtenerPorId(Number(id));
-  }
-
-  @Patch(':id')
-  actualizarEstado(@Param('id') id: string, @Body() dto: UpdateInscripcionDto) {
-    return this.inscripcionesService.actualizarEstado(Number(id), dto);
-  }
-
-  @Delete(':id')
-  eliminar(@Param('id') id: string) {
-    return this.inscripcionesService.eliminarInscripcion(Number(id));
-  }
-}
-
