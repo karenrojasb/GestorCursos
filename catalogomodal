@@ -175,12 +175,16 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
             />
           </div>
-          <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-[#990000]">
-            <XMarkIcon className="w-6 h-6" />
-          </button>
+           {/* BOTÓN CERRAR */}
+                  <button
+                    onClick={onClose}
+                    className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
         </div>
 
-        {/* Lista de cursos */}
+        {/* LISTA DE CURSOS */}
         <div className="flex-1 overflow-y-auto mt-2 space-y-2">
           {isLoading ? (
              <div className="flex justify-center py-4">
@@ -189,12 +193,15 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
           ) : cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso) => {
               const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
+             
               return (
                 <div key={curso.id} className="border-b py-2">
                   <div className="grid grid-cols-3 items-center">
                     <span>{curso.NombreCurso}</span>
                     <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
                    
+
+                   {/* BOTÓN DE VER MÁS */}
                     <button
                     onClick={() => handleVerMas(curso.id)}
                     className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
@@ -216,6 +223,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                     <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
                     <p><strong>Descripción:</strong> {curso.Descripcion}</p>
 
+
+                      {/* BOTÓN DE INSCRIPCIÓN */}
                       <button
                         onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
                         className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
