@@ -1,6 +1,6 @@
 "use client";
 
-import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, MagnifyingGlassIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 
 interface Curso {
@@ -37,16 +37,16 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [inscribiendo, setInscribiendo] = useState(false);
-  const [errorInscripcion, setErrorInscripcion] = useState<string | null>(null);
   const [idEmp, setIdEmp] = useState<number | null>(null);
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [loadingInscripcion, setLoadingInscripcion] = useState<number | null>(null);
+  const [mensaje, setMensaje] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     const storedIdEmp = localStorage.getItem("id_emp");
     if (storedIdEmp) {
       setIdEmp(Number(storedIdEmp));
-      fetchCursos(Number(storedIdEmp)); 
+      fetchCursos(Number(storedIdEmp));
     }
   }, []);
 
@@ -93,112 +93,98 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   };
 
   const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
-    setInscribiendo(true);
-    setErrorInscripcion(null);
+    setLoadingInscripcion(idCur);
 
     if (!idEmp) {
-      setErrorInscripcion("Error: No se encuentra el documento de usuario.");
-      setInscribiendo(false);
+      setMensaje({ text: "Error: No se encuentra el documento de usuario.", type: "error" });
+      setLoadingInscripcion(null);
       return;
     }
 
     try {
       if (estaInscrito && inscripcionId) {
-        // **CANCELAR INSCRIPCIÓN**
-        await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
+        const response = await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ est: false }),
         });
 
+        if (!response.ok) throw new Error("Error al cancelar inscripción");
       } else {
-        // **INSCRIBIRSE**
         const fecreg = new Date().toISOString().split("T")[0];
 
-        await fetch("http://localhost:8090/api/inscripciones", {
+        const response = await fetch("http://localhost:8090/api/inscripciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg }),
         });
+
+        if (!response.ok) throw new Error("Error al inscribirse");
       }
 
-      // Recargar inscripciones después de inscribirse o cancelar
       const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
       const updatedData = await updatedResponse.json();
       setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
 
+      setMensaje({
+        text: estaInscrito ? "Inscripción cancelada correctamente" : "Inscripción realizada con éxito",
+        type: "success",
+      });
     } catch (error) {
-      setErrorInscripcion("No se pudo completar la acción.");
+      setMensaje({ text: "No se pudo completar la acción.", type: "error" });
     }
 
-    setInscribiendo(false);
+    setLoadingInscripcion(null);
+
+    setTimeout(() => {
+      setMensaje(null);
+    }, 3000);
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-4xl flex flex-col">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
         
-        {/* BARRA DE BÚSQUEDA */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="relative flex items-center">
-            <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
-            <input
-              type="text"
-              placeholder="Buscar curso..."
-              value={busqueda}
-              onChange={handleBuscar}
-              className="ml-2 px-4 py-2 border rounded-lg focus:outline-none"
-            />
-          </div>
-          {/* BOTÓN CERRAR */}
-          <button onClick={onClose} className="text-gray-500 hover:text-[#990000]">
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-        </div>
+        {/* BOTÓN CERRAR */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
 
-        {/* TABLA DE CURSOS */}
-        <div className="flex-1 overflow-y-auto">
+        {/* MENSAJE DE CONFIRMACIÓN */}
+        {mensaje && (
+          <div className={`fixed top-5 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow-md text-white ${mensaje.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
+            {mensaje.text}
+          </div>
+        )}
+
+        {/* LISTA DE CURSOS */}
+        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
           {isLoading ? (
             <div className="flex justify-center py-4">
               <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
             </div>
+          ) : cursosFiltrados.length > 0 ? (
+            cursosFiltrados.map((curso) => {
+              const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
+
+              return (
+                <div key={curso.id} className="border-b py-2 flex justify-between items-center">
+                  <span>{curso.NombreCurso}</span>
+                  <button
+                    onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
+                    className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded transition-all duration-300 transform hover:scale-110"
+                    disabled={loadingInscripcion === curso.id}
+                  >
+                    {loadingInscripcion === curso.id ? "Procesando..." : inscripcion ? "Cancelar" : "Inscribirse"}
+                  </button>
+                </div>
+              );
+            })
           ) : (
-            <table className="w-full border-collapse border border-gray-300">
-              <thead className="bg-[#990000] text-white">
-                <tr>
-                  <th className="p-2">Curso</th>
-                  <th className="p-2">Inicio</th>
-                  <th className="p-2">Periodo</th>
-                  <th className="p-2">Profesor</th>
-                  <th className="p-2">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cursosFiltrados.length > 0 ? (
-                  cursosFiltrados.map((curso) => {
-                    const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
-                    return (
-                      <tr key={curso.id} className="border-t">
-                        <td className="p-2">{curso.NombreCurso}</td>
-                        <td className="p-2">{curso.Inicio || "dd/mm/aaaa"}</td>
-                        <td className="p-2">{curso.Periodo}</td>
-                        <td className="p-2">{curso.NombreProfesor || "N/A"}</td>
-                        <td className="p-2 text-center">
-                          <button
-                            onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
-                            className="bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded"
-                          >
-                            {inscripcion ? "Cancelar" : "Inscribirse"}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr><td colSpan={5} className="text-center p-4">No hay cursos disponibles.</td></tr>
-                )}
-              </tbody>
-            </table>
+            <p className="text-center py-4">No hay cursos disponibles.</p>
           )}
         </div>
       </div>
