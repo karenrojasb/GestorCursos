@@ -8,7 +8,7 @@ export class InscripcionesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async crearInscripcion(data: CreateInscripcionDto) {
-    // Verificar si ya existe una inscripción con el mismo curso y documento
+    // Buscar si ya existe una inscripción con el mismo curso e id de usuario
     const inscripcionExistente = await this.prisma.inscripciones.findFirst({
       where: {
         idCur: data.idCur,
@@ -17,22 +17,19 @@ export class InscripcionesService {
     });
 
     if (inscripcionExistente) {
-      // Si la inscripción ya existe, actualizamos el estado a activo (1)
+      // Si la inscripción ya existe, actualizar estado a `true`
       return this.prisma.inscripciones.update({
         where: { id: inscripcionExistente.id },
-        data: {
-          est: 1, // Reactivar la inscripción
-          fecreg: new Date(), // Actualizar la fecha de inscripción
-        },
+        data: { est: true },
       });
     }
 
-    // Si no existe, se crea una nueva inscripción
+    // Si no existe, crear nueva inscripción
     return this.prisma.inscripciones.create({
       data: {
         idCur: data.idCur,
         docInscr: data.docInscr,
-        est: 1, // Siempre inicia como activa
+        est: true, // Estado siempre inicia en `true`
         fecreg: new Date(),
       },
     });
@@ -45,8 +42,8 @@ export class InscripcionesService {
         idCur: number;
         NombreCurso: string;
         docInscr: string;
-        nombre: string | null; // Puede ser null si el empleado no existe
-        est: number;
+        nombre: string | null;
+        est: boolean;
         fecreg: Date;
       }>
     >(
@@ -73,7 +70,7 @@ export class InscripcionesService {
   async actualizarEstado(id: number, dto: UpdateInscripcionDto) {
     return this.prisma.inscripciones.update({
       where: { id },
-      data: { est: dto.est ? 1 : 0 }, // Convertimos booleano a número
+      data: { est: Boolean(dto.est) }, // Convertir a booleano
     });
   }
 
@@ -81,8 +78,6 @@ export class InscripcionesService {
     return this.prisma.inscripciones.delete({ where: { id } });
   }
 }
-
-
 
 
 
@@ -122,3 +117,4 @@ export class InscripcionesController {
     return this.inscripcionesService.eliminarInscripcion(Number(id));
   }
 }
+
