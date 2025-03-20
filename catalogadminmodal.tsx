@@ -2,13 +2,6 @@
 import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 
-
-interface Opcion {
-  id: number;
-  Especificacion: string;
-  Tipo: number;
-}
-
 interface Curso {
   id: number;
   NombreCurso: string;
@@ -32,33 +25,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
   const [mensajeExito, setMensajeExito] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
-  const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
-  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
-  const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
-  const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
-
-  useEffect(() => {
-    async function fetchOpciones() {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
-        if (!response.ok) throw new Error("Error al obtener las opciones");
-
-        const data: Opcion[] = await response.json();
-
-        setOpcionesPublico(data.filter((item) => item.Tipo === 1));
-        setOpcionesLinea(data.filter((item) => item.Tipo === 2));
-        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
-        setOpcionesEstado(data.filter((item) => item.Tipo === 4));
-        setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
-      } catch (error) {
-        console.error("Error cargando las opciones:", error);
-      }
-    }
-
-    fetchOpciones();
-  }, []);
-
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
