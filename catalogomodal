@@ -45,31 +45,33 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
 
   useEffect(() => {
-    const fetchCursos = async () => {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos");
-        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-        const data = await response.json();
-
-        const hoy = new Date();
-        const cursosActivos = data.filter((curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy);
-
-        setTimeout(() => {
-          setCursos(cursosActivos);
-          setCursosFiltrados(cursosActivos);
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error("Error al obtener los cursos:", error);
-        setIsLoading(false);
-      }
-    };
-
     const storedIdEmp = localStorage.getItem("id_emp");
-    if (storedIdEmp) setIdEmp(Number(storedIdEmp));
-
-    fetchCursos();
+    if (storedIdEmp) {
+      setIdEmp(Number(storedIdEmp));
+      fetchCursos(Number(storedIdEmp)); 
+    }
   }, []);
+  const fetchCursos = async (idEmp: number) => {
+    try {
+      const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      const data = await response.json();
+  
+      const hoy = new Date();
+      const cursosActivos = data.cursos.filter((curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy);
+  
+      setTimeout(() => {
+        setCursos(cursosActivos);
+        setCursosFiltrados(cursosActivos);
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error al obtener los cursos:", error);
+      setIsLoading(false);
+    }
+  };
+
+
 
   useEffect(() => {
     const fetchInscripciones = async () => {
