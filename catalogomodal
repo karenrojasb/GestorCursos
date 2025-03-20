@@ -1,6 +1,6 @@
 "use client";
 
-import { XMarkIcon, MagnifyingGlassIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, MagnifyingGlassIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 
 interface Curso {
@@ -12,15 +12,8 @@ interface Curso {
   Inicio: string;
   Fin: string;
   Horas: number;
-  CupoMax: number;
   Lugar: string;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: string;
   Descripcion: string;
-  IdTipoCurso: number;
   NombreProfesor?: string;
 }
 
@@ -39,14 +32,13 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [isLoading, setIsLoading] = useState(true);
   const [idEmp, setIdEmp] = useState<number | null>(null);
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
-  const [loadingInscripcion, setLoadingInscripcion] = useState<number | null>(null);
-  const [mensaje, setMensaje] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [popup, setPopup] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     const storedIdEmp = localStorage.getItem("id_emp");
     if (storedIdEmp) {
       setIdEmp(Number(storedIdEmp));
-      fetchCursos(Number(storedIdEmp));
+      fetchCursos(Number(storedIdEmp)); 
     }
   }, []);
 
@@ -55,10 +47,10 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
       const data = await response.json();
-
+  
       const hoy = new Date();
       const cursosActivos = data.cursos.filter((curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy);
-
+  
       setTimeout(() => {
         setCursos(cursosActivos);
         setCursosFiltrados(cursosActivos);
@@ -86,58 +78,47 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     if (idEmp) fetchInscripciones();
   }, [idEmp]);
 
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
-
   const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
-    setLoadingInscripcion(idCur);
-
-    if (!idEmp) {
-      setMensaje({ text: "Error: No se encuentra el documento de usuario.", type: "error" });
-      setLoadingInscripcion(null);
-      return;
-    }
+    if (!idEmp) return;
 
     try {
       if (estaInscrito && inscripcionId) {
-        const response = await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
+        // **Cancelar inscripción**
+        await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ est: false }),
         });
 
-        if (!response.ok) throw new Error("Error al cancelar inscripción");
+        showPopup("Inscripción cancelada", "error");
+
       } else {
+        // **Inscribirse**
         const fecreg = new Date().toISOString().split("T")[0];
 
-        const response = await fetch("http://localhost:8090/api/inscripciones", {
+        await fetch("http://localhost:8090/api/inscripciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg }),
         });
 
-        if (!response.ok) throw new Error("Error al inscribirse");
+        showPopup("Inscripción exitosa", "success");
       }
 
+      // Recargar inscripciones
       const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
       const updatedData = await updatedResponse.json();
       setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
 
-      setMensaje({
-        text: estaInscrito ? "Inscripción cancelada correctamente" : "Inscripción realizada con éxito",
-        type: "success",
-      });
     } catch (error) {
-      setMensaje({ text: "No se pudo completar la acción.", type: "error" });
+      console.error("Error en la inscripción:", error);
     }
+  };
 
-    setLoadingInscripcion(null);
-
+  const showPopup = (message: string, type: "success" | "error") => {
+    setPopup({ message, type });
     setTimeout(() => {
-      setMensaje(null);
+      setPopup(null);
     }, 3000);
   };
 
@@ -153,13 +134,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
           <XMarkIcon className="h-6 w-6" />
         </button>
 
-        {/* MENSAJE DE CONFIRMACIÓN */}
-        {mensaje && (
-          <div className={`fixed top-5 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow-md text-white ${mensaje.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
-            {mensaje.text}
-          </div>
-        )}
-
         {/* LISTA DE CURSOS */}
         <div className="flex-1 overflow-y-auto mt-2 space-y-2">
           {isLoading ? (
@@ -167,27 +141,51 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
               <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
             </div>
           ) : cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map((curso) => {
-              const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
-
-              return (
-                <div key={curso.id} className="border-b py-2 flex justify-between items-center">
-                  <span>{curso.NombreCurso}</span>
-                  <button
-                    onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
-                    className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded transition-all duration-300 transform hover:scale-110"
-                    disabled={loadingInscripcion === curso.id}
-                  >
-                    {loadingInscripcion === curso.id ? "Procesando..." : inscripcion ? "Cancelar" : "Inscribirse"}
-                  </button>
-                </div>
-              );
-            })
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-[#990000] text-white">
+                  <th className="p-2">Curso</th>
+                  <th className="p-2">Inicio</th>
+                  <th className="p-2">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cursosFiltrados.map((curso) => {
+                  const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
+                  return (
+                    <tr key={curso.id} className="border-b">
+                      <td className="p-2">{curso.NombreCurso}</td>
+                      <td className="p-2">{curso.Inicio || "dd/mm/aaaa"}</td>
+                      <td className="p-2">
+                        <button
+                          onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
+                          className={`px-4 py-1 rounded transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95 ${
+                            inscripcion ? "bg-red-600 hover:bg-red-700 text-white" : "bg-green-600 hover:bg-green-700 text-white"
+                          }`}
+                        >
+                          {inscripcion ? "Cancelar" : "Inscribirse"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           ) : (
             <p className="text-center py-4">No hay cursos disponibles.</p>
           )}
         </div>
       </div>
+
+      {/* POPUP FLOTANTE */}
+      {popup && (
+        <div className={`fixed bottom-5 right-5 flex items-center text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300 ${
+          popup.type === "success" ? "bg-green-600" : "bg-red-600"
+        }`}>
+          {popup.type === "success" ? <CheckCircleIcon className="h-6 w-6 mr-2" /> : <XCircleIcon className="h-6 w-6 mr-2" />}
+          {popup.message}
+        </div>
+      )}
     </div>
   );
 }
