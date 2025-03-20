@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client'; // Importamos Prisma para consultas SQL crudas
 import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
 import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
 
@@ -9,19 +8,38 @@ export class InscripcionesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async crearInscripcion(data: CreateInscripcionDto) {
+    // Verificar si ya existe una inscripción con el mismo curso y documento
+    const inscripcionExistente = await this.prisma.inscripciones.findFirst({
+      where: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+      },
+    });
+
+    if (inscripcionExistente) {
+      // Si la inscripción ya existe, actualizamos el estado a activo (1)
+      return this.prisma.inscripciones.update({
+        where: { id: inscripcionExistente.id },
+        data: {
+          est: 1, // Reactivar la inscripción
+          fecreg: new Date(), // Actualizar la fecha de inscripción
+        },
+      });
+    }
+
+    // Si no existe, se crea una nueva inscripción
     return this.prisma.inscripciones.create({
       data: {
         idCur: data.idCur,
         docInscr: data.docInscr,
-        est: data.est, 
-        fecreg: new Date(), 
+        est: 1, // Siempre inicia como activa
+        fecreg: new Date(),
       },
     });
   }
 
   async getInscripciones() {
-    // Consulta SQL cruda usando parámetros seguros
-    const inscripciones = await this.prisma.$queryRawUnsafe<
+    return this.prisma.$queryRawUnsafe<
       Array<{
         id: number;
         idCur: number;
@@ -44,8 +62,6 @@ export class InscripcionesService {
       LEFT JOIN gescur.Cursos c ON i.idCur = c.id
       LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp`
     );
-
-    return inscripciones;
   }
 
   async obtenerPorId(id: number) {
@@ -57,7 +73,7 @@ export class InscripcionesService {
   async actualizarEstado(id: number, dto: UpdateInscripcionDto) {
     return this.prisma.inscripciones.update({
       where: { id },
-      data: { est: Boolean(dto.est) }, // Aseguramos que est sea booleano
+      data: { est: dto.est ? 1 : 0 }, // Convertimos booleano a número
     });
   }
 
@@ -65,6 +81,10 @@ export class InscripcionesService {
     return this.prisma.inscripciones.delete({ where: { id } });
   }
 }
+
+
+
+
 
 
 
@@ -102,4 +122,3 @@ export class InscripcionesController {
     return this.inscripcionesService.eliminarInscripcion(Number(id));
   }
 }
-
