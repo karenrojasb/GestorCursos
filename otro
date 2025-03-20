@@ -27,7 +27,7 @@ export class InscripcionesService {
         idCur: number;
         NombreCurso: string;
         docInscr: string;
-        nom_emp: string | null; // Puede ser null si el empleado no existe
+        nombre: string | null; // Puede ser null si el empleado no existe
         est: number;
         fecreg: Date;
       }>
@@ -37,7 +37,7 @@ export class InscripcionesService {
         i.idCur, 
         c.NombreCurso, 
         i.docInscr, 
-        e.nom_emp, 
+        e.nombre, 
         i.est, 
         i.fecreg
       FROM gescur.Inscripciones i
@@ -65,3 +65,41 @@ export class InscripcionesService {
     return this.prisma.inscripciones.delete({ where: { id } });
   }
 }
+
+
+
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { InscripcionesService } from './inscripciones.service';
+import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
+
+@Controller('inscripciones')
+export class InscripcionesController {
+  constructor(private readonly inscripcionesService: InscripcionesService) {}
+
+  @Post()
+  crear(@Body() dto: CreateInscripcionDto) {
+    return this.inscripcionesService.crearInscripcion(dto);
+  }
+
+  @Get()
+  obtenerTodas() {
+    return this.inscripcionesService.getInscripciones();
+  }
+
+  @Get(':id')
+  obtenerPorId(@Param('id') id: string) {
+    return this.inscripcionesService.obtenerPorId(Number(id));
+  }
+
+  @Patch(':id')
+  actualizarEstado(@Param('id') id: string, @Body() dto: UpdateInscripcionDto) {
+    return this.inscripcionesService.actualizarEstado(Number(id), dto);
+  }
+
+  @Delete(':id')
+  eliminar(@Param('id') id: string) {
+    return this.inscripcionesService.eliminarInscripcion(Number(id));
+  }
+}
+
