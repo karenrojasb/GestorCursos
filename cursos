@@ -1,202 +1,189 @@
-[Nest] 12000  - 17/03/2025, 1:28:57 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
-Invalid `prisma.$queryRaw()` invocation:
+"use client";
 
+import { XMarkIcon, MagnifyingGlassIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import { useEffect, useState } from "react";
 
-Raw query failed. Code: `5`. Message: `Named Pipes Provider: Could not open a connection to SQL Server [5]. `
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async UsuarioService.iniciarSesion (C:\Users\desarrollador5\Documents\gestor_cursos\src\usuario\usuario.service.ts:9:21)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.3.1',
-  meta: {
-    code: '5',
-    message: 'Named Pipes Provider: Could not open a connection to SQL Server [5]. '       
-  }
-}
-[Nest] 12000  - 17/03/2025, 1:30:05 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
-Invalid `prisma.$queryRaw()` invocation:
-
-
-Raw query failed. Code: `58`. Message: `Named Pipes Provider: Could not open a connection to SQL Server [58]. `
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async UsuarioService.iniciarSesion (C:\Users\desarrollador5\Documents\gestor_cursos\src\usuario\usuario.service.ts:9:21)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.3.1',
-  meta: {
-    code: '58',
-    message: 'Named Pipes Provider: Could not open a connection to SQL Server [58]. '      
-  }
-}
-[Nest] 12000  - 17/03/2025, 1:30:16 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
-Invalid `prisma.$queryRaw()` invocation:
-
-
-Raw query failed. Code: `58`. Message: `Named Pipes Provider: Could not open a connection to SQL Server [58]. `
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async UsuarioService.iniciarSesion (C:\Users\desarrollador5\Documents\gestor_cursos\src\usuario\usuario.service.ts:9:21)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.3.1',
-  meta: {
-    code: '58',
-    message: 'Named Pipes Provider: Could not open a connection to SQL Server [58]. '      
-  }
+interface Curso {
+  id: number;
+  NombreCurso: string;
+  Valor: number;
+  Publico: number;
+  Periodo: string;
+  Inicio: string;
+  Fin: string;
+  Horas: number;
+  CupoMax: number;
+  Lugar: string;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  SegundoPro: string;
+  Proexterno: string;
+  Descripcion: string;
+  IdTipoCurso: number;
+  NombreProfesor?: string;
 }
 
+interface Inscripcion {
+  id: number;
+  idCur: number;
+  docInscr: number;
+  est: boolean;
+  fecreg: string;
+}
 
+export default function CatalogoModal({ onClose }: { onClose: () => void }) {
+  const [cursos, setCursos] = useState<Curso[]>([]);
+  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [inscribiendo, setInscribiendo] = useState(false);
+  const [idEmp, setIdEmp] = useState<number | null>(null);
+  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [mensajeExito, setMensajeExito] = useState<string | null>(null); // Mensaje de éxito
 
-model Cursos {
-  id                                Int             @id(map: "PK__Cursos__3213E83FF1A9718F") @default(autoincrement())
-  NombreCurso                       String?         @db.VarChar(100)
-  Valor                             Int?
-  Publico                           Int?
-  Periodo                           String?         @db.VarChar(10)
-  Inicio                            String?         @db.VarChar(15)
-  Fin                               String?         @db.VarChar(15)
-  Horas                             Int?
-  CupoMax                           Int?
-  Lugar                             String?         @db.VarChar(50)
-  LunesIni                          String?         @db.VarChar(15)
-  LunesFin                          String?         @db.VarChar(15)
-  MartesIni                         String?         @db.VarChar(15)
-  MartesFin                         String?         @db.VarChar(15)
-  MiercolesIni                      String?         @db.VarChar(15)
-  MiercolesFin                      String?         @db.VarChar(15)
-  JuevesIni                         String?         @db.VarChar(15)
-  JuevesFin                         String?         @db.VarChar(15)
-  ViernesIni                        String?         @db.VarChar(15)
-  ViernesFin                        String?         @db.VarChar(15)
-  SabadoIni                         String?         @db.VarChar(15)
-  SabadoFin                         String?         @db.VarChar(15)
-  DomingoIni                        String?         @db.VarChar(15)
-  DomingoFin                        String?         @db.VarChar(15)
-  Linea                             Int?
-  Estado                            Int?
-  Modalidad                         Int?
-  Unidad                            Int?
-  Profesor                          Int?
-  SegundoPro                        Int?
-  Proexterno                        String?         @db.VarChar(50)
-  Descripcion                       String?         @db.VarChar(400)
-  IdTipoCurso                       Int?
-
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
-import { CursosService } from './cursos.service';
-import { CreateCursoDto } from './dto/create-curso.dto';
-import { UpdateCursoDto } from './dto/update-curso.dto';
-
-@Controller('cursos')
-export class CursosController {
-  constructor(private readonly cursosService: CursosService) {}
-
-  // CREAR CURSO
-  @Post()
-  async createCourses(@Body() data: CreateCursoDto) {
-    console.log("Recibiendo datos:", data);
-    return this.cursosService.createCourses(data);
-  }
-
-  // OBTENER TODOS LOS CURSOS
-  @Get() 
-  async getCourses() {
-    return this.cursosService.getCourses();
-  }
-
-  // OBTENER ESPECIFICACIONES PARA EL DESPLEGABLE
-  @Get('especificaciones')
-  async getEspecificaciones() {
-    return this.cursosService.getEspecificaciones();
-  }
-
-  // ACTUALIZAR CURSO POR ID
-  @Put(':id')
-  async updateCourse(@Param('id') id: string, @Body() updateCursoDto: UpdateCursoDto) {
-    const updateCourse = await this.cursosService.updateCourse(Number(id), updateCursoDto);
-    if (!updateCourse) {
-      throw new NotFoundException(`El id #${id} no fue encontrado`);
+  useEffect(() => {
+    const storedIdEmp = localStorage.getItem("id_emp");
+    if (storedIdEmp) {
+      setIdEmp(Number(storedIdEmp));
+      fetchCursos(Number(storedIdEmp));
     }
-    return updateCourse;
-  }
+  }, []);
 
-  // ELIMINAR CURSO POR ID
-  @Delete(':id')
-  async deleteCourse(@Param('id') id: string) {
-    return this.cursosService.deleteCourse(Number(id));
-  }
-}
-
-
-
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
-import { CreateCursoDto } from './dto/create-curso.dto';
-
-@Injectable()
-export class CursosService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  // CREAR CURSO
-  async createCourses(data: CreateCursoDto) {
-    console.log("Data recibida:", data);
+  const fetchCursos = async (idEmp: number) => {
     try {
-      return await this.prisma.cursos.create({ data });
+      const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      const data = await response.json();
+      const hoy = new Date();
+      const cursosActivos = data.cursos.filter((curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy);
+      setTimeout(() => {
+        setCursos(cursosActivos);
+        setCursosFiltrados(cursosActivos);
+        setIsLoading(false);
+      }, 1000);
     } catch (error) {
-      console.error("Error al crear el curso en el backend", error);
-      throw new Error("Error al crear el curso");
+      console.error("Error al obtener los cursos:", error);
+      setIsLoading(false);
     }
-  }
+  };
 
-  // OBTENER TODOS LOS CURSOS
-  async getCourses() {
-    return this.prisma.cursos.findMany();
-  }
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      if (!idEmp) return;
+      try {
+        const response = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
+        if (!response.ok) throw new Error("Error al obtener inscripciones");
+        const data = await response.json();
+        setInscripciones(data.filter((ins: Inscripcion) => ins.est === true));
+      } catch (error) {
+        console.error("Error al obtener inscripciones:", error);
+      }
+    };
 
-  // OBTENER OPCIONES PARA EL DESPLEGABLE
-  async getEspecificaciones() {
+    if (idEmp) fetchInscripciones();
+  }, [idEmp]);
+
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+    setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
+  };
+
+  const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
+    setInscribiendo(true);
+
+    if (!idEmp) {
+      setInscribiendo(false);
+      return;
+    }
+
     try {
-      return await this.prisma.listas.findMany(); // Asegúrate de que 'listas' es la tabla correcta
+      if (estaInscrito && inscripcionId) {
+        // **CANCELAR INSCRIPCIÓN**
+        const response = await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ est: false }),
+        });
+
+        if (!response.ok) throw new Error("Error al cancelar inscripción");
+
+        setMensajeExito("Se canceló la inscripción exitosamente ✅");
+
+      } else {
+        // **INSCRIBIRSE**
+        const fecreg = new Date().toISOString().split("T")[0];
+
+        const response = await fetch("http://localhost:8090/api/inscripciones", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg }),
+        });
+
+        if (!response.ok) throw new Error("Error al inscribirse");
+
+        setMensajeExito("Inscripción exitosa ✅");
+      }
+
+      // Recargar inscripciones después de inscribirse o cancelar
+      const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
+      const updatedData = await updatedResponse.json();
+      setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
+
     } catch (error) {
-      console.error("Error al obtener las especificaciones:", error);
-      throw new Error("Error al obtener las especificaciones");
+      console.error("No se pudo completar la acción.");
     }
-  }
 
-  // OBTENER CURSO POR ID
-  async getCourseId(id: number) {
-    return this.prisma.cursos.findUnique({ where: { id } });
-  }
+    setInscribiendo(false);
 
-  // ACTUALIZAR CURSO POR ID
-  async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
-    console.log('ID recibido:', id);
-    console.log('Datos recibidos:', data);
-    try {
-      return await this.prisma.cursos.update({
-        where: { id },
-        data,
-      });
-    } catch (error) {
-      console.error('Error al actualizar el curso:', error);
-      throw new Error('El curso no se pudo actualizar');
-    }
-  }
+    // Ocultar la notificación después de 3 segundos
+    setTimeout(() => {
+      setMensajeExito(null);
+    }, 3000);
+  };
 
-  // ELIMINAR CURSO POR ID
-  async deleteCourse(id: number) {
-    return this.prisma.cursos.delete({ where: { id } });
-  }
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
+
+        {/* NOTIFICACIÓN DE ÉXITO */}
+        {mensajeExito && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 animate-fade-in">
+            <CheckCircleIcon className="h-6 w-6 text-white" />
+            <span>{mensajeExito}</span>
+          </div>
+        )}
+
+        {/* LISTA DE CURSOS */}
+        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+          {isLoading ? (
+            <div className="flex justify-center py-4">
+              <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+            </div>
+          ) : cursosFiltrados.length > 0 ? (
+            cursosFiltrados.map((curso) => {
+              const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
+
+              return (
+                <div key={curso.id} className="border-b py-2">
+                  <div className="grid grid-cols-3 items-center">
+                    <span>{curso.NombreCurso}</span>
+                    <button
+                      onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
+                      className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded transition-all duration-300 transform hover:scale-110"
+                    >
+                      {inscripcion ? "Cancelar inscripción" : "Inscribirse"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-center py-4">No hay cursos disponibles.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
