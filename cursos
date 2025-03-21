@@ -1,27 +1,11 @@
 "use client";
 
-import { XMarkIcon, MagnifyingGlassIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
+import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 interface Curso {
   id: number;
   NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: number;
-  Lugar: string;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
-  NombreProfesor?: string;
 }
 
 interface Inscripcion {
@@ -34,13 +18,10 @@ interface Inscripcion {
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [busqueda, setBusqueda] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [inscribiendo, setInscribiendo] = useState(false);
   const [idEmp, setIdEmp] = useState<number | null>(null);
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
-  const [mensajeExito, setMensajeExito] = useState<string | null>(null); // Mensaje de éxito
+  const [mostrarAnimacion, setMostrarAnimacion] = useState(false);
 
   useEffect(() => {
     const storedIdEmp = localStorage.getItem("id_emp");
@@ -53,24 +34,17 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const fetchCursos = async (idEmp: number) => {
     try {
       const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      if (!response.ok) throw new Error("Error en la respuesta del servidor");
       const data = await response.json();
-      const hoy = new Date();
-      const cursosActivos = data.cursos.filter((curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy);
-      setTimeout(() => {
-        setCursos(cursosActivos);
-        setCursosFiltrados(cursosActivos);
-        setIsLoading(false);
-      }, 1000);
+      setCursos(data.cursos);
     } catch (error) {
       console.error("Error al obtener los cursos:", error);
-      setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    if (!idEmp) return;
     const fetchInscripciones = async () => {
-      if (!idEmp) return;
       try {
         const response = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
         if (!response.ok) throw new Error("Error al obtener inscripciones");
@@ -80,89 +54,59 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         console.error("Error al obtener inscripciones:", error);
       }
     };
-
-    if (idEmp) fetchInscripciones();
+    fetchInscripciones();
   }, [idEmp]);
-
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
 
   const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
     setInscribiendo(true);
-
-    if (!idEmp) {
-      setInscribiendo(false);
-      return;
-    }
+    if (!idEmp) return;
 
     try {
       if (estaInscrito && inscripcionId) {
-        // **CANCELAR INSCRIPCIÓN**
-        const response = await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
+        await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ est: false }),
         });
-
-        if (!response.ok) throw new Error("Error al cancelar inscripción");
-
-        setMensajeExito("Se canceló la inscripción exitosamente ✅");
-
       } else {
-        // **INSCRIBIRSE**
-        const fecreg = new Date().toISOString().split("T")[0];
-
-        const response = await fetch("http://localhost:8090/api/inscripciones", {
+        await fetch("http://localhost:8090/api/inscripciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg }),
+          body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg: new Date().toISOString().split("T")[0] }),
         });
-
-        if (!response.ok) throw new Error("Error al inscribirse");
-
-        setMensajeExito("Inscripción exitosa ✅");
       }
 
-      // Recargar inscripciones después de inscribirse o cancelar
       const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
       const updatedData = await updatedResponse.json();
       setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
+
+      // Mostrar animación del check
+      setMostrarAnimacion(true);
+      setTimeout(() => setMostrarAnimacion(false), 2000); // Ocultar después de 2 segundos
 
     } catch (error) {
       console.error("No se pudo completar la acción.");
     }
 
     setInscribiendo(false);
-
-    // Ocultar la notificación después de 3 segundos
-    setTimeout(() => {
-      setMensajeExito(null);
-    }, 3000);
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[600px] max-w-3xl flex flex-col">
 
-        {/* NOTIFICACIÓN DE ÉXITO */}
-        {mensajeExito && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 animate-fade-in">
-            <CheckCircleIcon className="h-6 w-6 text-white" />
-            <span>{mensajeExito}</span>
+        {/* ANIMACIÓN DE CHECK */}
+        {mostrarAnimacion && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="animate-check-spin opacity-100 transition-opacity duration-700">
+              <CheckCircleIcon className="h-32 w-32 text-green-500" />
+            </div>
           </div>
         )}
 
-        {/* LISTA DE CURSOS */}
         <div className="flex-1 overflow-y-auto mt-2 space-y-2">
-          {isLoading ? (
-            <div className="flex justify-center py-4">
-              <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
-            </div>
-          ) : cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map((curso) => {
+          {cursos.length > 0 ? (
+            cursos.map((curso) => {
               const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
 
               return (
