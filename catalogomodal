@@ -35,7 +35,6 @@ interface Inscripcion {
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,6 +50,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       fetchCursos(Number(storedIdEmp)); 
     }
   }, []);
+
   const fetchCursos = async (idEmp: number) => {
     try {
       const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
@@ -70,8 +70,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       setIsLoading(false);
     }
   };
-
-
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -93,10 +91,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     const texto = e.target.value.toLowerCase();
     setBusqueda(texto);
     setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
-
-  const handleVerMas = (id: number) => {
-    setExpandedCursoId(expandedCursoId === id ? null : id);
   };
 
   const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
@@ -144,29 +138,16 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
     setInscribiendo(false);
   };
-  const handleMouseEnter = () => {
-    setIsSearchActive(true);
-  };
-
-  const handleMouseLeave = () => {
-    if (busqueda === "") {
-      setIsSearchActive(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-3xl flex flex-col">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-5xl flex flex-col">
         
-        {/* BARRA DE BUSQUEDA*/}
+        {/* BARRA DE BÚSQUEDA Y BOTÓN DE CIERRE */}
         <div className="flex justify-between items-center mb-4">
-          <div className="relative flex items-center"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}>
-            <button 
-            
-            onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
-              {isSearchActive ? <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />}
+          <div className="relative flex items-center">
+            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
             </button>
             <input
               type="text"
@@ -177,68 +158,54 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
             />
           </div>
-           {/* BOTÓN CERRAR */}
-                  <button
-                    onClick={onClose}
-                    className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-                  >
-                    <XMarkIcon className="h-6 w-6" />
-                  </button>
+
+          <button
+            onClick={onClose}
+            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
         </div>
 
-        {/* LISTA DE CURSOS */}
-        <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+        {/* TABLA DE CURSOS */}
+        <div className="flex-1 overflow-y-auto mt-2">
           {isLoading ? (
-             <div className="flex justify-center py-4">
-             <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
-           </div>
+            <div className="flex justify-center py-4">
+              <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+            </div>
           ) : cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map((curso) => {
-              const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
-             
-              return (
-                <div key={curso.id} className="border-b py-2">
-                  <div className="grid grid-cols-3 items-center">
-                    <span>{curso.NombreCurso}</span>
-                    <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-                   
-
-                   {/* BOTÓN DE VER MÁS */}
-                    <button
-                    onClick={() => handleVerMas(curso.id)}
-                    className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
-                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-                  >
-                    {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
-                  </button>
-                  </div>
-
-                  {expandedCursoId === curso.id && (
-                    <div className="p-4 border bg-gray-50 rounded-lg mt-2">
-                       <h3 className="text-lg font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
-                    
-                    <p><strong>Valor:</strong> {curso.Valor}</p>
-                    <p><strong>Fin:</strong> {curso.Fin}</p>
-                    <p><strong>Periodo:</strong> {curso.Periodo}</p>
-                    <p><strong>Horas:</strong> {curso.Horas}</p>
-                    <p><strong>Lugar:</strong> {curso.Lugar}</p>
-                    <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
-                    <p><strong>Descripción:</strong> {curso.Descripcion}</p>
-
-
-                      {/* BOTÓN DE INSCRIPCIÓN */}
-                      <button
-                        onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
-                        className="ml-4 bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded w-24 h-11 flex justify-center items-center transition-all 
-                    duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-                      >
-                        {inscripcion ? "Cancelar inscripción" : "Inscribirse"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })
+            <table className="w-full border-collapse border border-gray-300">
+              <thead className="bg-[#990000] text-white">
+                <tr>
+                  <th className="border p-2">Nombre</th>
+                  <th className="border p-2">Inicio</th>
+                  <th className="border p-2">Fin</th>
+                  <th className="border p-2">Profesor</th>
+                  <th className="border p-2">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cursosFiltrados.map((curso) => {
+                  const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
+                  return (
+                    <tr key={curso.id} className="border">
+                      <td className="border p-2">{curso.NombreCurso}</td>
+                      <td className="border p-2">{curso.Inicio || "N/A"}</td>
+                      <td className="border p-2">{curso.Fin || "N/A"}</td>
+                      <td className="border p-2">{curso.NombreProfesor || "N/A"}</td>
+                      <td className="border p-2 text-center">
+                        <button
+                          onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
+                          className="bg-[#990000] hover:bg-red-700 text-white px-4 py-1 rounded"
+                        >
+                          {inscripcion ? "Cancelar" : "Inscribirse"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           ) : (
             <p className="text-center py-4">No hay cursos disponibles.</p>
           )}
@@ -247,5 +214,3 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
-
-
