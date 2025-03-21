@@ -40,7 +40,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
   const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
-  const [profesores, setProfesores] = useState<{ nombre: string}[]>([]);
+  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([]);
 
   useEffect(()  => {
     async function fetcProfesores() {
@@ -138,8 +138,21 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                 onChange={handleChange}
                 className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
                 />
-              )
-              : key === "Publico" ? (
+              ) :
+              key === "Profesor" || key === "SegundoPro" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {profesores.map((profesor) => (
+                    <option key={profesor.id_emp} value={profesor.id_emp}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Publico" ? (
                 <select name="Publico" 
                 value={curso.Publico} 
                 onChange={handleChange} 
@@ -187,26 +200,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                     </option>
                   ))}
                   
-                  </select>
-              ) : key === "Profesor" ? (
-                <select name="Preeofesor" value={curso.Profesor} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-                  <option value="">Selecciona una opción</option>
-                  {profesores.map((profesor, index) => (
-                    <option key={index} value={profesor.nombre}>
-                      {profesor.nombre}
-                    </option>
-                  ))}
-
-                   </select>
-              ) : key === "SegundoPro" ? (
-                <select name="SegundoPro" value={curso.SegundoPro} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-                  <option value="">Selecciona una opción</option>
-                  {profesores.map((profesor, index) => (
-                    <option key={index} value={profesor.nombre}>
-                      {profesor.nombre}
-                    </option>
-                  ))}
-                </select>
+                  </select>            
 
                 
               ) : (
