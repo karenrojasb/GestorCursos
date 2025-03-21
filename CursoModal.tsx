@@ -40,6 +40,22 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
   const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
+  const [profesores, setProfesores] = useState<{ nombre: string}[]>([]);
+
+  useEffect(()  => {
+    async function fetcProfesores() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/profesores")
+        if (!response.ok) throw new Error("Error al obtener los profesores");
+
+        const data = await response.json();
+        setProfesores(data);
+        } catch(error){
+          console.error("Error cargando los profesores:", error);
+        }
+      }
+      fetcProfesores(); 
+  }, []);
 
   useEffect(() => {
     async function fetchOpciones() {
@@ -170,10 +186,32 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                       {opcion.Especificacion}
                     </option>
                   ))}
+                  
+                  </select>
+              ) : key === "Profesor" ? (
+                <select name="Preeofesor" value={curso.Profesor} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {profesores.map((profesor, index) => (
+                    <option key={index} value={profesor.nombre}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
+
+                   </select>
+              ) : key === "SegundoPro" ? (
+                <select name="SegundoPro" value={curso.SegundoPro} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {profesores.map((profesor, index) => (
+                    <option key={index} value={profesor.nombre}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
                 </select>
+
+                
               ) : (
                 <input 
-                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
+                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
                   name={key}
                   value={curso[key as keyof typeof curso]}
                   onChange={handleChange}
