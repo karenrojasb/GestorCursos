@@ -157,15 +157,15 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                           <td colSpan={4}>
                             <div className="p-4 bg-gray-50 border border-gray-300 rounded-md shadow-md mt-2">
                               <h3 className="text-lg font-semibold text-[#990000]">Inscritos:</h3>
-                              <ul className="list-disc pl-5 mt-2 space-y-2">
+                              <ul className=" list-disc pl-6 mt-2 space-y-2">
                                 {inscripciones
                                 .filter((inscripcion) => Number(inscripcion.est) === 1)
                                 .map((inscripcion) => (
                                   <li key={inscripcion.id} className="text-gray-700">
-                                    <strong>Nombre:</strong> {inscripcion.nombre}
-                                    <strong>Documento:</strong> {inscripcion.docInscr} | 
-                                    
-                                    
+                                    <div className="grid grid-cols-2">
+                                    <span><strong>Nombre:</strong> {inscripcion.nombre} </span>
+                                    <span><strong>Documento:</strong> {inscripcion.docInscr} </span> 
+                                    </div> 
                                   </li>
                                 ))}
                               </ul>
