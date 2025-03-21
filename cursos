@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircleIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
 interface Curso {
   id: number;
@@ -22,6 +22,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [idEmp, setIdEmp] = useState<number | null>(null);
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [mostrarAnimacion, setMostrarAnimacion] = useState(false);
+  const [mensajeAnimacion, setMensajeAnimacion] = useState("");
+  const [esInscripcion, setEsInscripcion] = useState(true);
 
   useEffect(() => {
     const storedIdEmp = localStorage.getItem("id_emp");
@@ -68,21 +70,25 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ est: false }),
         });
+        setEsInscripcion(false);
+        setMensajeAnimacion("Se ha desinscrito satisfactoriamente");
       } else {
         await fetch("http://localhost:8090/api/inscripciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg: new Date().toISOString().split("T")[0] }),
         });
+        setEsInscripcion(true);
+        setMensajeAnimacion("Se ha inscrito satisfactoriamente");
       }
 
       const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
       const updatedData = await updatedResponse.json();
       setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
 
-      // Mostrar animación del check
+      // Mostrar animación
       setMostrarAnimacion(true);
-      setTimeout(() => setMostrarAnimacion(false), 2000); // Ocultar después de 2 segundos
+      setTimeout(() => setMostrarAnimacion(false), 2500); // Ocultar después de 2.5 segundos
 
     } catch (error) {
       console.error("No se pudo completar la acción.");
@@ -95,12 +101,17 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[600px] max-w-3xl flex flex-col">
 
-        {/* ANIMACIÓN DE CHECK */}
+        {/* ANIMACIÓN DE CHECK O X */}
         {mostrarAnimacion && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="animate-check-spin opacity-100 transition-opacity duration-700">
-              <CheckCircleIcon className="h-32 w-32 text-green-500" />
+          <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="animate-check-spin scale-125">
+              {esInscripcion ? (
+                <CheckCircleIcon className="h-32 w-32 text-green-500" />
+              ) : (
+                <XCircleIcon className="h-32 w-32 text-red-500" />
+              )}
             </div>
+            <p className="text-white text-2xl font-bold mt-2 animate-fade-in">{mensajeAnimacion}</p>
           </div>
         )}
 
