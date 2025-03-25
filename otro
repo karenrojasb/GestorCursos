@@ -1,4 +1,4 @@
-  async obtenerPeriodosDelAñoActual() {
+async obtenerPeriodosDelAñoActual() {
     const añoActual = new Date().getFullYear();
 
     return this.prisma.gescur_Periodos.findMany({
@@ -9,7 +9,7 @@
               gte: new Date(`${añoActual}-01-01`), // Desde el 1 de enero del año actual
               lt: new Date(`${añoActual + 1}-01-01`), // Hasta el 31 de diciembre del año actual
             },
-          },
+          }
         ],
       },
       select: {
@@ -21,4 +21,3 @@
       },
     });
   }
-}
