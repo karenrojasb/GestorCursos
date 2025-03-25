@@ -1,17 +1,30 @@
-Error: You provided a `value` prop to a form field without an `onChange` handler. This will render a read-only field. If the field should be mutable use `defaultValue`. Otherwise, set either `onChange` or `readOnly`.
-    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
-    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
-    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
-    at checkControlledValueProps (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:1181:375)
-    at setInitialProperties (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:9149:17)
-    at completeWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7326:35)
-    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
-    at completeUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8020:23)
-    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7957:28)
-    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
-    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
-    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7565:211)
-    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8402:9)
-    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8326:245)
-    at processRootScheduleInMicrotask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8343:9)
-    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8413:126
+<tbody>
+  {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => {
+    const horaInicio = curso[`${dia}Ini` as keyof typeof curso] || "";
+    const horaFin = curso[`${dia}Fin` as keyof typeof curso] || "";
+    
+    return (
+      <tr key={dia} className={horaInicio || horaFin ? "" : "hidden"}>
+        <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Ini`}
+            value={horaInicio}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Fin`}
+            value={horaFin}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
