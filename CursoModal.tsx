@@ -33,6 +33,20 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     Proexterno: "",  
     Descripcion: "", 
     IdTipoCurso: "",
+    LunesIni: "",
+    LunesFin: "",
+    MartesIni: "",
+    MartesFin: "",
+    MiercolesIni: "",
+    MiercolesFin: "",
+    JuevesIni: "",
+    JuevesFin: "",
+    ViernesIni: "",
+    ViernesFin: "",
+    SabadoIni: "",
+    SabadoFin: "",
+    DomingoIni: "",
+    DomingoFin: "", 
   });
 
   const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
@@ -127,6 +141,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         <h2 className="text-2xl font-bold text-[#990000] text-center- mb-6 ">Crear Curso</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          
           {Object.keys(curso).map((key) => (
             <div key={key} className="mb-3">
               <label className="block font-semibold text-gray-700">{key}:</label>
@@ -200,8 +215,12 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                     </option>
                   ))}
                   
-                  </select>                           
-              ) : (
+                  </select> 
+                  
+                  
+              ) : ( 
+                
+
                 <input 
                   type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
                   name={key}
