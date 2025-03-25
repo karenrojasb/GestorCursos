@@ -1,8 +1,1 @@
-const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  const { name, value, type } = e.target;
-
-  setCurso((prev) => ({
-    ...prev,
-    [name]: type === "time" && value === "" ? null : value, // Si es un input de tipo "time" y está vacío, lo pone en `null`
-  }));
-};
+You provided a `value` prop to a form field without an `onChange` handler. This will render a read-only field. If the field should be mutable use `defaultValue`. Otherwise, set either `onChange` or `readOnly`.
