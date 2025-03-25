@@ -1,34 +1,5 @@
-const [curso, setCurso] = useState({
-    NombreCurso: "",
-    Valor: "",
-    Publico: "",
-    Periodo: "",
-    Inicio: "",
-    Fin: "",
-    Horas: "",
-    CupoMax: "",
-    Lugar: "",
-    Linea: "",
-    Estado: "",
-    Modalidad: "",
-    Unidad: "",
-    Profesor: "",
-    SegundoPro: "",  
-    Proexterno: "",  
-    Descripcion: "", 
-    IdTipoCurso: "",
-    LunesIni: "",
-    LunesFin: "",
-    MartesIni: "",
-    MartesFin: "",
-    MiercolesIni: "",
-    MiercolesFin: "",
-    JuevesIni: "",
-    JuevesFin: "",
-    ViernesIni: "",
-    ViernesFin: "",
-    SabadoIni: "",
-    SabadoFin: "",
-    DomingoIni: "",
-    DomingoFin: "", 
-  });
+  @Get('periodos')
+  async obtenerPeriodosActuales() {
+    return await this.cursoService.obtenerPeriodosDelAñoActual();
+  }
+}
