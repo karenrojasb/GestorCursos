@@ -1,19 +1,35 @@
-          <h3 className="text-lg font-semibold mt-4">Horarios</h3>
-          <table className="w-full border-collapse border border-gray-300 text-center mt-2">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-2 py-1">Día</th>
-                <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
-                <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
-              </tr>
-            </thead>
-            <tbody>
-              {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
-                <tr key={dia}>
-                  <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
-                  <td className="border border-gray-300 px-2 py-1">-</td>
-                  <td className="border border-gray-300 px-2 py-1">-</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+<h3 className="text-lg font-semibold mt-4">Horarios</h3>
+<table className="w-full border-collapse border border-gray-300 text-center">
+  <thead>
+    <tr className="bg-gray-200">
+      <th className="border border-gray-300 px-2 py-1">Día</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
+    </tr>
+  </thead>
+  <tbody>
+    {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+      <tr key={dia}>
+        <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Ini`}  // Ejemplo: "LunesIni"
+            value={curso[`${dia}Ini` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Fin`}  // Ejemplo: "LunesFin"
+            value={curso[`${dia}Fin` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
