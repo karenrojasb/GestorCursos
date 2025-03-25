@@ -33,20 +33,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     Proexterno: "",  
     Descripcion: "", 
     IdTipoCurso: "",
-    LunesIni: "",
-    LunesFin: "",
-    MartesIni: "",
-    MartesFin: "",
-    MiercolesIni: "",
-    MiercolesFin: "",
-    JuevesIni: "",
-    JuevesFin: "",
-    ViernesIni: "",
-    ViernesFin: "",
-    SabadoIni: "",
-    SabadoFin: "",
-    DomingoIni: "",
-    DomingoFin: "", 
   });
 
   const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
@@ -91,13 +77,22 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
     fetchOpciones();
   }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const {name, value} = e.target;
     setCurso((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+      [name]: value,
+    }))
+    }
+
+
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  //   setCurso((prev) => ({
+  //     ...prev,
+  //     [e.target.name]: e.target.value,
+  //   }));
+  // };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,7 +136,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         <h2 className="text-2xl font-bold text-[#990000] text-center- mb-6 ">Crear Curso</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           {Object.keys(curso).map((key) => (
             <div key={key} className="mb-3">
               <label className="block font-semibold text-gray-700">{key}:</label>
@@ -214,41 +208,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                       {opcion.Especificacion}
                     </option>
                   ))}
-
-<h3>Horarios</h3>
-          <table className="w-full border-collapse border border-gray-300 text-center ">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-2 py-1">Día</th>
-                <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
-                <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
-              </tr>
-            </thead>
-            <tbody>
-              {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
-                <tr key={dia}>
-                  <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
-                  <td className="border border-gray-300 px-2 py-1">
-                    <input
-                    type="time"
-                    name={`${dia}Ini`}
-                    value={curso[`${dia}Ini` as keyof typeof curso]}
-                    onChange={handleChange}
-                    className="w-full border p-1 rounded-lg"/>
-                  </td>
-
-                  <td className="border border-gray-300 px-2 py-1">
-                    <input
-                    type="time"
-                    name={`${dia}Fin`}
-                    value={curso[`${dia}Fin` as keyof typeof curso]}
-                    onChange={handleChange}
-                    className="w-full border p-1 rounded-lg"/>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
                   
                   </select>                           
               ) : (
@@ -262,6 +221,42 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
               )} 
             </div>
           ))}
+          <h3 className="text-lg font-semibold mt-4">Horarios</h3>
+<table className="w-full border-collapse border border-gray-300 text-center">
+  <thead>
+    <tr className="bg-gray-200">
+      <th className="border border-gray-300 px-2 py-1">Día</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
+    </tr>
+  </thead>
+  <tbody>
+    {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+      <tr key={dia}>
+        <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Ini`}
+            value={curso[`${dia}Ini` as keyof typeof curso] || ""}
+            // onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Fin`}
+            value={curso[`${dia}Fin` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+          
           
           {/* BOTÓN GUARDAR */}
           <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
