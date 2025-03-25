@@ -116,12 +116,12 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md transition-transform transform scale-95 opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
         <motion.div
         className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-lg overflow-y-auto"
-        initial={{ opacity: 0, scale: 0.95}}
-        animate={{ opacity: 1, scale: 1}}
-        exit={{ opacity: 0, scale: 0.95}}
+        initial={{ opacity: 0}}
+        animate={{ opacity: 1}}
+        exit={{ opacity: 0}}
         transition={{ duration: 0.3}}
         >
 
@@ -239,7 +239,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
             type="time"
             name={`${dia}Ini`}
             value={curso[`${dia}Ini` as keyof typeof curso] || ""}
-            // onChange={handleChange}
+            onChange={handleChange}
             className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
           />
         </td>
