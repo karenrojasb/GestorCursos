@@ -1,33 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
-
-@Injectable()
-export class PeriodoService {
-  constructor(private prisma: PrismaService) {}
-
-  async obtenerPeriodosDelAñoActual() {
+async obtenerPeriodosDelAñoActual() {
     const añoActual = new Date().getFullYear();
 
     return this.prisma.periodos.findMany({
       where: {
-        OR: [
+        AND: [
           {
             fecha_ini: {
-              gte: new Date(`${añoActual}-01-01`), // Mayor o igual al 1 de enero del año actual
-              lt: new Date(`${añoActual + 1}-01-01`), // Menor que el 1 de enero del siguiente año
+              gte: new Date(`${añoActual}-01-01`), // Desde el 1 de enero del año actual
+              lt: new Date(`${añoActual + 1}-01-01`), // Hasta el 31 de diciembre del año actual
             },
           },
           {
-            fecha_fin: {
-              gte: new Date(`${añoActual}-01-01`), // Si finaliza en el año actual
-              lt: new Date(`${añoActual + 1}-01-01`),
+            cursos: {
+              some: {}, // Aseguramos que los periodos estén vinculados a algún curso
             },
           },
         ],
+      },
+      select: {
+        id: true,
+        periodo: true, // Solo mostramos el campo 'periodo'
       },
       orderBy: {
         fecha_ini: 'asc',
       },
     });
   }
-}
