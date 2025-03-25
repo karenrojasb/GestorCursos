@@ -1,4 +1,19 @@
-  @Get('periodos')
-  async obtenerPeriodosActuales() {
-    return await this.cursoService.obtenerPeriodosDelAñoActual();
-  }
+ async obtenerPeriodosDelAñoActual() {
+  const añoActual = new Date().getFullYear();
+
+  return this.prisma.periodo.findMany({
+    where: {
+      fecha_ini: {
+        gte: new Date(`${añoActual}-01-01`), // Desde el 1 de enero del año actual
+        lt: new Date(`${añoActual + 1}-01-01`), // Hasta el 31 de diciembre del año actual
+      },
+    },
+    select: {
+      id: true,
+      periodo: true, // Solo se devuelve el campo 'periodo'
+    },
+    orderBy: {
+      fecha_ini: 'asc',
+    },
+  });
+}
