@@ -42,6 +42,23 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
   const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([]);
   const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
+  const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
+
+
+  useEffect(()  => {
+    async function fetcPeriodos() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/periodos")
+        if (!response.ok) throw new Error("Error al obtener los periodos");
+
+        const data = await response.json();
+        setOpcionesPeriodos(data);
+        } catch(error){
+          console.error("Error cargando lista de periodos:", error);
+        }
+      }
+      fetcPeriodos(); 
+  }, []);
 
 
   useEffect(()  => {
@@ -160,6 +177,19 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                 onChange={handleChange}
                 className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
                 />
+              ) : key === "Periodo" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesPeriodos.map((opcion, index) => (
+                    <option key={index} value={opcion.periodo}>
+                      {opcion.periodo}
+                    </option>
+                  ))}
+                </select>
               ) : key === "Profesor" || key === "SegundoPro" ? (
                 <select
                 name={key}
