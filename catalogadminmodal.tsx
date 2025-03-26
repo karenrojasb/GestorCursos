@@ -25,6 +25,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
   const [mensajeExito, setMensajeExito] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
@@ -58,7 +60,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
   const handleMouseLeave = () => {
     if (busqueda === "") {
-      setIsSearchActive(false);
+      setIsSearchActive(true);
     }
   };
 
