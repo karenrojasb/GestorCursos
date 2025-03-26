@@ -41,6 +41,23 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
   const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
   const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([]);
+  const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
+
+
+  useEffect(()  => {
+    async function fetcUnidades() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/unidad")
+        if (!response.ok) throw new Error("Error al obtener las unidades");
+
+        const data = await response.json();
+        setUnidad(data);
+        } catch(error){
+          console.error("Error cargando lista de unidades:", error);
+        }
+      }
+      fetcUnidades(); 
+  }, []);
 
   useEffect(()  => {
     async function fetcProfesores() {
@@ -87,12 +104,6 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     }
 
 
-  // const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  //   setCurso((prev) => ({
-  //     ...prev,
-  //     [e.target.name]: e.target.value,
-  //   }));
-  // };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,9 +127,9 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
         <motion.div
-        className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-lg overflow-y-auto"
+        className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto"
         initial={{ opacity: 0}}
         animate={{ opacity: 1}}
         exit={{ opacity: 0}}
@@ -136,7 +147,9 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         <h2 className="text-2xl font-bold text-[#990000] text-center- mb-6 ">Crear Curso</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {Object.keys(curso).map((key) => (
+          {Object.keys(curso)
+                   .filter((key) => !["LunesIni", "LunesFin", "MartesIni", "MartesFin", "MiercolesIni", "MiercolesFin", "JuevesIni", "JuevesFin", "ViernesIni", "ViernesFin", "SabadoIni", "SabadoFin", "DomingoIni", "DomingoFin"]. includes(key))
+          .map((key) => (
             <div key={key} className="mb-3">
               <label className="block font-semibold text-gray-700">{key}:</label>
               { key === "Inicio" || key === "Fin" ? (
@@ -147,8 +160,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                 onChange={handleChange}
                 className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
                 />
-              ) :
-              key === "Profesor" || key === "SegundoPro" ? (
+              ) : key === "Profesor" || key === "SegundoPro" ? (
                 <select
                 name={key}
                 value={curso[key as keyof typeof curso]}
@@ -161,6 +173,22 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                     </option>
                   ))}
                 </select>
+
+              ) : key === "Unidad" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {unidad.map((unidad) => (
+                    <option key={unidad.codigo} value={unidad.codigo}>
+                      {unidad.nombre}
+                    </option>
+                  ))}
+                </select>
+
+
               ) : key === "Publico" ? (
                 <select name="Publico" 
                 value={curso.Publico} 
@@ -200,6 +228,8 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                     </option>
                   ))}
                 </select>
+
+        
               ) : key === "IdTipoCurso" ? (
                 <select name="IdTipoCurso" value={curso.IdTipoCurso} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
                   <option value="">Selecciona una opción</option>
@@ -212,7 +242,7 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                   </select>                           
               ) : (
                 <input 
-                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad", "Unidad", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
+                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad",  "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
                   name={key}
                   value={curso[key as keyof typeof curso]}
                   onChange={handleChange}
