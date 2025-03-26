@@ -1,5 +1,5 @@
 "use client";
-import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 
 interface Curso {
@@ -24,7 +24,6 @@ interface Curso {
 }
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
@@ -53,22 +52,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     fetchCursos();
   }, []);
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(`http://localhost:8090/api/cursos/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
-      setMensajeExito("Curso eliminado correctamente");
-      setTimeout(() => setMensajeExito(""), 3000);
-      setCursos(prev => prev.filter(curso => curso.id !== id));
-      setCursosFiltrados(prev => prev.filter(curso => curso.id !== id));
-    } catch (error) {
-      console.error("Error al eliminar el curso:", error);
-      alert("No se pudo eliminar el curso");
-    }
-    setIsLoading(false);
-  };
-
   // INICIAR EDICIÓN
   const handleEditar = (curso: Curso) => {
     setEditandoCurso({ ...curso });
@@ -78,26 +61,23 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     if (!editandoCurso) return;
     const { name, value } = e.target;
 
-  // GUARDAR CAMBIOS 
-  setEditandoCurso((prev) => {
-    if (!prev) return null;
-    
-    const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"];
+    setEditandoCurso((prev) => {
+      if (!prev) return null;
 
-    return {
-      ...prev,
-      [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
-    };
-  
-  });
-};
+      const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"];
 
-// GUARDAR CAMBIOS AL EDITAR
-const handleGuardarEdicion = async () => {
-  if (!editandoCurso) return;
-  console.log("Intentando guardar cambios...");
-  console.log("Datos enviados al backend:", JSON.stringify(editandoCurso, null, 2));
+      return {
+        ...prev,
+        [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
+      };
+    });
+  };
 
+  // GUARDAR CAMBIOS AL EDITAR
+  const handleGuardarEdicion = async () => {
+    if (!editandoCurso) return;
+    console.log("Intentando guardar cambios...");
+    console.log("Datos enviados al backend:", JSON.stringify(editandoCurso, null, 2));
 
     setIsLoading(true);
     try {
@@ -110,23 +90,22 @@ const handleGuardarEdicion = async () => {
       if (!response.ok) {
         console.error("Error HTTP al actualizar:", response.status);
         const errorText = await response.text();
-        console.error("Respuesta del servidor:", errorText)
+        console.error("Respuesta del servidor:", errorText);
         return;
       }
 
       console.log("Curso actualizado con éxito");
-      
+
       setMensajeExito("¡Curso actualizado con éxito!");
 
-      // RECARGAR DESPUES DE LA ACTUALIZACIÓN DEL CURSO
+      // RECARGAR DESPUÉS DE LA ACTUALIZACIÓN DEL CURSO
       await fetchCursos();
 
-      // CERRAR MODA DE EDICIÓN
-      setTimeout(()=> {
+      // CERRAR MODO DE EDICIÓN
+      setTimeout(() => {
         setMensajeExito("");
         setEditandoCurso(null);
       }, 3000);
-      
     } catch (error) {
       console.error("Error al guardar la edición:", error);
     }
@@ -137,54 +116,58 @@ const handleGuardarEdicion = async () => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         
+        {/* MODAL EDICIÓN DE CURSO */}
+        {editandoCurso && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="relative bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
               
-      
+              {/* BOTÓN PARA CERRAR */}
+              <button
+                className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+                onClick={() => setEditandoCurso(null)}
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
 
-       {/* MODAL EDICIÓN DE CURSO */}
- {editandoCurso && (
-   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-     <div className="relative bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
-      
-       {/* BOTÓN PARA CERRAR */}
-       <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" 
-         onClick={() => setEditandoCurso(null)}>
-         <XMarkIcon className="w-6 h-6" />
-       </button>
+              <h2 className="text-lg text-[#990000] font-bold mb-4">Editar Curso</h2>
 
-       <h2 className="text-lg text-[#990000] font-bold mb-4">Editar Curso</h2>
-       {/* MENSAJE DE ÉXITO AL ACTUALIZAR EL CURSO*/}
-       {mensajeExito && (
-         <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-[#990000] text-white p-2 rounded text-center mb-4">
-           {mensajeExito}
-         </div>
-       )}
+              {/* MENSAJE DE ÉXITO AL ACTUALIZAR EL CURSO*/}
+              {mensajeExito && (
+                <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-[#990000] text-white p-2 rounded text-center mb-4">
+                  {mensajeExito}
+                </div>
+              )}
 
-       {/* FORMULARIO DE EDICIÓN */}
-       {Object.keys(editandoCurso).map((key) => (
-         key !== "id" && (
-           <div key={key} className="mt-2">
-             <label className="block text-sm font-bold">{key}</label>
-             <input
-               type="text"
-               name={key}
-               value={editandoCurso ? (editandoCurso as any)[key] ?? "" : ""}
-               onChange={handleChange}
-               className="border p-2 w-full rounded"
-             />
-           </div>
-         )
-       ))}
-    
+              {/* FORMULARIO DE EDICIÓN */}
+              {Object.keys(editandoCurso).map(
+                (key) =>
+                  key !== "id" && (
+                    <div key={key} className="mt-2">
+                      <label className="block text-sm font-bold">{key}</label>
+                      <input
+                        type="text"
+                        name={key}
+                        value={editandoCurso ? (editandoCurso as any)[key] ?? "" : ""}
+                        onChange={handleChange}
+                        className="border p-2 w-full rounded"
+                      />
+                    </div>
+                  )
+              )}
 
-       {/* BOTONES GUARDAR Y CANCELAR */}
-       <div className="mt-4 flex space-x-4 ">
-         <button onClick={handleGuardarEdicion} className="bg-[#990000] text-white px-4 py-2 rounded">Guardar</button>
-         <button onClick={() => setEditandoCurso(null)} className="bg-gray-700 text-white px-4 py-2 rounded">Cancelar</button>
-       </div>
-            
-           </div>
-         </div>
-       )}
-     </div>
-   );
- }
+              {/* BOTONES GUARDAR Y CANCELAR */}
+              <div className="mt-4 flex space-x-4 ">
+                <button onClick={handleGuardarEdicion} className="bg-[#990000] text-white px-4 py-2 rounded">
+                  Guardar
+                </button>
+                <button onClick={() => setEditandoCurso(null)} className="bg-gray-700 text-white px-4 py-2 rounded">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
