@@ -1,19 +1,15 @@
- async obtenerPeriodosDelAñoActual() {
-  const añoActual = new Date().getFullYear();
+ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (!editandoCurso) return;
+    const { name, value } = e.target;
 
-  return this.prisma.periodo.findMany({
-    where: {
-      fecha_ini: {
-        gte: new Date(`${añoActual}-01-01`), // Desde el 1 de enero del año actual
-        lt: new Date(`${añoActual + 1}-01-01`), // Hasta el 31 de diciembre del año actual
-      },
-    },
-    select: {
-      id: true,
-      periodo: true, // Solo se devuelve el campo 'periodo'
-    },
-    orderBy: {
-      fecha_ini: 'asc',
-    },
-  });
-}
+    // Estos son los campos que SÍ son numéricos
+    const camposNumericos = ["Valor", "Publico", "Horas", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"];
+
+    setEditandoCurso((prev) => {
+        if (!prev) return null;
+        return {
+            ...prev,
+            [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
+        };
+    });
+};
