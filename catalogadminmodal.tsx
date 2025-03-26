@@ -11,16 +11,9 @@ interface Curso {
   Inicio: string;
   Fin: string;
   Horas: number;
-  CupoMax: number;
   Lugar: string;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
   NombreProfesor?: string;
+  Descripcion: string;
 }
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
@@ -291,7 +284,7 @@ const handleGuardarEdicion = async () => {
            {mensajeExito}
          </div>
        )}
-
+       
 
        {/* FORMULARIO DE EDICIÓN */}
        {Object.keys(editandoCurso).map((key) => (
