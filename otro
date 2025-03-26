@@ -1,74 +1,15 @@
-{/* Campo Publico */}
-<label className="block text-sm font-medium text-gray-700">Público</label>
-<select
-  name="Publico"
-  value={editandoCurso.Publico}
-  onChange={handleChange}
-  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#990000] focus:border-[#990000]"
->
-  {opcionesPublico.map((opcion) => (
-    <option key={opcion.id} value={opcion.id}>
-      {opcion.Especificacion}
-    </option>
-  ))}
-</select>
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  if (!editandoCurso) return;
+  const { name, value } = e.target;
 
-{/* Campo Línea */}
-<label className="block text-sm font-medium text-gray-700">Línea</label>
-<select
-  name="Linea"
-  value={editandoCurso.Linea}
-  onChange={handleChange}
-  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#990000] focus:border-[#990000]"
->
-  {opcionesLinea.map((opcion) => (
-    <option key={opcion.id} value={opcion.id}>
-      {opcion.Especificacion}
-    </option>
-  ))}
-</select>
-
-{/* Campo Modalidad */}
-<label className="block text-sm font-medium text-gray-700">Modalidad</label>
-<select
-  name="Modalidad"
-  value={editandoCurso.Modalidad}
-  onChange={handleChange}
-  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#990000] focus:border-[#990000]"
->
-  {opcionesModalidad.map((opcion) => (
-    <option key={opcion.id} value={opcion.id}>
-      {opcion.Especificacion}
-    </option>
-  ))}
-</select>
-
-{/* Campo Estado */}
-<label className="block text-sm font-medium text-gray-700">Estado</label>
-<select
-  name="Estado"
-  value={editandoCurso.Estado}
-  onChange={handleChange}
-  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#990000] focus:border-[#990000]"
->
-  {opcionesEstado.map((opcion) => (
-    <option key={opcion.id} value={opcion.id}>
-      {opcion.Especificacion}
-    </option>
-  ))}
-</select>
-
-{/* Campo Tipo de Curso */}
-<label className="block text-sm font-medium text-gray-700">Tipo de Curso</label>
-<select
-  name="IdTipoCurso"
-  value={editandoCurso.IdTipoCurso}
-  onChange={handleChange}
-  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#990000] focus:border-[#990000]"
->
-  {opcionesTipoCurso.map((opcion) => (
-    <option key={opcion.id} value={opcion.id}>
-      {opcion.Especificacion}
-    </option>
-  ))}
-</select>
+  // Convertir valores de `select` a número si es necesario
+  const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "IdTipoCurso"];
+  
+  setEditandoCurso((prev) => {
+    if (!prev) return null;
+    return {
+      ...prev,
+      [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
+    };
+  });
+};
