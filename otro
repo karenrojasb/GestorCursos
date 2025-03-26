@@ -46,33 +46,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     fetchCursos();
   }, []);
 
-  // BUSCAR CURSOS
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
-
-  const handleMouseEnter = () => {
-    setIsSearchActive(true);
-  };
-
-  const handleMouseLeave = () => {
-    if (busqueda === "") {
-      setIsSearchActive(true);
-    }
-  };
-
-  // EXPANDIR DETALLES DEL CURSO
-  const handleVerMas = (id: number) => {
-    setExpandedCursoId(expandedCursoId === id ? null : id);
-  };
-
-  // ELIMINAR CURSO
-  const handleDeleteCourse =async (id: number) => {
-    const confirmar = window.confirm("¿Estas seguro de que deseas eliminar este curso?");
-    if (!confirmar) return;
-
     setIsLoading(true);
     try {
       const response = await fetch(`http://localhost:8090/api/cursos/${id}`, { method: "DELETE" });
