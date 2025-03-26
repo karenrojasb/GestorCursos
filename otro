@@ -1,15 +1,31 @@
-const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-  if (!editandoCurso) return;
-  const { name, value } = e.target;
+{Object.keys(editandoCurso).map((key) => (
+  key !== "id" && (
+    <div key={key} className="mt-2">
+      <label className="block text-sm font-bold">{key}</label>
 
-  // Convertir valores de `select` a número si es necesario
-  const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "IdTipoCurso"];
-  
-  setEditandoCurso((prev) => {
-    if (!prev) return null;
-    return {
-      ...prev,
-      [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
-    };
-  });
-};
+      {key === "Publico" ? (
+        <select
+          name={key}
+          value={editandoCurso[key] ?? ""}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+        >
+          <option value="">Selecciona una opción</option>
+          {opcionesPublico.map((opcion) => (
+            <option key={opcion.id} value={opcion.id}>
+              {opcion.Especificacion}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input
+          type="text"
+          name={key}
+          value={editandoCurso[key] ?? ""}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+        />
+      )}
+    </div>
+  )
+))}
