@@ -11,9 +11,16 @@ interface Curso {
   Inicio: string;
   Fin: string;
   Horas: number;
+  CupoMax: number;
   Lugar: string;
-  NombreProfesor?: string;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  SegundoPro: string;
+  Proexterno: string;
   Descripcion: string;
+  IdTipoCurso: number;
+  NombreProfesor?: string;
 }
 
 interface Opcion {
