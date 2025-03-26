@@ -34,6 +34,13 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
     Descripcion: "", 
     IdTipoCurso: "",
   });
+  const etiquetas = {
+    NombreCurso: "Nombre Curso",
+    CupoMax: "Cupo Máximo",
+    SegundoPro: "Segundo Profesor",
+    Proexterno: "Profesor Externo",
+    IdTipoCurso: "Tipo de curso",
+  };
 
   const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
   const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
@@ -162,13 +169,13 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
         </button>
 
         <h2 className="text-2xl font-bold text-[#990000] text-center- mb-6 ">Crear Curso</h2>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           {Object.keys(curso)
                    .filter((key) => !["LunesIni", "LunesFin", "MartesIni", "MartesFin", "MiercolesIni", "MiercolesFin", "JuevesIni", "JuevesFin", "ViernesIni", "ViernesFin", "SabadoIni", "SabadoFin", "DomingoIni", "DomingoFin"]. includes(key))
           .map((key) => (
             <div key={key} className="mb-3">
-              <label className="block font-semibold text-gray-700">{key}:</label>
+              <label className="block font-semibold text-gray-700">
+                {etiquetas[key as keyof typeof etiquetas] || key}</label>
               { key === "Inicio" || key === "Fin" ? (
                 <input 
                 type="date"
@@ -190,7 +197,8 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                     </option>
                   ))}
                 </select>
-              ) : key === "Profesor" || key === "SegundoPro" ? (
+           
+          ) : key === "Profesor" || key === "SegundoPro" ? (
                 <select
                 name={key}
                 value={curso[key as keyof typeof curso]}
