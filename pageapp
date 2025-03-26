@@ -1,15 +1,7 @@
- const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    if (!editandoCurso) return;
+ const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Estos son los campos que SÍ son numéricos
-    const camposNumericos = ["Valor", "Publico", "Horas", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"];
-
-    setEditandoCurso((prev) => {
-        if (!prev) return null;
-        return {
-            ...prev,
-            [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
-        };
-    });
+    setEditandoCurso((prev) => ({
+        ...prev,
+        [name]: value,
+    }));
 };
