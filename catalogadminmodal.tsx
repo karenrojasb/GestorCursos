@@ -11,9 +11,18 @@ interface Curso {
   Inicio: string;
   Fin: string;
   Horas: number;
+  CupoMax: number;
   Lugar: string;
-  NombreProfesor?: string;
+  Linea: number;
+  Estado: number;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  SegundoPro: string;
+  Proexterno: string;
   Descripcion: string;
+  IdTipoCurso: number;
+  NombreProfesor?: string;
 }
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
@@ -155,7 +164,7 @@ const handleGuardarEdicion = async () => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl h-[90vh] overflow-y-auto">
         
        {/* BOTÓN CERRAR */}
               <button
@@ -200,7 +209,7 @@ const handleGuardarEdicion = async () => {
 
          {/* LISTA DE CURSOS */}
         
-         <div className="flex-1 overflow-y-auto max-h-[60vh] space-y-2">
+         <div className="flex-1 overflow-y-auto max-h-[75vh] space-y-2">
            {cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso) => (
               <div key={curso.id} className="border-b py-2">
@@ -239,19 +248,70 @@ const handleGuardarEdicion = async () => {
                    {/* CONTENIDO DE CURSO */}
                    {expandedCursoId === curso.id && (
                   
-                   <div className="p-4 border bg-gray-50 rounded-lg mt-3 h-[500px]">
-                      <h3 className="text-ig font-bold text-[#990000] mb-2">{curso.NombreCurso}</h3>
-                                        
-                     <p><strong>Id:</strong> {curso.id}</p>
-                     <p><strong>Valor:</strong> {curso.Valor}</p>
-                     <p><strong>Fin:</strong> {curso.Fin}</p>
-                     <p><strong>Publico:</strong> {curso.Publico}</p>
-                     <p><strong>Periodo:</strong> {curso.Periodo}</p>
-                     <p><strong>Horas:</strong> {curso.Horas}</p>
-                     <p><strong>Lugar:</strong> {curso.Lugar}</p>
-                     <p><strong>Profesor:</strong> {curso.NombreProfesor}</p>
-                     <p><strong>Descripción:</strong> {curso.Descripcion}</p>
-                   </div>
+                  
+                  <div className="flex mt-4">
+  <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden">
+    <thead className="bg-[#990000] text-white">
+      <tr>
+        <th className="border px-4 py-2">Nombre del curso</th>
+        <th className="border px-4 py-2">ID</th>
+        <th className="border px-4 py-2">Valor</th>
+        <th className="border px-4 py-2">Público</th>
+        <th className="border px-4 py-2">Periodo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="bg-gray-50">
+        <td className="border px-4 py-2">{curso.NombreCurso}</td>
+        <td className="border px-4 py-2">{curso.id}</td>
+        <td className="border px-4 py-2">{curso.Valor}</td>
+        <td className="border px-4 py-2">{curso.Publico}</td>
+        <td className="border px-4 py-2">{curso.Periodo}</td>
+      </tr>
+
+      <tr>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Inicio</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Fin</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Horas</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Cupo Máximo</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Lugar</th>
+      </tr>
+      <tr className="bg-gray-50">
+        <td className="border px-4 py-2">{curso.Inicio}</td>
+        <td className="border px-4 py-2">{curso.Fin}</td>
+        <td className="border px-4 py-2">{curso.Horas}</td>
+        <td className="border px-4 py-2">{curso.CupoMax}</td>
+        <td className="border px-4 py-2">{curso.Lugar}</td>
+      </tr>
+
+      <tr>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Línea</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Estado</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Modalidad</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Unidad</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Profesor</th>
+      </tr>
+      <tr className="bg-gray-50">
+        <td className="border px-4 py-2">{curso.Linea}</td>
+        <td className="border px-4 py-2">{curso.Estado}</td>
+        <td className="border px-4 py-2">{curso.Modalidad}</td>
+        <td className="border px-4 py-2">{curso.Unidad}</td>
+        <td className="border px-4 py-2">{curso.Profesor}</td>
+      </tr>
+
+      <tr>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Tipo de Curso</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white" colSpan={4}>Descripción</th>
+      </tr>
+      <tr className="bg-gray-50">
+        <td className="border px-4 py-2">{curso.IdTipoCurso}</td>
+        <td className="border px-4 py-2" colSpan={4}>{curso.Descripcion}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>            
+                     
+              
                  )}
                </div>
               </div>
