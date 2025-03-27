@@ -1,7 +1,61 @@
- const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEditandoCurso((prev) => ({
-        ...prev,
-        [name]: value,
-    }));
-};
+<div className="flex justify-center mt-4">
+  <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden">
+    <thead className="bg-[#990000] text-white">
+      <tr>
+        <th className="border px-4 py-2">Nombre del curso</th>
+        <th className="border px-4 py-2">ID</th>
+        <th className="border px-4 py-2">Valor</th>
+        <th className="border px-4 py-2">Público</th>
+        <th className="border px-4 py-2">Periodo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="bg-gray-50">
+        <td className="border px-4 py-2">{curso.NombreCurso}</td>
+        <td className="border px-4 py-2">{curso.id}</td>
+        <td className="border px-4 py-2">{curso.Valor}</td>
+        <td className="border px-4 py-2">{curso.Publico}</td>
+        <td className="border px-4 py-2">{curso.Periodo}</td>
+      </tr>
+
+      <tr>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Inicio</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Fin</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Horas</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Cupo Máximo</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Lugar</th>
+      </tr>
+      <tr className="bg-gray-50">
+        <td className="border px-4 py-2">{curso.Inicio}</td>
+        <td className="border px-4 py-2">{curso.Fin}</td>
+        <td className="border px-4 py-2">{curso.Horas}</td>
+        <td className="border px-4 py-2">{curso.CupoMax}</td>
+        <td className="border px-4 py-2">{curso.Lugar}</td>
+      </tr>
+
+      <tr>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Línea</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Estado</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Modalidad</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Unidad</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Profesor</th>
+      </tr>
+      <tr className="bg-gray-50">
+        <td className="border px-4 py-2">{curso.Linea}</td>
+        <td className="border px-4 py-2">{curso.Estado}</td>
+        <td className="border px-4 py-2">{curso.Modalidad}</td>
+        <td className="border px-4 py-2">{curso.Unidad}</td>
+        <td className="border px-4 py-2">{curso.Profesor}</td>
+      </tr>
+
+      <tr>
+        <th className="border px-4 py-2 bg-[#990000] text-white">Tipo de Curso</th>
+        <th className="border px-4 py-2 bg-[#990000] text-white" colSpan={4}>Descripción</th>
+      </tr>
+      <tr className="bg-gray-50">
+        <td className="border px-4 py-2">{curso.IdTipoCurso}</td>
+        <td className="border px-4 py-2" colSpan={4}>{curso.Descripcion}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
