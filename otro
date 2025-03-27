@@ -1,24 +1,87 @@
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-  <div className="border border-gray-300 rounded-lg shadow p-4" style={{ borderColor: '#990000' }}>
-    <h2 className="text-[#990000] font-semibold text-lg mb-2">{curso.NombreCurso}</h2>
+<div className="border border-gray-300 rounded-lg shadow p-4 w-full" style={{ borderColor: '#990000' }}>
+  <h2 className="text-[#990000] font-bold text-xl mb-4">{curso.NombreCurso}</h2>
 
-    <div className="text-sm text-gray-700 space-y-1">
-      <p><strong>ID:</strong> {curso.id}</p>
-      <p><strong>Valor:</strong> {curso.Valor}</p>
-      <p><strong>Público:</strong> {curso.Publico}</p>
-      <p><strong>Periodo:</strong> {curso.Periodo}</p>
-      <p><strong>Inicio:</strong> {curso.Inicio}</p>
-      <p><strong>Fin:</strong> {curso.Fin}</p>
-      <p><strong>Horas:</strong> {curso.Horas}</p>
-      <p><strong>Cupo Máximo:</strong> {curso.CupoMax}</p>
-      <p><strong>Lugar:</strong> {curso.Lugar}</p>
-      <p><strong>Línea:</strong> {curso.Linea}</p>
-      <p><strong>Estado:</strong> {curso.Estado}</p>
-      <p><strong>Modalidad:</strong> {curso.Modalidad}</p>
-      <p><strong>Unidad:</strong> {curso.Unidad}</p>
-      <p><strong>Profesor:</strong> {curso.Profesor}</p>
-      <p><strong>Descripción:</strong> {curso.Descripcion}</p>
-      <p><strong>Tipo de Curso:</strong> {curso.IdTipoCurso}</p>
+  <div className="grid grid-cols-3 gap-4 text-sm text-gray-700">
+
+    <div>
+      <p className="font-semibold text-[#990000]">ID:</p>
+      <p>{curso.id}</p>
     </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Valor:</p>
+      <p>{curso.Valor}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Público:</p>
+      <p>{curso.Publico}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Periodo:</p>
+      <p>{curso.Periodo}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Fecha de Inicio:</p>
+      <p>{curso.Inicio}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Fecha de Fin:</p>
+      <p>{curso.Fin}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Horas:</p>
+      <p>{curso.Horas}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Cupo Máximo:</p>
+      <p>{curso.CupoMax}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Lugar:</p>
+      <p>{curso.Lugar}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Línea:</p>
+      <p>{curso.Linea}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Estado:</p>
+      <p>{curso.Estado}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Modalidad:</p>
+      <p>{curso.Modalidad}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Unidad:</p>
+      <p>{curso.Unidad}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Profesor:</p>
+      <p>{curso.Profesor}</p>
+    </div>
+
+    <div>
+      <p className="font-semibold text-[#990000]">Tipo de Curso:</p>
+      <p>{curso.IdTipoCurso}</p>
+    </div>
+
+    <div className="col-span-3">
+      <p className="font-semibold text-[#990000]">Descripción:</p>
+      <p>{curso.Descripcion}</p>
+    </div>
+
   </div>
 </div>
