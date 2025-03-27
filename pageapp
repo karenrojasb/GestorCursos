@@ -1,4 +1,4 @@
-<div className="flex justify-center mt-4">
+ <div className="flex mt-4">
   <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden">
     <thead className="bg-[#990000] text-white">
       <tr>
@@ -58,4 +58,5 @@
       </tr>
     </tbody>
   </table>
-</div>
+</div>            
+                     
