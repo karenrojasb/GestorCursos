@@ -1,56 +1,18 @@
-<table className="w-full border border-gray-300 rounded-lg overflow-hidden text-sm">
-  <thead className="bg-[#990000] text-white">
-    <tr>
-      <th className="border border-gray-300 px-2 py-2">Nombre del curso</th>
-      <th className="border border-gray-300 px-2 py-2">ID</th>
-      <th className="border border-gray-300 px-2 py-2">Valor</th>
-      <th className="border border-gray-300 px-2 py-2">Público</th>
-      <th className="border border-gray-300 px-2 py-2">Periodo</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td className="border border-gray-300 px-2 py-1">{curso.NombreCurso}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.id}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Valor}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Publico}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Periodo}</td>
-    </tr>
-    <tr>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Fecha de Inicio</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Fecha de Fin</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Horas</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Cupo Máximo</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Lugar</th>
-    </tr>
-    <tr>
-      <td className="border border-gray-300 px-2 py-1">{curso.Inicio}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Fin}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Horas}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.CupoMax}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Lugar}</td>
-    </tr>
-    <tr>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Línea</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Estado</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Modalidad</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Unidad</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Profesor</th>
-    </tr>
-    <tr>
-      <td className="border border-gray-300 px-2 py-1">{curso.Linea}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Estado}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Modalidad}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Unidad}</td>
-      <td className="border border-gray-300 px-2 py-1">{curso.Profesor}</td>
-    </tr>
-    <tr>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Tipo de Curso</th>
-      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white" colSpan="4">Descripción</th>
-    </tr>
-    <tr>
-      <td className="border border-gray-300 px-2 py-1">{curso.IdTipoCurso}</td>
-      <td className="border border-gray-300 px-2 py-1" colSpan="4">{curso.Descripcion}</td>
-    </tr>
-  </tbody>
-</table>
+[Nest] 17500  - 27/03/2025, 3:50:04 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `248`. Message: `The conversion of the varchar value '88040561930 ' overflowed an int column.`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2010',
+  clientVersion: '6.3.1',
+  meta: {
+    code: '248',
+    message: "The conversion of the varchar value '88040561930 ' overflowed an int column."
+  }
+}
