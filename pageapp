@@ -1,7 +1,7 @@
- <div className="flex mt-4">
+<div className="flex justify-center mt-4">
   <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden">
-    <thead className="bg-[#990000] text-white">
-      <tr>
+    <thead>
+      <tr className="bg-[#990000] text-white">
         <th className="border px-4 py-2">Nombre del curso</th>
         <th className="border px-4 py-2">ID</th>
         <th className="border px-4 py-2">Valor</th>
@@ -18,14 +18,14 @@
         <td className="border px-4 py-2">{curso.Periodo}</td>
       </tr>
 
-      <tr>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Inicio</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Fin</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Horas</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Cupo Máximo</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Lugar</th>
+      <tr className="bg-gray-200 text-gray-700 font-semibold">
+        <th className="border px-4 py-2">Fecha de Inicio</th>
+        <th className="border px-4 py-2">Fecha de Fin</th>
+        <th className="border px-4 py-2">Horas</th>
+        <th className="border px-4 py-2">Cupo Máximo</th>
+        <th className="border px-4 py-2">Lugar</th>
       </tr>
-      <tr className="bg-gray-50">
+      <tr className="bg-white">
         <td className="border px-4 py-2">{curso.Inicio}</td>
         <td className="border px-4 py-2">{curso.Fin}</td>
         <td className="border px-4 py-2">{curso.Horas}</td>
@@ -33,14 +33,14 @@
         <td className="border px-4 py-2">{curso.Lugar}</td>
       </tr>
 
-      <tr>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Línea</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Estado</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Modalidad</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Unidad</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Profesor</th>
+      <tr className="bg-gray-200 text-gray-700 font-semibold">
+        <th className="border px-4 py-2">Línea</th>
+        <th className="border px-4 py-2">Estado</th>
+        <th className="border px-4 py-2">Modalidad</th>
+        <th className="border px-4 py-2">Unidad</th>
+        <th className="border px-4 py-2">Profesor</th>
       </tr>
-      <tr className="bg-gray-50">
+      <tr className="bg-white">
         <td className="border px-4 py-2">{curso.Linea}</td>
         <td className="border px-4 py-2">{curso.Estado}</td>
         <td className="border px-4 py-2">{curso.Modalidad}</td>
@@ -48,15 +48,14 @@
         <td className="border px-4 py-2">{curso.Profesor}</td>
       </tr>
 
-      <tr>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Tipo de Curso</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white" colSpan={4}>Descripción</th>
+      <tr className="bg-gray-200 text-gray-700 font-semibold">
+        <th className="border px-4 py-2">Tipo de Curso</th>
+        <th className="border px-4 py-2" colSpan={4}>Descripción</th>
       </tr>
-      <tr className="bg-gray-50">
+      <tr className="bg-white">
         <td className="border px-4 py-2">{curso.IdTipoCurso}</td>
         <td className="border px-4 py-2" colSpan={4}>{curso.Descripcion}</td>
       </tr>
     </tbody>
   </table>
-</div>            
-                     
+</div>
