@@ -1,173 +1,49 @@
-"use client";
-import { XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
-
-interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: number;
-  Lugar: string;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
-  NombreProfesor?: string;
-}
-
-export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
-  const [mensajeExito, setMensajeExito] = useState("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  // OBTENER CURSO DE BACKEND
-  const fetchCursos = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos");
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      const data = await response.json();
-      setCursos(data);
-      setCursosFiltrados(data);
-    } catch (error) {
-      console.error("Error al obtener los cursos:", error);
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    fetchCursos();
-  }, []);
-
-  // INICIAR EDICIÓN
-  const handleEditar = (curso: Curso) => {
-    setEditandoCurso({ ...curso });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (!editandoCurso) return;
-    const { name, value } = e.target;
-
-    setEditandoCurso((prev) => {
-      if (!prev) return null;
-
-      const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"];
-
-      return {
-        ...prev,
-        [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
-      };
-    });
-  };
-
-  // GUARDAR CAMBIOS AL EDITAR
-  const handleGuardarEdicion = async () => {
-    if (!editandoCurso) return;
-    console.log("Intentando guardar cambios...");
-    console.log("Datos enviados al backend:", JSON.stringify(editandoCurso, null, 2));
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(`http://localhost:8090/api/cursos/${editandoCurso.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editandoCurso),
-      });
-
-      if (!response.ok) {
-        console.error("Error HTTP al actualizar:", response.status);
-        const errorText = await response.text();
-        console.error("Respuesta del servidor:", errorText);
-        return;
-      }
-
-      console.log("Curso actualizado con éxito");
-
-      setMensajeExito("¡Curso actualizado con éxito!");
-
-      // RECARGAR DESPUÉS DE LA ACTUALIZACIÓN DEL CURSO
-      await fetchCursos();
-
-      // CERRAR MODO DE EDICIÓN
-      setTimeout(() => {
-        setMensajeExito("");
-        setEditandoCurso(null);
-      }, 3000);
-    } catch (error) {
-      console.error("Error al guardar la edición:", error);
-    }
-    setIsLoading(false);
-  };
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        
-        {/* MODAL EDICIÓN DE CURSO */}
-        {editandoCurso && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="relative bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
-              
-              {/* BOTÓN PARA CERRAR */}
-              <button
-                className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
-                onClick={() => setEditandoCurso(null)}
-              >
-                <XMarkIcon className="w-6 h-6" />
-              </button>
-
-              <h2 className="text-lg text-[#990000] font-bold mb-4">Editar Curso</h2>
-
-              {/* MENSAJE DE ÉXITO AL ACTUALIZAR EL CURSO*/}
-              {mensajeExito && (
-                <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-[#990000] text-white p-2 rounded text-center mb-4">
-                  {mensajeExito}
-                </div>
-              )}
-
-              {/* FORMULARIO DE EDICIÓN */}
-              {Object.keys(editandoCurso).map(
-                (key) =>
-                  key !== "id" && (
-                    <div key={key} className="mt-2">
-                      <label className="block text-sm font-bold">{key}</label>
-                      <input
-                        type="text"
-                        name={key}
-                        value={editandoCurso ? (editandoCurso as any)[key] ?? "" : ""}
-                        onChange={handleChange}
-                        className="border p-2 w-full rounded"
-                      />
-                    </div>
-                  )
-              )}
-
-              {/* BOTONES GUARDAR Y CANCELAR */}
-              <div className="mt-4 flex space-x-4 ">
-                <button onClick={handleGuardarEdicion} className="bg-[#990000] text-white px-4 py-2 rounded">
-                  Guardar
-                </button>
-                <button onClick={() => setEditandoCurso(null)} className="bg-gray-700 text-white px-4 py-2 rounded">
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+<table>
+                        <thead>
+                        <tr className="bg-gray-200">
+                          
+                          
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Nombre del curso:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Id:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Valor:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Público:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Periodo:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Fecha de inicio:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Fecha de fin:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Horas:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Cupo Máximo:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Lugar:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Linea:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Estado:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Modalidad:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Unidad:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Profesor:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Descripción:</td>
+                          <td className="border border-gray-300 px-2 py-1 font-semibold">Tipo de curso:</td>
+                        </tr>
+                        </thead>
+                        
+                        <tbody>
+                          <tr>
+                           
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.NombreCurso}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.id}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Valor}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Publico}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Periodo}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Inicio}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Fin}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Horas}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.CupoMax}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Lugar}</th>                
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Linea}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Estado}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600      ">{curso.Modalidad}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Unidad}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Profesor}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Descripcion}</th>
+                            <th className="border border-gray-300 px-2 py-1 text-gray-600">{curso.IdTipoCurso}</th>
+                            
+                          </tr>
+                        </tbody>
+                      </table>
