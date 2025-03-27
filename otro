@@ -1,87 +1,56 @@
-<div className="border border-gray-300 rounded-lg shadow p-4 w-full" style={{ borderColor: '#990000' }}>
-  <h2 className="text-[#990000] font-bold text-xl mb-4">{curso.NombreCurso}</h2>
-
-  <div className="grid grid-cols-3 gap-4 text-sm text-gray-700">
-
-    <div>
-      <p className="font-semibold text-[#990000]">ID:</p>
-      <p>{curso.id}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Valor:</p>
-      <p>{curso.Valor}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Público:</p>
-      <p>{curso.Publico}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Periodo:</p>
-      <p>{curso.Periodo}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Fecha de Inicio:</p>
-      <p>{curso.Inicio}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Fecha de Fin:</p>
-      <p>{curso.Fin}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Horas:</p>
-      <p>{curso.Horas}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Cupo Máximo:</p>
-      <p>{curso.CupoMax}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Lugar:</p>
-      <p>{curso.Lugar}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Línea:</p>
-      <p>{curso.Linea}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Estado:</p>
-      <p>{curso.Estado}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Modalidad:</p>
-      <p>{curso.Modalidad}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Unidad:</p>
-      <p>{curso.Unidad}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Profesor:</p>
-      <p>{curso.Profesor}</p>
-    </div>
-
-    <div>
-      <p className="font-semibold text-[#990000]">Tipo de Curso:</p>
-      <p>{curso.IdTipoCurso}</p>
-    </div>
-
-    <div className="col-span-3">
-      <p className="font-semibold text-[#990000]">Descripción:</p>
-      <p>{curso.Descripcion}</p>
-    </div>
-
-  </div>
-</div>
+<table className="w-full border border-gray-300 rounded-lg overflow-hidden text-sm">
+  <thead className="bg-[#990000] text-white">
+    <tr>
+      <th className="border border-gray-300 px-2 py-2">Nombre del curso</th>
+      <th className="border border-gray-300 px-2 py-2">ID</th>
+      <th className="border border-gray-300 px-2 py-2">Valor</th>
+      <th className="border border-gray-300 px-2 py-2">Público</th>
+      <th className="border border-gray-300 px-2 py-2">Periodo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 px-2 py-1">{curso.NombreCurso}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.id}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Valor}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Publico}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Periodo}</td>
+    </tr>
+    <tr>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Fecha de Inicio</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Fecha de Fin</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Horas</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Cupo Máximo</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Lugar</th>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 px-2 py-1">{curso.Inicio}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Fin}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Horas}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.CupoMax}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Lugar}</td>
+    </tr>
+    <tr>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Línea</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Estado</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Modalidad</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Unidad</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Profesor</th>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 px-2 py-1">{curso.Linea}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Estado}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Modalidad}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Unidad}</td>
+      <td className="border border-gray-300 px-2 py-1">{curso.Profesor}</td>
+    </tr>
+    <tr>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white">Tipo de Curso</th>
+      <th className="border border-gray-300 px-2 py-2 bg-[#990000] text-white" colSpan="4">Descripción</th>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 px-2 py-1">{curso.IdTipoCurso}</td>
+      <td className="border border-gray-300 px-2 py-1" colSpan="4">{curso.Descripcion}</td>
+    </tr>
+  </tbody>
+</table>
