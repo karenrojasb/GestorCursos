@@ -1,6 +1,18 @@
-  Listas_Cursos_EstadoToListas      Listas?         @relation("Cursos_EstadoToListas", fields: [Estado], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Estado__59063A47")
-  Listas_Cursos_IdTipoCursoToListas Listas?         @relation("Cursos_IdTipoCursoToListas", fields: [IdTipoCurso], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__IdTipoCu__59FA5E80")
-  Listas_Cursos_LineaToListas       Listas?         @relation("Cursos_LineaToListas", fields: [Linea], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Linea__5AEE82B9")
-  Listas_Cursos_ModalidadToListas   Listas?         @relation("Cursos_ModalidadToListas", fields: [Modalidad], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Modalida__5BE2A6F2")
-  Listas_Cursos_PublicoToListas     Listas?         @relation("Cursos_PublicoToListas", fields: [Publico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Publico__5CD6CB2B")
-  Inscripciones                     Inscripciones[]
+[Nest] 12804  - 27/03/2025, 2:46:10 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError:
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `207`. Message: `Invalid column name 'nombre'.`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2010',
+  clientVersion: '6.3.1',
+  meta: {
+    code: '207',
+    message: "Invalid column name 'nombre'."
+  }
+}
