@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, MagnifyingGlassIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import React from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 interface Inscripcion {
   NombreCurso: string | undefined;
@@ -30,6 +32,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
   const [expandedCourses, setExpandedCourses] = useState<{ [key: number]: boolean }>({});
   const [busqueda, setBusqueda] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -88,6 +91,50 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
     setExpandedCourses((prev) => ({ ...prev, [cursoId]: !prev[cursoId] }));
   };
 
+
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(true);
+    }
+  };
+
+  const handleDownloadExcelByCurso = (cursoId: number) => {
+  // Filtrar las inscripciones solo de ese curso
+  const datosCurso = inscripcionesFiltradas.filter(
+    (inscripcion) => (inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.curso?.id) === cursoId
+  );
+
+  if (datosCurso.length === 0) {
+    alert("No hay inscripciones en este curso.");
+    return;
+  }
+
+  // Formatear los datos
+  const data = datosCurso.map((inscripcion) => ({
+    "ID Curso": inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.curso?.id,
+    // {curso.NombreCurso || curso.Cursos?.NombreCurso || curso.curso?.NombreCurso || "Desconocido"}
+    "Nombre del Curso": inscripcion.Cursos?.NombreCurso || inscripcion.curso?.NombreCurso || "Desconocido",
+    "Documento": inscripcion.docInscr,
+    "Nombre": inscripcion.nombre,
+    "Estado": inscripcion.est === 1 ? "Inscrito" : "Cancelado",
+    "Fecha Registro": new Date(inscripcion.fecreg).toLocaleDateString(),
+  }));
+
+  // Crear libro de Excel
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Inscripciones");
+
+  // Generar archivo y descargarlo
+  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  saveAs(blob, `Inscripciones_Curso_${cursoId}.xlsx`);
+};
+
   return (
     <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-8 px-10 rounded-lg shadow-md  min-h-[800px]">
@@ -104,16 +151,22 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
         <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscripciones</h2>
 
         {/* BARRA DE BÚSQUEDA ANIMADA */}
-        <div className="relative w-full flex items-center mb-4 transition-all duration-300">
-          <MagnifyingGlassIcon className="absolute left-3 h-5 w-5 text-gray-500 transition-all duration-300 transform scale-100" />
-          <input
-            type="text"
-            placeholder="Buscar por ID, Nombre o Fecha"
-            value={busqueda}
-            onChange={handleBuscar}
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-[#990000] focus:border-[#990000] transition-all duration-300"
-          />
-        </div>
+        <div className="relative flex items-center"
+           onMouseEnter={handleMouseEnter}
+           onMouseLeave={handleMouseLeave}>
+            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
+            </button>
+            <input
+              type="text"
+              placeholder="Buscar por ID, Nombre o Fecha"
+              value={busqueda}
+              onChange={handleBuscar}
+              className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+            /> 
+            </div>
+
 
         {/* LISTA DE INSCRIPCIONES */}
         <div className="w-full max-h-[600px] overflow-auto border border-gray-300 rounded-md shadow-sm">
@@ -149,6 +202,13 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                           >
                             {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
                           </button>
+
+                          <button
+                          onClick={() => handleDownloadExcelByCurso (Number(cursoId))}
+                          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition ">
+                            <ArrowDownTrayIcon className="w-5 h-5"/>
+                            Descargar
+                          </button>
                         </td>
                       </tr>
 
@@ -157,18 +217,26 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                           <td colSpan={4}>
                             <div className="p-4 bg-gray-50 border border-gray-300 rounded-md shadow-md mt-2">
                               <h3 className="text-lg font-semibold text-[#990000]">Inscritos:</h3>
-                              <ul className=" list-disc pl-6 mt-2 space-y-2">
-                                {inscripciones
-                                .filter((inscripcion) => Number(inscripcion.est) === 1)
-                                .map((inscripcion) => (
-                                  <li key={inscripcion.id} className="text-gray-700">
-                                    <div className="grid grid-cols-2">
-                                    <span><strong>Nombre:</strong> {inscripcion.nombre} </span>
-                                    <span><strong>Documento:</strong> {inscripcion.docInscr} </span> 
-                                    </div> 
-                                  </li>
-                                ))}
-                              </ul>
+                              <table className="w-full border-collapse border border-gray-300">
+                                <thead className="bg-gray-200">
+                                  <tr>
+                                    <th className="border border-gray-300 p-2">Nombre del inscrito</th>
+                                    <th className="border border-gray-300 p-2">Numero de documento</th>
+                                    <th className="border border-gray-300 p-2">Fecha de inscripción</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {inscripciones
+                                  .filter((inscripciones) => Number(inscripciones.est) ===1)
+                                  .map((inscripciones) => (
+                                    <tr key={inscripciones.id} className={`text-center border border-gray-300 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
+                                      <td className="border border-gray-300 p-2">{inscripciones.nombre}</td>
+                                      <td className="border border-gray-300 p-2 ">{inscripciones.docInscr}</td>
+                                      <td className="border border-gray-300 p-2">{inscripciones.fecreg}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
                           </td>
                         </tr>
