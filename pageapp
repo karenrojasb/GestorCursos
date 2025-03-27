@@ -1,7 +1,7 @@
 <div className="flex justify-center mt-4">
   <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden">
     <thead>
-      <tr className="bg-[#990000] text-white">
+      <tr className="bg-[#b32a2a] text-white">
         <th className="border px-4 py-2">Nombre del curso</th>
         <th className="border px-4 py-2">ID</th>
         <th className="border px-4 py-2">Valor</th>
