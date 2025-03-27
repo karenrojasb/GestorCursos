@@ -1,56 +1,24 @@
-<div className="overflow-x-auto max-w-screen-lg mx-auto mt-4 rounded-lg shadow-md border border-gray-300">
-  <table className="w-full border-collapse text-sm">
-    <thead>
-      {/* Primera fila de agrupación */}
-      <tr className="bg-[#990000] text-white">
-        <th colSpan={3} className="border border-gray-300 px-2 py-2">Curso</th>
-        <th colSpan={3} className="border border-gray-300 px-2 py-2">Fechas</th>
-        <th colSpan={4} className="border border-gray-300 px-2 py-2">Detalles</th>
-        <th colSpan={4} className="border border-gray-300 px-2 py-2">Información adicional</th>
-      </tr>
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+  <div className="border border-gray-300 rounded-lg shadow p-4" style={{ borderColor: '#990000' }}>
+    <h2 className="text-[#990000] font-semibold text-lg mb-2">{curso.NombreCurso}</h2>
 
-      {/* Segunda fila con las columnas reales */}
-      <tr className="bg-gray-100 text-gray-700">
-        <th className="border border-gray-300 px-2 py-1">Nombre</th>
-        <th className="border border-gray-300 px-2 py-1">ID</th>
-        <th className="border border-gray-300 px-2 py-1">Valor</th>
-
-        <th className="border border-gray-300 px-2 py-1">Inicio</th>
-        <th className="border border-gray-300 px-2 py-1">Fin</th>
-        <th className="border border-gray-300 px-2 py-1">Periodo</th>
-
-        <th className="border border-gray-300 px-2 py-1">Público</th>
-        <th className="border border-gray-300 px-2 py-1">Horas</th>
-        <th className="border border-gray-300 px-2 py-1">Cupo Máx</th>
-        <th className="border border-gray-300 px-2 py-1">Lugar</th>
-
-        <th className="border border-gray-300 px-2 py-1">Línea</th>
-        <th className="border border-gray-300 px-2 py-1">Estado</th>
-        <th className="border border-gray-300 px-2 py-1">Modalidad</th>
-        <th className="border border-gray-300 px-2 py-1">Unidad</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <tr className="bg-white hover:bg-gray-50">
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.NombreCurso}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.id}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Valor}</td>
-
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Inicio}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Fin}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Periodo}</td>
-
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Publico}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Horas}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.CupoMax}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Lugar}</td>
-
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Linea}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Estado}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Modalidad}</td>
-        <td className="border border-gray-300 px-2 py-1 text-gray-600">{curso.Unidad}</td>
-      </tr>
-    </tbody>
-  </table>
+    <div className="text-sm text-gray-700 space-y-1">
+      <p><strong>ID:</strong> {curso.id}</p>
+      <p><strong>Valor:</strong> {curso.Valor}</p>
+      <p><strong>Público:</strong> {curso.Publico}</p>
+      <p><strong>Periodo:</strong> {curso.Periodo}</p>
+      <p><strong>Inicio:</strong> {curso.Inicio}</p>
+      <p><strong>Fin:</strong> {curso.Fin}</p>
+      <p><strong>Horas:</strong> {curso.Horas}</p>
+      <p><strong>Cupo Máximo:</strong> {curso.CupoMax}</p>
+      <p><strong>Lugar:</strong> {curso.Lugar}</p>
+      <p><strong>Línea:</strong> {curso.Linea}</p>
+      <p><strong>Estado:</strong> {curso.Estado}</p>
+      <p><strong>Modalidad:</strong> {curso.Modalidad}</p>
+      <p><strong>Unidad:</strong> {curso.Unidad}</p>
+      <p><strong>Profesor:</strong> {curso.Profesor}</p>
+      <p><strong>Descripción:</strong> {curso.Descripcion}</p>
+      <p><strong>Tipo de Curso:</strong> {curso.IdTipoCurso}</p>
+    </div>
+  </div>
 </div>
