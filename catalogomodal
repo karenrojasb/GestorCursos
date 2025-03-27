@@ -1,7 +1,7 @@
 "use client";
 
-import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
+import { CheckCircleIcon, XCircleIcon, XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 
 interface Curso {
   id: number;
@@ -37,11 +37,14 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [inscribiendo, setInscribiendo] = useState(false);
-  const [errorInscripcion, setErrorInscripcion] = useState<string | null>(null);
   const [idEmp, setIdEmp] = useState<number | null>(null);
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [mostrarAnimacion, setMostrarAnimacion] = useState(false);
+  const [mensajeAnimacion, setMensajeAnimacion] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const [esInscripcion, setEsInscripcion] = useState(true);
 
   useEffect(() => {
     const storedIdEmp = localStorage.getItem("id_emp");
@@ -72,8 +75,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   };
 
   useEffect(() => {
+    if (!idEmp) return;
     const fetchInscripciones = async () => {
-      if (!idEmp) return;
       try {
         const response = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
         if (!response.ok) throw new Error("Error al obtener inscripciones");
@@ -83,9 +86,9 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         console.error("Error al obtener inscripciones:", error);
       }
     };
-
-    if (idEmp) fetchInscripciones();
+    fetchInscripciones();
   }, [idEmp]);
+
 
   const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const texto = e.target.value.toLowerCase();
@@ -93,59 +96,82 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
   };
 
+
+
   const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
     setInscribiendo(true);
-    setErrorInscripcion(null);
-
-    if (!idEmp) {
-      setErrorInscripcion("Error: No se encuentra el documento de usuario.");
-      setInscribiendo(false);
-      return;
-    }
+    if (!idEmp) return;
 
     try {
       if (estaInscrito && inscripcionId) {
-        // **CANCELAR INSCRIPCIÓN**
-        const response = await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
+        await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ est: false }),
         });
-
-        if (!response.ok) throw new Error("Error al cancelar inscripción");
-
+        setEsInscripcion(false);
+        setMensajeAnimacion("Se ha desinscrito satisfactoriamente");
       } else {
-        // **INSCRIBIRSE**
-        const fecreg = new Date().toISOString().split("T")[0];
-
-        const response = await fetch("http://localhost:8090/api/inscripciones", {
+        await fetch("http://localhost:8090/api/inscripciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg }),
+          body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg: new Date().toISOString().split("T")[0] }),
         });
-
-        if (!response.ok) throw new Error("Error al inscribirse");
+        setEsInscripcion(true);
+        setMensajeAnimacion("Se ha inscrito satisfactoriamente");
       }
 
-      // Recargar inscripciones después de inscribirse o cancelar
       const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
       const updatedData = await updatedResponse.json();
       setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
 
+      // Mostrar animación
+      setMostrarAnimacion(true);
+      setTimeout(() => setMostrarAnimacion(false), 2500); // Ocultar después de 2.5 segundos
+
     } catch (error) {
-      setErrorInscripcion("No se pudo completar la acción.");
+      console.error("No se pudo completar la acción.");
     }
 
     setInscribiendo(false);
   };
 
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(true);
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[700px] max-w-5xl flex flex-col">
-        
-        {/* BARRA DE BÚSQUEDA Y BOTÓN DE CIERRE */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="relative flex items-center">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full h-[600px] max-w-3xl flex flex-col">
+
+       
+       
+
+        {/* ANIMACIÓN DE CHECK O X */}
+        {mostrarAnimacion && (
+          <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="animate-check-spin scale-125">
+              {esInscripcion ? (
+                <CheckCircleIcon className="h-32 w-32 text-green-500" />
+              ) : (
+                <CheckCircleIcon className="h-32 w-32 text-green-500" />
+              )}
+            </div>
+            <p className="text-white text-2xl font-bold mt-2 animate-fade-in">{mensajeAnimacion}</p>
+          </div>
+        )}
+
+         {/* BARRA DE BÚSQUEDA Y BOTÓN DE CIERRE */}
+     
+          <div className="relative flex items-center"
+           onMouseEnter={handleMouseEnter}
+           onMouseLeave={handleMouseLeave}>
             <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
               <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
             </button>
@@ -156,8 +182,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
               onChange={handleBuscar}
               className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />
-          </div>
+            />     
 
           <button
             onClick={onClose}
@@ -192,7 +217,13 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                       <td className="border p-2">{curso.NombreCurso}</td>
                       <td className="border p-2">{curso.Inicio || "N/A"}</td>
                       <td className="border p-2">{curso.Fin || "N/A"}</td>
-                      <td className="border p-2">{curso.NombreProfesor || "N/A"}</td>
+                      <td className="border p-2">
+                        
+                        <li>{curso.NombreProfesor}</li>
+                        <li>{curso.Proexterno}</li>
+                        <li>{curso.SegundoPro}</li>
+                        
+                      </td>
                       <td className="border p-2 text-center">
                         <button
                           onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
@@ -208,9 +239,11 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
             </table>
           ) : (
             <p className="text-center py-4">No hay cursos disponibles.</p>
+                 
+          
           )}
         </div>
       </div>
-    </div>
+      </div>
   );
 }
