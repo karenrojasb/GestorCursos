@@ -218,6 +218,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                           <td colSpan={4}>
                             <div className="p-4 bg-gray-50 border border-gray-300 rounded-md shadow-md mt-2">
                               <h3 className="text-lg font-semibold text-[#990000]">Inscritos:</h3>
+                              
                               <table className="w-full border-collapse border border-gray-500">
                                 <thead className="bg-[#990000] text-white">
                                   <tr >
@@ -230,7 +231,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                                   {inscripciones
                                   .filter((inscripciones) => Number(inscripciones.est) ===1)
                                   .map((inscripciones) => (
-                                    <tr key={inscripciones.id} className={`text-center border border-gray-300 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
+                                    <tr key={inscripciones.id} className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
                                       <td className="border border-gray-300 p-1">{inscripciones.nombre}</td>
                                       <td className="border border-gray-300 p-1 ">{inscripciones.docInscr}</td>
                                       <td className="border border-gray-300 p-1">{inscripciones.fecreg}</td>
