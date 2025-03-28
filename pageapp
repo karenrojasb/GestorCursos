@@ -1,61 +1,21 @@
-<div className="flex justify-center mt-4">
-  <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden">
-    <thead>
-      <tr className="bg-[#b32a2a] text-white">
-        <th className="border px-4 py-2">Nombre del curso</th>
-        <th className="border px-4 py-2">ID</th>
-        <th className="border px-4 py-2">Valor</th>
-        <th className="border px-4 py-2">Público</th>
-        <th className="border px-4 py-2">Periodo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr className="bg-gray-50">
-        <td className="border px-4 py-2">{curso.NombreCurso}</td>
-        <td className="border px-4 py-2">{curso.id}</td>
-        <td className="border px-4 py-2">{curso.Valor}</td>
-        <td className="border px-4 py-2">{curso.Publico}</td>
-        <td className="border px-4 py-2">{curso.Periodo}</td>
-      </tr>
-
-      <tr className="bg-gray-200 text-gray-700 font-semibold">
-        <th className="border px-4 py-2">Fecha de Inicio</th>
-        <th className="border px-4 py-2">Fecha de Fin</th>
-        <th className="border px-4 py-2">Horas</th>
-        <th className="border px-4 py-2">Cupo Máximo</th>
-        <th className="border px-4 py-2">Lugar</th>
-      </tr>
-      <tr className="bg-white">
-        <td className="border px-4 py-2">{curso.Inicio}</td>
-        <td className="border px-4 py-2">{curso.Fin}</td>
-        <td className="border px-4 py-2">{curso.Horas}</td>
-        <td className="border px-4 py-2">{curso.CupoMax}</td>
-        <td className="border px-4 py-2">{curso.Lugar}</td>
-      </tr>
-
-      <tr className="bg-gray-200 text-gray-700 font-semibold">
-        <th className="border px-4 py-2">Línea</th>
-        <th className="border px-4 py-2">Estado</th>
-        <th className="border px-4 py-2">Modalidad</th>
-        <th className="border px-4 py-2">Unidad</th>
-        <th className="border px-4 py-2">Profesor</th>
-      </tr>
-      <tr className="bg-white">
-        <td className="border px-4 py-2">{curso.Linea}</td>
-        <td className="border px-4 py-2">{curso.Estado}</td>
-        <td className="border px-4 py-2">{curso.Modalidad}</td>
-        <td className="border px-4 py-2">{curso.Unidad}</td>
-        <td className="border px-4 py-2">{curso.Profesor}</td>
-      </tr>
-
-      <tr className="bg-gray-200 text-gray-700 font-semibold">
-        <th className="border px-4 py-2">Tipo de Curso</th>
-        <th className="border px-4 py-2" colSpan={4}>Descripción</th>
-      </tr>
-      <tr className="bg-white">
-        <td className="border px-4 py-2">{curso.IdTipoCurso}</td>
-        <td className="border px-4 py-2" colSpan={4}>{curso.Descripcion}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+  <table className="w-full border-collapse border border-gray-500">
+                                <thead className="bg-[#990000] text-white">
+                                  <tr >
+                                    <th className="border border-gray-300 p-2">Nombre del inscrito</th>
+                                    <th className="border border-gray-300 p-2">Numero de documento</th>
+                                    <th className="border border-gray-300 p-2">Fecha de inscripción</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {inscripciones
+                                  .filter((inscripciones) => Number(inscripciones.est) ===1)
+                                  .map((inscripciones) => (
+                                    <tr key={inscripciones.id} className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
+                                      <td className="border border-gray-300 p-1">{inscripciones.nombre}</td>
+                                      <td className="border border-gray-300 p-1 ">{inscripciones.docInscr}</td>
+                                      <td className="border border-gray-300 p-1">{inscripciones.fecreg}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            
