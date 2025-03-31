@@ -131,16 +131,35 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   };
 
   const handleGuardarCursoEditado = (cursoEditado: Curso) => {
+    // Verificamos que el curso editado tenga todas las propiedades necesarias
+    const cursoCompleto: Curso = {
+      ...cursoEditado,
+      LunesIni: cursoEditado.LunesIni || "",
+      LunesFin: cursoEditado.LunesFin || "",
+      MartesIni: cursoEditado.MartesIni || "",
+      MartesFin: cursoEditado.MartesFin || "",
+      MiercolesIni: cursoEditado.MiercolesIni || "",
+      MiercolesFin: cursoEditado.MiercolesFin || "",
+      JuevesIni: cursoEditado.JuevesIni || "",
+      JuevesFin: cursoEditado.JuevesFin || "",
+      ViernesIni: cursoEditado.ViernesIni || "",
+      ViernesFin: cursoEditado.ViernesFin || "",
+      SabadoIni: cursoEditado.SabadoIni || "",
+      SabadoFin: cursoEditado.SabadoFin || "",
+      DomingoIni: cursoEditado.DomingoIni || "",
+      DomingoFin: cursoEditado.DomingoFin || "",
+    };
+
     // Actualizamos el estado de cursos y cursosFiltrados de forma más confiable
     setCursos((prevCursos) =>
       prevCursos.map((curso) =>
-        curso.id === cursoEditado.id ? cursoEditado : curso
+        curso.id === cursoCompleto.id ? cursoCompleto : curso
       )
     );
 
     setCursosFiltrados((prevCursosFiltrados) =>
       prevCursosFiltrados.map((curso) =>
-        curso.id === cursoEditado.id ? cursoEditado : curso
+        curso.id === cursoCompleto.id ? cursoCompleto : curso
       )
     );
 
