@@ -1,7 +1,6 @@
 "use client";
-import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-import CursoEditarModal from "./CursoEditarModal";
 
 interface Curso {
   id: number;
@@ -46,7 +45,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
   const [mensajeExito, setMensajeExito] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -86,7 +84,13 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const texto = e.target.value.toLowerCase();
     setBusqueda(texto);
-    setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
+
+    // Solo se realiza el filtrado si hay texto en la búsqueda
+    if (texto === "") {
+      setCursosFiltrados(cursos);
+    } else {
+      setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
+    }
   };
 
   const handleMouseEnter = () => {
@@ -95,7 +99,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
   const handleMouseLeave = () => {
     if (busqueda === "") {
-      setIsSearchActive(true);
+      setIsSearchActive(false);
     }
   };
 
@@ -121,53 +125,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     } catch (error) {
       console.error("Error al eliminar el curso:", error);
       alert("No se pudo eliminar el curso");
-    }
-    setIsLoading(false);
-  };
-
-  // INICIAR EDICIÓN
-  const handleEditar = (curso: Curso) => {
-    setEditandoCurso({ ...curso });
-  };
-
-
-
-  // GUARDAR CAMBIOS AL EDITAR
-  const handleGuardarEdicion = async () => {
-    if (!editandoCurso) return;
-    console.log("Intentando guardar cambios...");
-    console.log("Datos enviados al backend:", JSON.stringify(editandoCurso, null, 2));
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(`http://localhost:8090/api/cursos/${editandoCurso.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editandoCurso),
-      });
-
-      if (!response.ok) {
-        console.error("Error HTTP al actualizar:", response.status);
-        const errorText = await response.text();
-        console.error("Respuesta del servidor:", errorText);
-        return;
-      }
-
-      console.log("Curso actualizado con éxito");
-
-      setMensajeExito("¡Curso actualizado con éxito!");
-
-      // RECARGAR DESPUES DE LA ACTUALIZACIÓN DEL CURSO
-      await fetchCursos();
-
-      // CERRAR MODA DE EDICIÓN
-      setTimeout(() => {
-        setMensajeExito("");
-        setEditandoCurso(null);
-      }, 3000);
-
-    } catch (error) {
-      console.error("Error al guardar la edición:", error);
     }
     setIsLoading(false);
   };
@@ -221,14 +178,6 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                     </button>
 
                     <button
-                      onClick={() => handleEditar(curso)}
-                      className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
-                      title="Editar"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" />
-                    </button>
-
-                    <button
                       onClick={() => handleDeleteCourse(curso.id)}
                       className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
                       title="Eliminar"
@@ -262,15 +211,16 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                           <tr>
                             <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Inicio</th>
                             <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Fin</th>
-                            <th className="border px-4 py-2 bg-[#990000] text-white">Cupo</th>
                             <th className="border px-4 py-2 bg-[#990000] text-white">Horas</th>
+                            <th className="border px-4 py-2 bg-[#990000] text-white">Cupo máximo</th>
                             <th className="border px-4 py-2 bg-[#990000] text-white">Lugar</th>
                           </tr>
-                          <tr className="bg-gray-50">
+
+                          <tr>
                             <td className="border px-4 py-2">{curso.Inicio}</td>
                             <td className="border px-4 py-2">{curso.Fin}</td>
-                            <td className="border px-4 py-2">{curso.CupoMax}</td>
                             <td className="border px-4 py-2">{curso.Horas}</td>
+                            <td className="border px-4 py-2">{curso.CupoMax}</td>
                             <td className="border px-4 py-2">{curso.Lugar}</td>
                           </tr>
                         </tbody>
@@ -281,26 +231,10 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
               </div>
             ))
           ) : (
-            <p>No se encontraron cursos.</p>
+            <p className="text-center">No se encontraron cursos</p>
           )}
         </div>
       </div>
-
-      {/* Modal de edición */}
-      {editandoCurso && (
-        <CursoEditarModal
-          curso={editandoCurso}
-          onClose={() => setEditandoCurso(null)}
-          onSave={handleGuardarEdicion}
-          onChange={handleChange}
-        />
-      )}
-
-      {mensajeExito && (
-        <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 p-4 bg-green-600 text-white rounded-lg">
-          {mensajeExito}
-        </div>
-      )}
     </div>
   );
 }
