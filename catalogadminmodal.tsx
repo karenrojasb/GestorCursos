@@ -38,6 +38,11 @@ interface Curso {
   DomingoIni: string;
   DomingoFin: string;
 }
+interface Opcion {
+  id: number;
+  Especificacion: string;
+  Tipo: number;
+}
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   
@@ -49,6 +54,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
   const [mensajeExito, setMensajeExito] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
  
 
   // OBTENER CURSO DE BACKEND
@@ -69,6 +75,24 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     fetchCursos();
   }, []);
+
+   useEffect(() => {
+      async function fetchOpciones() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+          if (!response.ok) throw new Error("Error al obtener las opciones");
+  
+          const data: Opcion[] = await response.json();
+  
+          setOpcionesPublico(data.filter((item) => item.Tipo === 1));
+   
+        } catch (error) {
+          console.error("Error cargando las opciones:", error);
+        }
+      }
+  
+      fetchOpciones();
+    }, []);
 
 
 
