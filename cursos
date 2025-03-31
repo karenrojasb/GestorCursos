@@ -41,7 +41,6 @@ interface Curso {
 }
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
@@ -50,7 +49,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [editandoCurso, setEditandoCurso] = useState<Curso | null>(null);
   const [mensajeExito, setMensajeExito] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
- 
+
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
     setIsLoading(true);
@@ -131,17 +130,27 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setEditandoCurso(curso);
   };
 
-  // Manejar guardar el curso editado
   const handleGuardarCursoEditado = (cursoEditado: Curso) => {
-    setCursos(cursos.map(curso => curso.id === cursoEditado.id ? cursoEditado : curso));
-    setCursosFiltrados(cursosFiltrados.map(curso => curso.id === cursoEditado.id ? cursoEditado : curso));
-    setEditandoCurso(null); // Cierra el modal después de guardar los cambios
+    // Actualizamos el estado de cursos y cursosFiltrados de forma más confiable
+    setCursos((prevCursos) =>
+      prevCursos.map((curso) =>
+        curso.id === cursoEditado.id ? cursoEditado : curso
+      )
+    );
+
+    setCursosFiltrados((prevCursosFiltrados) =>
+      prevCursosFiltrados.map((curso) =>
+        curso.id === cursoEditado.id ? cursoEditado : curso
+      )
+    );
+
+    // Cerramos el modal de edición
+    setEditandoCurso(null);
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl h-[90vh] overflow-y-auto">
-        
         {/* BOTÓN CERRAR */}
         <button
           onClick={onClose}
@@ -151,22 +160,18 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         </button>
 
         {/* BARRA DE BUSQUEDA */}
-        <div className="relative flex items-center"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}>
-            <button 
-              onClick={() => setIsSearchActive(!isSearchActive)} 
-              className="p-2 rounded-full bg-gray-200">
-              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
-            </button>
-            <input
-              type="text"
-              placeholder="Busque el nombre del curso"
-              value={busqueda}
-              onChange={handleBuscar}
-              className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
-                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />
+        <div className="relative flex items-center" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+          <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+            {isSearchActive ? <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />}
+          </button>
+          <input
+            type="text"
+            placeholder="Busque el nombre del curso"
+            value={busqueda}
+            onChange={handleBuscar}
+            className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out
+              ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+          />
         </div>
 
         <div className="w-full flex justify-between text-[#990000] font-semibold px-4 py-2 rounded-t-lg">
@@ -193,52 +198,61 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
                   {/* BOTONES */}
                   <div className="flex space-x-2">
-                    <button 
-                      onClick={() => handleVerMas(curso.id)} 
-                      className="bg-[#990000] hover:bg-red-700 text-white px-4 py-2 rounded transition-transform hover:scale-110 active:scale-95">
+                    <button onClick={() => handleVerMas(curso.id)} className="bg-[#990000] hover:bg-red-700 text-white px-4 py-2 rounded transition-transform hover:scale-110 active:scale-95">
                       {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
                     </button>
 
                     {/* BOTÓN PARA EDITAR */}
-                    <button 
-                      onClick={() => handleEditar(curso)}
-                      className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
-                      title="Editar">
+                    <button onClick={() => handleEditar(curso)} className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95" title="Editar">
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
 
                     {/* BOTÓN PARA ELIMINAR */}
-                    <button 
-                      onClick={() => handleDeleteCourse(curso.id)} 
-                      className="bg-red-600 hover:bg-red-800 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
-                      title="Eliminar">
+                    <button onClick={() => handleDeleteCourse(curso.id)} className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95" title="Eliminar">
                       <TrashIcon className="h-5 w-5" />
                     </button>
                   </div>
+
+                  {/* CONTENIDO DE CURSO */}
+                  {expandedCursoId === curso.id && (
+                    <div className="relative bg-gray-100 p-6 flex mt-5 justify-center overflow-x-auto min-w-[680px]">
+                      <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden">
+                        <thead className="bg-[#990000] text-white font-semibold">
+                          <tr>
+                            <th className="border px-4 py-2">Nombre del curso</th>
+                            <th className="border px-4 py-2">ID</th>
+                            <th className="border px-4 py-2">Valor</th>
+                            <th className="border px-4 py-2">Público</th>
+                            <th className="border px-4 py-2">Periodo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="bg-gray-50">
+                            <td className="border px-4 py-2">{curso.NombreCurso}</td>
+                            <td className="border px-4 py-2">{curso.id}</td>
+                            <td className="border px-4 py-2">{curso.Valor}</td>
+                            <td className="border px-4 py-2">{curso.Publico}</td>
+                            <td className="border px-4 py-2">{curso.Periodo}</td>
+                          </tr>
+                          {/* Aquí va el resto del contenido del curso */}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-                
-                {/* Mostrar detalles del curso */}
-                {expandedCursoId === curso.id && (
-                  <div className="text-left px-4 py-2">
-                    {formatearHorario(curso).map((dia, index) => (
-                      <p key={index}>{dia.dia}: {dia.ini} - {dia.fin}</p>
-                    ))}
-                  </div>
-                )}
               </div>
             ))
-          ) : (
-            <div className="text-center py-4">No se encontraron cursos.</div>
+          ) : !isLoading && (
+            <p className="text-center py-4">No hay cursos disponibles.</p>
           )}
         </div>
       </div>
 
-      {/* MODAL DE EDICIÓN DE CURSO */}
       {editandoCurso && (
         <CursoEditarModal
           curso={editandoCurso}
-          onGuardar={handleGuardarCursoEditado}
-          onCancelar={() => setEditandoCurso(null)}
+          onClose={() => setEditandoCurso(null)} // Cierra el modal de edición
+          onSave={handleGuardarCursoEditado} // Llama a la función para guardar el curso editado
         />
       )}
     </div>
