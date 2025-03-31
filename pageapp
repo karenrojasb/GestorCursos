@@ -1,5 +1,15 @@
-Error: Respuesta del servidor: "{\"message\":[\"Publico must be an integer number\",\"Linea must be an integer number\",\"Estado must be an integer number\",\"Modalidad must be an integer number\",\"Unidad must be an integer number\",\"Profesor must be an integer number\",\"IdTipoCurso must be a number conforming to the specified constraints\"],\"error\":\"Bad Request\",\"statusCode\":400}"
-    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
-    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
-    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
-    at handleGuardarEdicion (http://localhost:3000/_next/static/chunks/app_94355b._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252Fcatalogoadminmodal.tsx+%255Bapp-client%255D+%2528ecmascript%2529:253:25)
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const { name, value } = e.target;
+
+  // Lista de campos que deben ser enteros
+  const camposNumericos = ["Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"];
+
+  setEditandoCurso((prevCurso) => {
+    if (!prevCurso) return prevCurso; // Evita errores si el estado es null
+
+    return {
+      ...prevCurso,
+      [name]: camposNumericos.includes(name) ? (value ? Number(value) : null) : value,
+    };
+  });
+};
