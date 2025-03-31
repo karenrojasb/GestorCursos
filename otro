@@ -12,13 +12,13 @@ async obtenerCursosParaUsuario(id_emp: string) {
     const publico = usuario[0].publico;
     console.log(`Usuario ${id_emp} tiene público: ${publico}`);
 
-    // OBTENER CURSOS SEGÚN EL PÚBLICO
+    // OBTENER CURSOS SEGÚN EL PÚBLICO CON COLLATE PARA EVITAR CONFLICTOS
     const cursos = await this.prisma.$queryRaw`
       SELECT 
         c.id,
-        c.NombreCurso,
+        c.NombreCurso COLLATE Modern_Spanish_CI_AS AS NombreCurso,  -- Asegurar collation
         c.Valor,
-        lp.Especificacion AS Publico,
+        lp.Especificacion COLLATE Modern_Spanish_CI_AS AS Publico,
         c.Periodo,
         c.Inicio,
         c.Fin,
@@ -26,30 +26,30 @@ async obtenerCursosParaUsuario(id_emp: string) {
         c.CupoMax,
         c.Lugar,                          
         c.Linea,
-        l.Especificacion AS Linea,    
+        l.Especificacion COLLATE Modern_Spanish_CI_AS AS Linea,    
         c.Estado,
-        est.Especificacion AS Estado, 
+        est.Especificacion COLLATE Modern_Spanish_CI_AS AS Estado, 
         c.Modalidad,
-        m.Especificacion AS Modalidad,
-        u.nombre AS Unidad,                            
+        m.Especificacion COLLATE Modern_Spanish_CI_AS AS Modalidad,
+        u.nombre COLLATE Modern_Spanish_CI_AS AS Unidad,                            
         c.Profesor,                          
-        e.nombre AS NombreProfesor,  -- OBTENER NOMBRE DEL PROFESOR
+        e.nombre COLLATE Modern_Spanish_CI_AS AS NombreProfesor,  -- Asegurar collation
         c.SegundoPro,
-        sp.nombre AS SegundoPro,                        
+        sp.nombre COLLATE Modern_Spanish_CI_AS AS SegundoPro,                        
         c.Proexterno,                       
-        COALESCE(emp.nombre, 'No asignado') AS NombreEmpresario, -- OBTENER NOMBRE DEL EMPRESARIO
-        c.Descripcion,                       
+        COALESCE(emp.nombre COLLATE Modern_Spanish_CI_AS, 'No asignado') AS NombreEmpresario,
+        c.Descripcion COLLATE Modern_Spanish_CI_AS AS Descripcion,                       
         c.IdTipoCurso,
-        tc.Especificacion AS IdTipoCurso
+        tc.Especificacion COLLATE Modern_Spanish_CI_AS AS IdTipoCurso
       FROM gescur.cursos c
       LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
       LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
       LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
       LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
       LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
-      LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp  -- UNIR CON LA TABLA DE EMPLEADOS PARA OBTENER EL NOMBRE
-      LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-      LEFT JOIN gescur.emp_nomina emp ON c.Proexterno = emp.id_emp -- OBTENER NOMBRE DEL EMPRESARIO
+      LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp  
+      LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) COLLATE Modern_Spanish_CI_AS = sp.id_emp
+      LEFT JOIN gescur.emp_nomina emp ON c.Proexterno = emp.id_emp 
       LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
       WHERE c.Publico = ${publico} OR c.Publico = 3
       ORDER BY c.id;
