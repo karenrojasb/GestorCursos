@@ -1,7 +1,7 @@
 "use client";
 import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-import CursoEditarModal from "./components/CursoEditarModal";
+import CursoEditarModal from "./CursoEditarModal";
 
 interface Curso {
   id: number;
@@ -130,21 +130,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setEditandoCurso({ ...curso });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    if (!editandoCurso) return;
-    const { name, value } = e.target;
 
-    setEditandoCurso((prev) => {
-      if (!prev) return null;
-
-      const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"];
-
-      return {
-        ...prev,
-        [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
-      };
-    });
-  };
 
   // GUARDAR CAMBIOS AL EDITAR
   const handleGuardarEdicion = async () => {
