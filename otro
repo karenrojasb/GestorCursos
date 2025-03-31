@@ -1,18 +1,102 @@
-Error al obtener cursos: 
-Invalid `prisma.$queryRaw()` invocation:
+async obtenerCursosParaUsuario(id_emp: string) {
+  try {
+      // OBTENER EL VALOR DE "PÚBLICO" DEL USUARIO
+      const usuario = await this.prisma.$queryRaw<{ publico: number }[]>`
+          SELECT publico FROM gescur.emp_nomina WHERE id_emp = CAST(${id_emp} AS VARCHAR)
+      `;
+
+      if (!usuario || usuario.length === 0) {
+          throw new Error('Usuario no encontrado en gescur.emp_nomina');
+      }
+
+      const publico = usuario[0].publico;
+
+      console.log(`Usuario ${id_emp} tiene publico: ${publico}`);
+
+      // OBTENER CURSOS SEGÚN EL PÚBLICO
+      let cursos;
+      if (publico === 3) {
+          cursos = await this.prisma.$queryRaw`
+              SELECT 
+                  c.id,
+                  c.NombreCurso,
+                  c.Valor,
+                  lp.Especificacion AS Publico,
+                  c.Periodo,
+                  c.Inicio,
+                  c.Fin,
+                  c.Horas,
+                  c.CupoMax,
+                  c.Lugar,
+                  c.Linea,
+                  l.Especificacion AS Linea,
+                  c.Estado,
+                  est.Especificacion AS Estado,
+                  c.Modalidad,
+                  m.Especificacion AS Modalidad,
+                  u.nombre AS Unidad,
+                  e.nombre AS NombreProfesor,
+                  sp.nombre AS SegundoPro
+              FROM gescur.cursos c
+              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+              ORDER BY c.id
+          `;
+      } else {
+          cursos = await this.prisma.$queryRaw`
+              SELECT 
+                  c.id,
+                  c.NombreCurso,
+                  c.Valor,
+                  lp.Especificacion AS Publico,
+                  c.Periodo,
+                  c.Inicio,
+                  c.Fin,
+                  c.Horas,
+                  c.CupoMax,
+                  c.Lugar,
+                  c.Linea,
+                  l.Especificacion AS Linea,
+                  c.Estado,
+                  est.Especificacion AS Estado,
+                  c.Modalidad,
+                  m.Especificacion AS Modalidad,
+                  u.nombre AS Unidad,
+                  e.nombre AS NombreProfesor,
+                  sp.nombre AS SegundoPro
+              FROM gescur.cursos c
+              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+              WHERE c.publico = ${publico} OR c.publico = 3
+              ORDER BY c.id
+          `;
+      }
+
+      console.log(`Cursos obtenidos para usuario ${id_emp}:`, cursos);
+
+      return cursos;
+  } catch (error) {
+      console.error('Error al obtener cursos:', error.message);
+      throw new Error('No se pudieron obtener los cursos.');
+  }
+}
 
 
-Raw query failed. Code: `248`. Message: `The conversion of the varchar value '88040561930 ' overflowed an int column.`
-[Nest] 12368  - 31/03/2025, 9:27:47 a. m.   ERROR [ExceptionsHandler] Error: No se pudieron obtener los cursos.
-    at CursosService.obtenerCursosParaUsuario (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.service.ts:141:11)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17
-Error al obtener cursos: 
-Invalid `prisma.$queryRaw()` invocation:
 
 
-Raw query failed. Code: `248`. Message: `The conversion of the varchar value '88040561930 ' overflowed an int column.`
-[Nest] 12368  - 31/03/2025, 9:27:47 a. m.   ERROR [ExceptionsHandler] Error: No se pudieron obtener los cursos.
-    at CursosService.obtenerCursosParaUsuario (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.service.ts:141:11)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17
+  @Get('usuario/:id_emp')
+  async obtenerCursosParaUsuario(@Param('id_emp') id_emp: string) {
+    return this.cursosService.obtenerCursosParaUsuario(id_emp);
+  }
+
+
