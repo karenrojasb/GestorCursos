@@ -1,35 +1,181 @@
-{
-    "id": 445,
-    "NombreCurso": "prueba desplegables actualizar",
-    "Valor": null,
-    "Publico": 3,
-    "Periodo": "2025-2",
-    "Inicio": "2025-04-04",
-    "Fin": "2025-04-05",
-    "Horas": 5,
-    "CupoMax": 20,
-    "Lugar": "bloque",
-    "LunesIni": "13:00",
-    "LunesFin": "15:00",
-    "MartesIni": null,
-    "MartesFin": null,
-    "MiercolesIni": null,
-    "MiercolesFin": null,
-    "JuevesIni": null,
-    "JuevesFin": null,
-    "ViernesIni": null,
-    "ViernesFin": null,
-    "SabadoIni": null,
-    "SabadoFin": null,
-    "DomingoIni": null,
-    "DomingoFin": null,
-    "Linea": 11,
-    "Estado": 15,
-    "Modalidad": 12,
-    "Unidad": 1217010000,
-    "Profesor": 1000034366,
-    "SegundoPro": 1000185025,
-    "Proexterno": null,
-    "Descripcion": null,
-    "IdTipoCurso": 26
-}
+{editandoCurso && (
+   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+     <div className="relative bg-white p-6 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto w-full max-w-md">
+      
+       {/* BOTÓN PARA CERRAR */}
+       <button className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90" 
+         onClick={() => setEditandoCurso(null)}>
+         <XMarkIcon className="w-6 h-6" />
+       </button>
+
+       <h2 className="text-lg text-[#990000] font-bold mb-4">Editar Curso</h2>
+       {/* MENSAJE DE ÉXITO AL ACTUALIZAR EL CURSO*/}
+       {mensajeExito && (
+         <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-[#990000] text-white p-2 rounded text-center mb-4">
+           {mensajeExito}
+         </div>
+       )}
+       
+
+       {/* FORMULARIO DE EDICIÓN */}
+       {Object.keys(editandoCurso).map((key) => (
+  key !== "id" && (
+    <div key={key} className="mt-2">
+      <label className="block text-sm font-bold">{key}</label>
+
+      {key === "Publico" ? (
+        // Si el campo es "Publico", usa un <select> en lugar de un <input>
+        <select
+          name="Publico"
+          value={editandoCurso.Publico}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+        >
+          {opcionesPublico.map((opcion) => (
+            <option key={opcion.id} value={opcion.id}>
+              {opcion.Especificacion}
+            </option>
+          ))}
+        </select>
+
+        
+      ) : key === "Linea" ? (
+        <select
+        name={key}
+        value={editandoCurso.Linea}
+        onChange={handleChange}
+        className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+        
+          {opcionesLinea.map((opcion) => (
+            <option key={opcion.id} value={opcion.id}>
+              {opcion.Especificacion}
+            </option>
+          ))}
+        </select>
+
+         ) : key === "Modalidad" ? (
+        <select
+        name={key}
+        value={editandoCurso.Modalidad}
+        onChange={handleChange}
+        className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+        
+          {opcionesModalidad.map((opcion) => (
+            <option key={opcion.id} value={opcion.id}>
+              {opcion.Especificacion}
+            </option>
+          ))}
+        </select>
+
+         ) : key === "Estado" ? (
+        <select
+        name={key}
+        value={editandoCurso.Estado}
+        onChange={handleChange}
+        className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+        
+          {opcionesEstado.map((opcion) => (
+            <option key={opcion.id} value={opcion.id}>
+              {opcion.Especificacion}
+            </option>
+          ))}
+        </select>
+
+         ) : key === "IdTipoCurso" ? (
+        <select
+        name={key}
+        value={editandoCurso.IdTipoCurso}
+        onChange={handleChange}
+        className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+        
+          {opcionesTipoCurso.map((opcion) => (
+            <option key={opcion.id} value={opcion.id}>
+              {opcion.Especificacion}
+            </option>
+          ))}
+        </select>
+
+        ) : key === "Profesor"? (
+       <select
+       name={key}
+       value={editandoCurso.Profesor}
+       onChange={handleChange}
+       className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+   
+          {profesores.map((profesor) => (
+            <option key={profesor.id_emp} value={profesor.id_emp}>
+             {profesor.nombre}
+             </option>
+          ))}
+        </select>
+
+        ) : key === "SegundoPro"? (
+       <select
+       name={key}
+       value={editandoCurso.SegundoPro}
+       onChange={handleChange}
+       className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+   
+          {profesores.map((profesor) => (
+            <option key={profesor.id_emp} value={profesor.id_emp}>
+             {profesor.nombre}
+             </option>
+          ))}
+        </select>
+
+            ) : key === "Profesor"? (
+       <select
+       name={key}
+       value={editandoCurso.Profesor}
+       onChange={handleChange}
+       className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+   
+          {profesores.map((profesor) => (
+            <option key={profesor.id_emp} value={profesor.id_emp}>
+             {profesor.nombre}
+             </option>
+          ))}
+        </select>
+
+
+
+         ) : key === "Unidad" ? (
+                <select
+                name={key}
+                value={editandoCurso.Unidad}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  
+                  {unidad.map((unidad) => (
+                    <option key={unidad.codigo} value={unidad.codigo}>
+                      {unidad.nombre}
+                    </option>
+                  ))}
+                </select>
+
+         ) : key === "Periodo" ? (
+          <select
+          name={key}
+          value={editandoCurso.Periodo}
+          onChange={handleChange}
+          className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+            
+            {opcionesPeriodos.map((opcion, index) => (
+              <option key={index} value={opcion.periodo}>
+                {opcion.periodo}
+              </option>
+            ))}
+          </select>
+  ) : (
+        
+        <input
+          type="text"
+          name={key}
+          value={editandoCurso ? (editandoCurso as any)[key] ?? "" : ""}
+          onChange={handleChange}
+          className="border p-2 w-full rounded"
+        />
+      )}
+    </div>
+  )
+))}
