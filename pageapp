@@ -1,16 +1,4 @@
-import CursoEditarModal from "./CursoEditarModal";
-
-// Dentro del componente CatalogoModal
-{
-  editandoCurso && (
-    <CursoEditarModal
-      curso={editandoCurso}
-      onClose={() => setEditandoCurso(null)}
-      onSave={(cursoActualizado) => {
-        // Aquí puedes manejar la actualización del curso en el estado
-        setCursos(prevCursos => prevCursos.map(c => c.id === cursoActualizado.id ? cursoActualizado : c));
-        setCursosFiltrados(prevCursos => prevCursos.map(c => c.id === cursoActualizado.id ? cursoActualizado : c));
-      }}
-    />
-  );
-}
+Argument of type '(prevCursos: Curso[]) => Curso[]' is not assignable to parameter of type 'SetStateAction<Curso[]>'.
+  Type '(prevCursos: Curso[]) => Curso[]' is not assignable to type '(prevState: Curso[]) => Curso[]'.
+    Type 'Curso[]' is not assignable to type 'Curso[]'. Two different types with this name exist, but they are unrelated.
+      Type 'Curso' is missing the following properties from type 'Curso': LunesIni, LunesFin, MartesIni, MartesFin, and 10 more.ts(2345)
