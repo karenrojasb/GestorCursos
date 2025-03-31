@@ -1,4 +1,95 @@
-Type '(cursoEditado: Curso) => void' is not assignable to type '(curso: Curso) => void'.
-  Types of parameters 'cursoEditado' and 'curso' are incompatible.
-    Type 'Curso' is missing the following properties from type 'Curso': LunesIni, LunesFin, MartesIni, MartesFin, and 10 more.ts(2322)
-CursoEditarModal.tsx(34, 92): The expected type comes from property 'onSave' which is decl
+import { useState } from "react";
+
+interface Curso {
+  id: number;
+  NombreCurso: string;
+  Valor: number;
+  Publico: number;
+  Periodo: string;
+  Inicio: string;
+  Fin: string;
+  Horas: number;
+  CupoMax: number;
+  Lugar: string;
+  Linea: number;
+  Estado: number;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  SegundoPro: string;
+  Proexterno: string;
+  Descripcion: string;
+  IdTipoCurso: number;
+  NombreProfesor?: string;
+  LunesIni: string;
+  LunesFin: string;
+  MartesIni: string;
+  MartesFin: string;
+  MiercolesIni: string;
+  MiercolesFin: string;
+  JuevesIni: string;
+  JuevesFin: string;
+  ViernesIni: string;
+  ViernesFin: string;
+  SabadoIni: string;
+  SabadoFin: string;
+  DomingoIni: string;
+  DomingoFin: string;
+}
+
+interface Props {
+  curso: Curso;
+  onClose: () => void;
+  onSave: (curso: Curso) => void;
+}
+
+export default function CursoEditarModal({ curso, onClose, onSave }: Props) {
+  const [cursoEditado, setCursoEditado] = useState<Curso>({ ...curso });
+
+  const handleGuardar = () => {
+    const cursoCompleto: Curso = {
+      ...curso,
+      ...cursoEditado, // Prioriza los cambios del usuario
+      LunesIni: cursoEditado.LunesIni || "",
+      LunesFin: cursoEditado.LunesFin || "",
+      MartesIni: cursoEditado.MartesIni || "",
+      MartesFin: cursoEditado.MartesFin || "",
+      MiercolesIni: cursoEditado.MiercolesIni || "",
+      MiercolesFin: cursoEditado.MiercolesFin || "",
+      JuevesIni: cursoEditado.JuevesIni || "",
+      JuevesFin: cursoEditado.JuevesFin || "",
+      ViernesIni: cursoEditado.ViernesIni || "",
+      ViernesFin: cursoEditado.ViernesFin || "",
+      SabadoIni: cursoEditado.SabadoIni || "",
+      SabadoFin: cursoEditado.SabadoFin || "",
+      DomingoIni: cursoEditado.DomingoIni || "",
+      DomingoFin: cursoEditado.DomingoFin || "",
+    };
+
+    onSave(cursoCompleto);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded shadow-lg w-96">
+        <h2 className="text-lg font-bold mb-4">Editar Curso</h2>
+
+        <label className="block mb-2">Nombre:</label>
+        <input
+          type="text"
+          value={cursoEditado.NombreCurso}
+          onChange={(e) => setCursoEditado({ ...cursoEditado, NombreCurso: e.target.value })}
+          className="w-full border p-2 rounded"
+        />
+
+        <button onClick={handleGuardar} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+          Guardar
+        </button>
+        <button onClick={onClose} className="mt-4 ml-2 bg-gray-300 text-black px-4 py-2 rounded">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
