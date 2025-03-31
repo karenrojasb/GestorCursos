@@ -1,15 +1,6 @@
-const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  const { name, value } = e.target;
-
-  // Lista de campos que deben ser enteros
-  const camposNumericos = ["Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "SegundoPro", "IdTipoCurso"];
-
-  setEditandoCurso((prevCurso) => {
-    if (!prevCurso) return prevCurso; // Evita errores si el estado es null
-
-    return {
-      ...prevCurso,
-      [name]: camposNumericos.includes(name) ? (value ? Number(value) : null) : value,
-    };
-  });
-};
+Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this errorAI
+intercept-console-error.ts:40 Error HTTP al actualizar: 400
+error @ intercept-console-error.ts:40Understand this errorAI
+intercept-console-error.ts:40 Respuesta del servidor: {"message":["Publico must be an integer number","Linea must be an integer number","Estado must be an integer number","Modalidad must be an integer number","Unidad must be an integer number","SegundoPro must be an integer number","IdTipoCurso must be a number conforming to the specified constraints"],"error":"Bad Request","statusCode":400}
+error @ intercept-console-error.ts:40Understand this errorAI
+hot-reloader-client.tsx:364 [Fast Refresh] rebuilding
