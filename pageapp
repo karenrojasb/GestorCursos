@@ -1,6 +1,15 @@
-Argument of type '(prevCurso: Curso | null) => { id?: number | undefined; NombreCurso?: string | undefined; Valor?: number | undefined; Publico?: number | undefined; Periodo?: string | undefined; ... 28 more ...; DomingoFin?: string | undefined; }' is not assignable to parameter of type 'SetStateAction<Curso | null>'.
-  Type '(prevCurso: Curso | null) => { id?: number | undefined; NombreCurso?: string | undefined; Valor?: number | undefined; Publico?: number | undefined; Periodo?: string | undefined; ... 28 more ...; DomingoFin?: string | undefined; }' is not assignable to type '(prevState: Curso | null) => Curso | null'.
-    Call signature return types '{ id?: number | undefined; NombreCurso?: string | undefined; Valor?: number | undefined; Publico?: number | undefined; Periodo?: string | undefined; Inicio?: string | undefined; Fin?: string | undefined; ... 26 more ...; DomingoFin?: string | undefined; }' and 'Curso | null' are incompatible.
-      The types of 'id' are incompatible between these types.
-        Type 'number | undefined' is not assignable to type 'number'.
-          Type 'undefined' is not assignable to type 'number'.ts(2345)
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const { name, value } = e.target;
+
+  // Lista de campos que deben ser enteros
+  const camposNumericos = ["Publico", "Linea", "Estado", "Modalidad", "Unidad", "SegundoPro", "IdTipoCurso"];
+
+  setEditandoCurso((prevCurso) => {
+    if (!prevCurso) return prevCurso; // Evita errores si el estado es null
+
+    return {
+      ...prevCurso,
+      [name]: camposNumericos.includes(name) ? (value ? parseInt(value, 10) : null) : value,
+    };
+  });
+};
