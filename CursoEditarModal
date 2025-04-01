@@ -18,11 +18,17 @@ interface CursoEditarModalProps {
   onClose: () => void;
   onUpdate: () => void;
 }
+interface Opcion {
+  id: number;
+  Especificacion: string;
+  Tipo: number;
+}
 
 export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }: CursoEditarModalProps) {
   const [formData, setFormData] = useState<Curso | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
 
   useEffect(() => {
     if (!courseId || !isOpen) return; // No ejecutar si no hay ID o el modal está cerrado
@@ -54,6 +60,25 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
         setLoading(false);
       });
   }, [courseId, isOpen]);
+
+    useEffect(() => {
+      async function fetchOpciones() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+          if (!response.ok) throw new Error("Error al obtener las opciones");
+  
+          const data: Opcion[] = await response.json();
+  
+         
+          setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
+         
+        } catch (error) {
+          console.error("Error cargando las opciones:", error);
+        }
+      }
+  
+      fetchOpciones();
+    }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) =>
@@ -118,9 +143,11 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
           <label>
             Modalidad:
             <select name="Modalidad" value={formData.Modalidad} onChange={handleChange} required>
-              <option value="1">Presencial</option>
-              <option value="2">Virtual</option>
-              <option value="3">Mixto</option>
+            {opcionesModalidad.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                    ))}
             </select>
           </label>
 
