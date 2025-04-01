@@ -13,36 +13,45 @@ interface Curso {
 }
 
 interface CursoEditarModalProps {
-  courseId: number;
+  courseId: number | null;
+  isOpen: boolean;
   onClose: () => void;
   onUpdate: () => void;
 }
 
-export default function CursoEditarModal({ courseId, onClose, onUpdate }: CursoEditarModalProps) {
+export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }: CursoEditarModalProps) {
   const [formData, setFormData] = useState<Curso | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const res = await fetch(`/api/cursos/${courseId}`);
-        if (!res.ok) throw new Error("Error al cargar el curso");
-        const data = await res.json();
-        setFormData(data);
-      } catch (err) {
-        setError("No se pudo cargar el curso");
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!courseId || !isOpen) return; // No ejecutar si no hay ID o el modal está cerrado
 
-    fetchCourse();
-  }, [courseId]);
+    setLoading(true);
+    setError(null);
+
+    console.log("Cargando curso con ID:", courseId);
+
+    fetch(`/api/cursos/${courseId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Error al cargar el curso");
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Datos del curso recibidos:", data);
+        setFormData(data);
+      })
+      .catch(() => {
+        setError("No se pudo cargar el curso");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [courseId, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) =>
-      prev ? { ...prev, [e.target.name]: e.target.value } : prev
+      prev ? { ...prev, [e.target.name]: e.target.type === "number" ? Number(e.target.value) : e.target.value } : prev
     );
   };
 
@@ -67,6 +76,7 @@ export default function CursoEditarModal({ courseId, onClose, onUpdate }: CursoE
     }
   };
 
+  if (!isOpen) return null; // No renderizar si el modal está cerrado
   if (loading) return <p>Cargando...</p>;
   if (error) return <p>{error}</p>;
   if (!formData) return null;
@@ -78,46 +88,22 @@ export default function CursoEditarModal({ courseId, onClose, onUpdate }: CursoE
         <form onSubmit={handleSubmit}>
           <label>
             Nombre:
-            <input
-              type="text"
-              name="NombreCurso"
-              value={formData.NombreCurso}
-              onChange={handleChange}
-              required
-            />
+            <input type="text" name="NombreCurso" value={formData.NombreCurso} onChange={handleChange} required />
           </label>
 
           <label>
             Valor:
-            <input
-              type="number"
-              name="Valor"
-              value={formData.Valor}
-              onChange={handleChange}
-              required
-            />
+            <input type="number" name="Valor" value={formData.Valor} onChange={handleChange} required />
           </label>
 
           <label>
             Horas:
-            <input
-              type="number"
-              name="Horas"
-              value={formData.Horas}
-              onChange={handleChange}
-              required
-            />
+            <input type="number" name="Horas" value={formData.Horas} onChange={handleChange} required />
           </label>
 
           <label>
             Cupo Máximo:
-            <input
-              type="number"
-              name="CupoMax"
-              value={formData.CupoMax}
-              onChange={handleChange}
-              required
-            />
+            <input type="number" name="CupoMax" value={formData.CupoMax} onChange={handleChange} required />
           </label>
 
           <label>
@@ -131,35 +117,17 @@ export default function CursoEditarModal({ courseId, onClose, onUpdate }: CursoE
 
           <label>
             Unidad:
-            <input
-              type="number"
-              name="Unidad"
-              value={formData.Unidad}
-              onChange={handleChange}
-              required
-            />
+            <input type="number" name="Unidad" value={formData.Unidad} onChange={handleChange} required />
           </label>
 
           <label>
             Profesor:
-            <input
-              type="number"
-              name="Profesor"
-              value={formData.Profesor}
-              onChange={handleChange}
-              required
-            />
+            <input type="number" name="Profesor" value={formData.Profesor} onChange={handleChange} required />
           </label>
 
           <label>
             Tipo de Curso:
-            <input
-              type="number"
-              name="IdTipoCurso"
-              value={formData.IdTipoCurso}
-              onChange={handleChange}
-              required
-            />
+            <input type="number" name="IdTipoCurso" value={formData.IdTipoCurso} onChange={handleChange} required />
           </label>
 
           <div className="modal-actions">
