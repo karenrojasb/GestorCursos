@@ -67,6 +67,7 @@ export default function CursoEditarModal({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
   const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
   const [unidad, setUnidad] = useState<{ codigo: number; nombre: string }[]>([]);
   const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string }[]>([]);
@@ -104,25 +105,24 @@ export default function CursoEditarModal({
   }, [courseId, isOpen]);
 
 
+    useEffect(() => {
+      async function fetchOpciones() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+          if (!response.ok) throw new Error("Error al obtener las opciones");
   
-
+          const data: Opcion[] = await response.json();
   
-  useEffect(() => {
-    async function fetchProfesores() {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos/profesores");
-        if (!response.ok) throw new Error("Error al obtener los profesores");
-  
-        const data = await response.json();
-        console.log("Profesores recibidos:", data);
-        setProfesores(data);
-      } catch (error) {
-        console.error("Error cargando los profesores:", error);
+          setOpcionesPublico(data.filter((item) => item.Tipo === 1));
+          
+        } catch (error) {
+          console.error("Error cargando las opciones:", error);
+        }
       }
-    }
   
-    fetchProfesores();
-  }, []);
+      fetchOpciones();
+    }, []);
+  
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -197,7 +197,7 @@ export default function CursoEditarModal({
 />
           </label>
 
-          <label>
+          <select> <label>
             Público:
             <input
   type="number"
@@ -206,7 +206,14 @@ export default function CursoEditarModal({
   onChange={handleChange}
   required
 />
+<option value="">{formData.Publico}</option>
+                  {opcionesPublico.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
           </label>
+          </select>
 
           <label>
             Periodo:
