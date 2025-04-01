@@ -34,11 +34,12 @@ interface Opcion {
 interface CursoEditarModalProps {
   curso: Curso;
   onClose: () => void;
+  onSave: (cursoEditar: Curso) => void;
  
 }
 
+export default function CursoEditarModal = ({curso, onClose, onSave}: CursoEditarModalProps) =>  {
 
-const CursoEditarModal = ({curso, onClose}: CursoEditarModalProps)  {
   const [editandoCurso, setEditandoCurso] = useState<Curso | null>(curso);
   const [mensajeExito, setMensajeExito] = useState("");
   const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
@@ -194,4 +195,3 @@ const CursoEditarModal = ({curso, onClose}: CursoEditarModalProps)  {
   );
 };
 
-export default CursoEditarModal;
