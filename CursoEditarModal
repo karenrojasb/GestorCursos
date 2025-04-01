@@ -1,128 +1,243 @@
-import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 interface Curso {
+  id: number;
   NombreCurso: string;
-  Valor: number | "";
-  Publico: number | "";
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number | "";
-  CupoMax: number | "";
-  Lugar: string;
-  Modalidad: number | "";
-  Unidad: number | "";
-  Profesor: number | "";
-  SegundoPro: string;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number | "";
+  Valor: number;
+  Horas: number;
+  CupoMax: number;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  IdTipoCurso: number;
 }
 
 interface CursoEditarModalProps {
-  cursoEditado: Curso | null;
+  courseId: number;
   onClose: () => void;
-  onSave: (data: Curso) => void;
+  onUpdate: () => void;
 }
 
-export default function CursoEditarModal({ onClose, onSave, cursoEditado }: CursoEditarModalProps) {
-  const [curso, setCurso] = useState<Curso>(
-    cursoEditado || {
-      NombreCurso: "",
-      Valor: "",
-      Publico: "",
-      Periodo: "",
-      Inicio: "",
-      Fin: "",
-      Horas: "",
-      CupoMax: "",
-      Lugar: "",
-      Modalidad: "",
-      Unidad: "",
-      Profesor: "",
-      SegundoPro: "",
-      Proexterno: "",
-      Descripcion: "",
-      IdTipoCurso: "",
-    }
-  );
+export default function CursoEditarModal({ courseId, onClose, onUpdate }: CursoEditarModalProps) {
+  const [formData, setFormData] = useState<Curso | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (cursoEditado) {
-      setCurso(cursoEditado);
-    }
-  }, [cursoEditado]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-
-    const numericFields = ["Valor", "Publico", "Horas", "CupoMax", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"];
-
-    setCurso((cursoAnterior) => ({
-      ...cursoAnterior,
-      [name]: numericFields.includes(name) ? (value === "" ? "" : Number(value)) : value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const cursoData: Curso = {
-      ...curso,
-      Valor: curso.Valor === "" ? 0 : Number(curso.Valor),
-      Publico: curso.Publico === "" ? 0 : Number(curso.Publico),
-      Horas: curso.Horas === "" ? 0 : Number(curso.Horas),
-      CupoMax: curso.CupoMax === "" ? 0 : Number(curso.CupoMax),
-      Modalidad: curso.Modalidad === "" ? 0 : Number(curso.Modalidad),
-      Unidad: curso.Unidad === "" ? 0 : Number(curso.Unidad),
-      Profesor: curso.Profesor === "" ? 0 : Number(curso.Profesor),
-      IdTipoCurso: curso.IdTipoCurso === "" ? 0 : Number(curso.IdTipoCurso),
+    const fetchCourse = async () => {
+      try {
+        const res = await fetch(`/api/cursos/${courseId}`);
+        if (!res.ok) throw new Error("Error al cargar el curso");
+        const data = await res.json();
+        setFormData(data);
+      } catch (err) {
+        setError("No se pudo cargar el curso");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    onSave(cursoData);
+    fetchCourse();
+  }, [courseId]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData((prev) =>
+      prev ? { ...prev, [e.target.name]: e.target.value } : prev
+    );
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData) return;
+
+    try {
+      const res = await fetch(`/api/cursos/${courseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error("Error al actualizar el curso");
+
+      alert("Curso actualizado correctamente");
+      onUpdate();
+      onClose();
+    } catch (err) {
+      setError("No se pudo actualizar el curso");
+    }
+  };
+
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p>{error}</p>;
+  if (!formData) return null;
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <motion.div
-          className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-[#990000]">
-            <XMarkIcon className="w-6 h-6" />
-          </button>
+    <div className="modal-overlay">
+      <div className="modal">
+        <h2>Editar Curso</h2>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Nombre:
+            <input
+              type="text"
+              name="NombreCurso"
+              value={formData.NombreCurso}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-          <h2 className="text-2xl font-bold text-[#990000] text-center mb-6">Editar Curso</h2>
+          <label>
+            Valor:
+            <input
+              type="number"
+              name="Valor"
+              value={formData.Valor}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {Object.keys(curso)
-              .filter((key) => !["Inicio", "Fin"].includes(key))
-              .map((key) => (
-                <div key={key} className="mb-3">
-                  <label className="block font-semibold text-gray-700">{key}</label>
+          <label>
+            Horas:
+            <input
+              type="number"
+              name="Horas"
+              value={formData.Horas}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-                  <input
-                    type={["Valor", "Horas", "CupoMax", "Publico", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"].includes(key) ? "number" : "text"}
-                    name={key}
-                    value={curso[key as keyof Curso] || ""}
-                    onChange={handleChange}
-                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-                  />
-                </div>
-              ))}
+          <label>
+            Cupo Máximo:
+            <input
+              type="number"
+              name="CupoMax"
+              value={formData.CupoMax}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-            <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
-              Guardar
-            </button>
-          </form>
-        </motion.div>
+          <label>
+            Modalidad:
+            <select name="Modalidad" value={formData.Modalidad} onChange={handleChange} required>
+              <option value="1">Presencial</option>
+              <option value="2">Virtual</option>
+              <option value="3">Mixto</option>
+            </select>
+          </label>
+
+          <label>
+            Unidad:
+            <input
+              type="number"
+              name="Unidad"
+              value={formData.Unidad}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <label>
+            Profesor:
+            <input
+              type="number"
+              name="Profesor"
+              value={formData.Profesor}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <label>
+            Tipo de Curso:
+            <input
+              type="number"
+              name="IdTipoCurso"
+              value={formData.IdTipoCurso}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <div className="modal-actions">
+            <button type="submit">Actualizar</button>
+            <button type="button" onClick={onClose}>Cancelar</button>
+          </div>
+        </form>
       </div>
+
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .modal {
+          background: white;
+          padding: 20px;
+          border-radius: 10px;
+          width: 400px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h2 {
+          margin-bottom: 15px;
+          text-align: center;
+        }
+
+        .modal label {
+          display: block;
+          margin-bottom: 10px;
+          font-weight: bold;
+        }
+
+        .modal input,
+        .modal select {
+          width: 100%;
+          padding: 8px;
+          margin-top: 5px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+        }
+
+        .modal-actions {
+          margin-top: 15px;
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .modal-actions button {
+          padding: 10px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 16px;
+        }
+
+        .modal-actions button[type="submit"] {
+          background-color: #28a745;
+          color: white;
+        }
+
+        .modal-actions button[type="button"] {
+          background-color: #dc3545;
+          color: white;
+        }
+
+        .modal-actions button:hover {
+          opacity: 0.8;
+        }
+      `}</style>
     </div>
   );
 }
