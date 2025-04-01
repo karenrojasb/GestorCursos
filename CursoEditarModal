@@ -22,7 +22,20 @@ interface Curso {
   Proexterno: string;
   Descripcion: string;
   IdTipoCurso: number;
-  NombreProfesor?: string;
+  LunesIni: string;
+  LunesFin: string;
+  MartesIni: string;
+  MartesFin: string;
+  MiercolesIni: string;
+  MiercolesFin: string;
+  JuevesIni: string;
+  JuevesFin: string;
+  ViernesIni: string;
+  ViernesFin: string;
+  SabadoIni: string;
+  SabadoFin: string;
+  DomingoIni: string;
+  DomingoFin: string;
 }
 
 interface Opcion {
@@ -34,11 +47,11 @@ interface Opcion {
 interface CursoEditarModalProps {
   curso: Curso;
   onClose: () => void;
-  onSave: (cursoEditar: Curso) => void;
+  onSave: (curso : Curso) => void;
  
 }
 
-export default function CursoEditarModal = ({curso, onClose, onSave}: CursoEditarModalProps) =>  {
+export default function CursoEditarModal ({curso, onClose, onSave}: CursoEditarModalProps) {
 
   const [editandoCurso, setEditandoCurso] = useState<Curso | null>(curso);
   const [mensajeExito, setMensajeExito] = useState("");
