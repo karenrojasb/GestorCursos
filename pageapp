@@ -1,11 +1,2 @@
-const handleGuardarEdicion = () => {
-  if (cursoEditar) {
-    setCursos((prevCursos) =>
-      prevCursos.map((curso) => (curso.id === cursoEditar.id ? cursoEditar : curso))
-    );
-    setCursosFiltrados((prevCursos) =>
-      prevCursos.map((curso) => (curso.id === cursoEditar.id ? cursoEditar : curso))
-    );
-    setCursoEditar(null);
-  }
-};
+Property 'isOpen' is missing in type '{ courseId: number; onClose: () => void; onUpdate: () => void; }' but required in type 'CursoEditarModalProps'.ts(2741)
+CursoEditarModal.tsx(17, 3): 'isOpen' is declared here.
