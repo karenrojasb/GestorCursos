@@ -32,17 +32,23 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
 
     console.log("Cargando curso con ID:", courseId);
 
-    fetch(`/api/cursos/${courseId}`)
+    fetch(`http://localhost:8090/api/cursos/${courseId}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Error al cargar el curso");
+        if (!res.ok) {
+          throw new Error("Error al cargar el curso");
+        }
         return res.json();
       })
       .then((data) => {
         console.log("Datos del curso recibidos:", data);
-        setFormData(data);
+        if (data) {
+          setFormData(data);
+        } else {
+          throw new Error("Datos del curso vacíos");
+        }
       })
-      .catch(() => {
-        setError("No se pudo cargar el curso");
+      .catch((err) => {
+        setError(err.message || "No se pudo cargar el curso");
       })
       .finally(() => {
         setLoading(false);
@@ -51,7 +57,10 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) =>
-      prev ? { ...prev, [e.target.name]: e.target.type === "number" ? Number(e.target.value) : e.target.value } : prev
+      prev ? {
+        ...prev,
+        [e.target.name]: e.target.type === "number" ? Number(e.target.value) : e.target.value
+      } : prev
     );
   };
 
@@ -60,7 +69,7 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
     if (!formData) return;
 
     try {
-      const res = await fetch(`/api/cursos/${courseId}`, {
+      const res = await fetch(`http://localhost:8090/api/cursos/${courseId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -79,7 +88,7 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
   if (!isOpen) return null; // No renderizar si el modal está cerrado
   if (loading) return <p>Cargando...</p>;
   if (error) return <p>{error}</p>;
-  if (!formData) return null;
+  if (!formData) return <p>No se encontró el curso</p>;
 
   return (
     <div className="modal-overlay">
