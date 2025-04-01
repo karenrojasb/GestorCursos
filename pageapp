@@ -1,3 +1,11 @@
-ype '(cursoActualizado: Curso) => void' is not assignable to type '() => void'.
-  Target signature provides too few arguments. Expected 1 or more, but got 0.ts(2322)
-CursoEditarModal.tsx(19, 3): The expected type comes from property 'onUpdate' which is declared here on type 'IntrinsicAttributes & CursoEditarModalProps'
+const handleGuardarEdicion = () => {
+  if (cursoEditar) {
+    setCursos((prevCursos) =>
+      prevCursos.map((curso) => (curso.id === cursoEditar.id ? cursoEditar : curso))
+    );
+    setCursosFiltrados((prevCursos) =>
+      prevCursos.map((curso) => (curso.id === cursoEditar.id ? cursoEditar : curso))
+    );
+    setCursoEditar(null);
+  }
+};
