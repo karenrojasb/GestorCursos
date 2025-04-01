@@ -3,9 +3,45 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 
 interface CursoEditarModalProps {
+  curso: Curso;
   onClose: () => void;
   onSave: (data: any) => void;
   cursoEditado: any; // Prop para recibir los datos del curso a editar
+}
+
+interface Curso {
+  id: number;
+  NombreCurso: string;
+  Valor: number;
+  Publico: number;
+  Periodo: string;
+  Inicio: string;
+  Fin: string;
+  Horas: number;
+  LunesIni: string;
+  LunesFin: string;
+  MartesIni: string;
+  MartesFin: string;
+  MiercolesIni: string;
+  MiercolesFin: string;
+  JuevesIni: string;
+  JuevesFin: string;
+  ViernesIni: string;
+  ViernesFin: string;
+  SabadoIni: string;
+  SabadoFin: string;
+  DomingoIni: string;
+  DomingoFin: string;
+  CupoMax: number;
+  Lugar: string;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  SegundoPro: string;
+  Proexterno: string;
+  Descripcion: string;
+  IdTipoCurso: number;
+  NombreProfesor?: string;
 }
 
 interface Opcion {
@@ -14,7 +50,7 @@ interface Opcion {
   Tipo: number;
 }
 
-export default function CursoEditarModal({ onClose, onSave, cursoEditado }: CursoEditarModalProps) {
+export default function CursoEditarModal({  onClose, onSave, cursoEditado }: CursoEditarModalProps) {
   const [curso, setCurso] = useState({
     NombreCurso: "",
     Valor: "",
@@ -313,7 +349,40 @@ export default function CursoEditarModal({ onClose, onSave, cursoEditado }: Curs
               ))}
             <h3 className="text-lg font-semibold mt-4">Horarios</h3>
             {/* Aquí va el formulario de horarios (igual que en CursoModal) */}
-
+            <table className="w-full border-collapse border border-gray-300 text-center">
+  <thead>
+    <tr className="bg-gray-200">
+      <th className="border border-gray-300 px-2 py-1">Día</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
+    </tr>
+  </thead>
+  <tbody>
+    {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+      <tr key={dia}>
+        <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Ini`}
+            value={curso[`${dia}Ini` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Fin`}
+            value={curso[`${dia}Fin` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
             {/* BOTÓN GUARDAR */}
             <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
               Guardar
