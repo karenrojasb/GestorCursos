@@ -341,12 +341,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       
 
       
-       {cursoEditar ? (
-        <CursoEditarModalProps
-        curso={cursoEditar} 
-        onClose={handleCerrarEditor}
-        onSave={handleGuardarEdicion}/>
-      ) : null}
+       
      </div>
    );
  }
