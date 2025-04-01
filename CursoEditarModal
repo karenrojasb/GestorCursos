@@ -84,7 +84,7 @@ export default function CursoEditarModal({ curso, onClose, onSave }: CursoEditar
 
     setEditandoCurso((prev) => ({
       ...prev,
-      [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
+      [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value || "", // Si value es null o undefined, usa ""
     }));
   };
 
@@ -105,7 +105,7 @@ export default function CursoEditarModal({ curso, onClose, onSave }: CursoEditar
       }
 
       setMensajeExito("¡Curso actualizado con éxito!");
-      onSave({ ...editandoCurso }); // Asegura que el curso actualizado se propaga correctamente
+      onSave({ ...editandoCurso });
       setTimeout(() => {
         setMensajeExito("");
         onClose();
@@ -172,7 +172,7 @@ export default function CursoEditarModal({ curso, onClose, onSave }: CursoEditar
                   <input
                     type="text"
                     name={key}
-                    value={editandoCurso[key as keyof Curso]}
+                    value={editandoCurso[key as keyof Curso] || ""} // Si es null o undefined, usa ""
                     onChange={handleChange}
                     className="border p-2 w-full rounded"
                   />
