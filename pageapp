@@ -1,3 +1,144 @@
+        import { useEffect, useState } from "react";
+
+interface Curso {
+  id: number;
+  NombreCurso: string;
+  Valor: number;
+  Horas: number;
+  CupoMax: number;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  IdTipoCurso: number;
+}
+
+interface CursoEditarModalProps {
+  courseId: number | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: () => void;
+}
+
+interface Opcion {
+  id: number;
+  Especificacion: string;
+  Tipo: number;
+}
+
+export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }: CursoEditarModalProps) {
+  const [formData, setFormData] = useState<Curso | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
+
+  useEffect(() => {
+    if (!courseId || !isOpen) return; // No ejecutar si no hay ID o el modal está cerrado
+
+    setLoading(true);
+    setError(null);
+
+    console.log("Cargando curso con ID:", courseId);
+
+    fetch(`http://localhost:8090/api/cursos/${courseId}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error al cargar el curso");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Datos del curso recibidos:", data);
+        if (data) {
+          setFormData(data);
+        } else {
+          throw new Error("Datos del curso vacíos");
+        }
+      })
+      .catch((err) => {
+        setError(err.message || "No se pudo cargar el curso");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [courseId, isOpen]);
+
+  useEffect(() => {
+    async function fetchOpciones() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+        if (!response.ok) throw new Error("Error al obtener las opciones");
+
+        const data: Opcion[] = await response.json();
+
+        setOpcionesModalidad(data.filter((item) => item.Tipo === 3)); // Filtrar solo las opciones de modalidad
+      } catch (error) {
+        console.error("Error cargando las opciones:", error);
+      }
+    }
+
+    fetchOpciones();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData((prev) =>
+      prev ? {
+        ...prev,
+        [e.target.name]: e.target.type === "number" ? Number(e.target.value) : e.target.value
+      } : prev
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData) return;
+
+    try {
+      const res = await fetch(`http://localhost:8090/api/cursos/${courseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error("Error al actualizar el curso");
+
+      alert("Curso actualizado correctamente");
+      onUpdate();
+      onClose();
+    } catch (err) {
+      setError("No se pudo actualizar el curso");
+    }
+  };
+
+  if (!isOpen) return null; // No renderizar si el modal está cerrado
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p>{error}</p>;
+  if (!formData) return <p>No se encontró el curso</p>;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <h2>Editar Curso</h2>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Nombre:
+            <input type="text" name="NombreCurso" value={formData.NombreCurso} onChange={handleChange} required />
+          </label>
+
+          <label>
+            Valor:
+            <input type="number" name="Valor" value={formData.Valor} onChange={handleChange} required />
+          </label>
+
+          <label>
+            Horas:
+            <input type="number" name="Horas" value={formData.Horas} onChange={handleChange} required />
+          </label>
+
+          <label>
+            Cupo Máximo:
+            <input type="number" name="CupoMax" value={formData.CupoMax} onChange={handleChange} required />
+          </label>
+
           <label>
             Modalidad:
             <select name="Modalidad" value={formData.Modalidad} onChange={handleChange} required>
@@ -8,3 +149,98 @@
               ))}
             </select>
           </label>
+
+          <label>
+            Unidad:
+            <input type="number" name="Unidad" value={formData.Unidad} onChange={handleChange} required />
+          </label>
+
+          <label>
+            Profesor:
+            <input type="number" name="Profesor" value={formData.Profesor} onChange={handleChange} required />
+          </label>
+
+          <label>
+            Tipo de Curso:
+            <input type="number" name="IdTipoCurso" value={formData.IdTipoCurso} onChange={handleChange} required />
+          </label>
+
+          <div className="modal-actions">
+            <button type="submit">Actualizar</button>
+            <button type="button" onClick={onClose}>Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .modal {
+          background: white;
+          padding: 20px;
+          border-radius: 10px;
+          width: 400px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h2 {
+          margin-bottom: 15px;
+          text-align: center;
+        }
+
+        .modal label {
+          display: block;
+          margin-bottom: 10px;
+          font-weight: bold;
+        }
+
+        .modal input,
+        .modal select {
+          width: 100%;
+          padding: 8px;
+          margin-top: 5px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+        }
+
+        .modal-actions {
+          margin-top: 15px;
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .modal-actions button {
+          padding: 10px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 16px;
+        }
+
+        .modal-actions button[type="submit"] {
+          background-color: #28a745;
+          color: white;
+        }
+
+        .modal-actions button[type="button"] {
+          background-color: #dc3545;
+          color: white;
+        }
+
+        .modal-actions button:hover {
+          opacity: 0.8;
+        }
+      `}</style>
+    </div>
+  );
+}
