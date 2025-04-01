@@ -1,2 +1,10 @@
-Property 'isOpen' is missing in type '{ courseId: number; onClose: () => void; onUpdate: () => void; }' but required in type 'CursoEditarModalProps'.ts(2741)
-CursoEditarModal.tsx(17, 3): 'isOpen' is declared here.
+          <label>
+            Modalidad:
+            <select name="Modalidad" value={formData.Modalidad} onChange={handleChange} required>
+              {opcionesModalidad.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
+            </select>
+          </label>
