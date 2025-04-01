@@ -9,6 +9,7 @@ interface Curso {
   Modalidad: number;
   Unidad: number;
   Profesor: number;
+  SegundoPro: number;
   IdTipoCurso: number;
 }
 
@@ -18,6 +19,7 @@ interface CursoEditarModalProps {
   onClose: () => void;
   onUpdate: () => void;
 }
+
 interface Opcion {
   id: number;
   Especificacion: string;
@@ -29,6 +31,8 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
+  const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
+  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([]);
 
   useEffect(() => {
     if (!courseId || !isOpen) return; // No ejecutar si no hay ID o el modal está cerrado
@@ -61,24 +65,55 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
       });
   }, [courseId, isOpen]);
 
-    useEffect(() => {
-      async function fetchOpciones() {
-        try {
-          const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
-          if (!response.ok) throw new Error("Error al obtener las opciones");
-  
-          const data: Opcion[] = await response.json();
-  
-         
-          setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
-         
-        } catch (error) {
-          console.error("Error cargando las opciones:", error);
+  useEffect(() => {
+    async function fetchOpciones() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+        if (!response.ok) throw new Error("Error al obtener las opciones");
+
+        const data: Opcion[] = await response.json();
+
+        setOpcionesModalidad(data.filter((item) => item.Tipo === 3)); // Filtrar solo las opciones de modalidad
+      } catch (error) {
+        console.error("Error cargando las opciones:", error);
+      }
+    }
+
+    fetchOpciones();
+  }, []);
+
+
+  useEffect(()  => {
+    async function fetcUnidades() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/unidad")
+        if (!response.ok) throw new Error("Error al obtener las unidades");
+
+        const data = await response.json();
+        setUnidad(data);
+        } catch(error){
+          console.error("Error cargando lista de unidades:", error);
         }
       }
-  
-      fetchOpciones();
-    }, []);
+      fetcUnidades(); 
+  }, []);
+
+
+  useEffect(()  => {
+    async function fetcProfesores() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/profesores")
+        if (!response.ok) throw new Error("Error al obtener los profesores");
+
+        const data = await response.json();
+        setProfesores(data);
+        } catch(error){
+          console.error("Error cargando los profesores:", error);
+        }
+      }
+      fetcProfesores(); 
+  }, []);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) =>
@@ -143,22 +178,45 @@ export default function CursoEditarModal({ courseId, isOpen, onClose, onUpdate }
           <label>
             Modalidad:
             <select name="Modalidad" value={formData.Modalidad} onChange={handleChange} required>
-            {opcionesModalidad.map((opcion) => (
-                    <option key={opcion.id} value={opcion.id}>
-                      {opcion.Especificacion}
-                    </option>
-                    ))}
+              {opcionesModalidad.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.Especificacion}
+                </option>
+              ))}
             </select>
           </label>
 
           <label>
             Unidad:
-            <input type="number" name="Unidad" value={formData.Unidad} onChange={handleChange} required />
+            <select name="Unidad" value={formData.Unidad} onChange={handleChange} required>
+            {unidad.map((unidad) => (
+                    <option key={unidad.codigo} value={unidad.codigo}>
+                      {unidad.nombre}
+                    </option>
+              ))}
+            </select>
           </label>
 
           <label>
             Profesor:
-            <input type="number" name="Profesor" value={formData.Profesor} onChange={handleChange} required />
+            <select name="Profesor" value={formData.Profesor} onChange={handleChange} required >
+            {profesores.map((profesor) => (
+                    <option key={profesor.id_emp} value={profesor.id_emp}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
+                  </select>
+          </label>
+
+          <label>
+            Segundo Profesor:
+            <select name="SegundoPro" value={formData.SegundoPro} onChange={handleChange} required >
+            {profesores.map((profesor) => (
+                    <option key={profesor.id_emp} value={profesor.id_emp}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
+                  </select>
           </label>
 
           <label>
