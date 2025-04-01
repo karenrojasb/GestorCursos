@@ -3,36 +3,9 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 
 interface CursoEditarModalProps {
-  curso: Curso;
+  cursoEditado: any;
   onClose: () => void;
   onSave: (data: any) => void;
-  cursoEditado: any;
-}
-
-interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: number;
-  Lugar: string;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
-}
-
-interface Opcion {
-  id: number;
-  Especificacion: string;
-  Tipo: number;
 }
 
 export default function CursoEditarModal({ onClose, onSave, cursoEditado }: CursoEditarModalProps) {
@@ -65,52 +38,19 @@ export default function CursoEditarModal({ onClose, onSave, cursoEditado }: Curs
     IdTipoCurso: "Tipo de curso",
   };
 
-  const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string }[]>([]);
-  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string }[]>([]);
-  const [unidad, setUnidad] = useState<{ codigo: number; nombre: string }[]>([]);
-
   useEffect(() => {
     if (cursoEditado) {
-      setCurso((prevCurso) => ({
-        ...prevCurso,
-        ...cursoEditado,
-      }));
+      setCurso(cursoEditado);
     }
   }, [cursoEditado]);
 
-  useEffect(() => {
-    async function fetchData(url: string, setData: Function) {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Error al obtener los datos de ${url}`);
-        const data = await response.json();
-        setData(data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    fetchData("http://localhost:8090/api/cursos/periodos", setOpcionesPeriodos);
-    fetchData("http://localhost:8090/api/cursos/unidad", setUnidad);
-    fetchData("http://localhost:8090/api/cursos/profesores", setProfesores);
-  }, []);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    const numericFields = ["Valor", "Publico", "Horas", "CupoMax", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"];
 
-    const numericFields = [
-      "Valor",
-      "Publico",
-      "Horas",
-      "CupoMax",
-      "Modalidad",
-      "Unidad",
-      "Profesor",
-      "IdTipoCurso",
-    ];
-
-    setCurso((prev) => ({
-      ...prev,
+    setCurso((cursoAnterior) => ({
+      ...cursoAnterior,
       [name]: numericFields.includes(name) ? (value === "" ? "" : Number(value)) : value,
     }));
   };
@@ -121,13 +61,9 @@ export default function CursoEditarModal({ onClose, onSave, cursoEditado }: Curs
     const cursoData = Object.keys(curso).reduce((acc, key) => {
       const value = curso[key as keyof typeof curso];
 
-      if (value !== "") {
-        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"].includes(key)
-          ? Number(value) || null
-          : value;
-      } else if (["SegundoPro", "Proexterno", "Descripcion"].includes(key)) {
-        acc[key] = null;
-      }
+      acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"].includes(key)
+        ? Number(value) || null
+        : value || null;
 
       return acc;
     }, {} as Record<string, any>);
@@ -137,7 +73,7 @@ export default function CursoEditarModal({ onClose, onSave, cursoEditado }: Curs
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         <motion.div
           className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto"
           initial={{ opacity: 0 }}
@@ -161,13 +97,7 @@ export default function CursoEditarModal({ onClose, onSave, cursoEditado }: Curs
                   </label>
 
                   <input
-                    type={
-                      ["Valor", "Horas", "CupoMax", "Publico", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"].includes(
-                        key
-                      )
-                        ? "number"
-                        : "text"
-                    }
+                    type={["Valor", "Horas", "CupoMax", "Publico", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"].includes(key) ? "number" : "text"}
                     name={key}
                     value={curso[key as keyof typeof curso] || ""}
                     onChange={handleChange}
@@ -175,42 +105,6 @@ export default function CursoEditarModal({ onClose, onSave, cursoEditado }: Curs
                   />
                 </div>
               ))}
-
-            <h3 className="text-lg font-semibold mt-4">Horarios</h3>
-            <table className="w-full border-collapse border border-gray-300 text-center">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="border border-gray-300 px-2 py-1">Día</th>
-                  <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
-                  <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
-                  <tr key={dia}>
-                    <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
-                    <td className="border border-gray-300 px-2 py-1">
-                      <input
-                        type="time"
-                        name={`${dia}Ini`}
-                        value={curso[`${dia}Ini` as keyof typeof curso] || ""}
-                        onChange={handleChange}
-                        className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1">
-                      <input
-                        type="time"
-                        name={`${dia}Fin`}
-                        value={curso[`${dia}Fin` as keyof typeof curso] || ""}
-                        onChange={handleChange}
-                        className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
 
             <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
               Guardar
