@@ -1,7 +1,7 @@
 "use client";
 import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-import CursoEditarModalProps from "../components/CursoEditarModal"
+import CursoEditarModal from "../components/CursoEditarModal"
 
 
 
@@ -341,7 +341,12 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       
 
       
-       
+       {cursoEditar && (
+        <CursoEditarModal
+        courseId={cursoEditar.id} 
+        onClose={handleCerrarEditor}
+        onUpdate={handleGuardarEdicion}/>
+      ) }
      </div>
    );
  }
