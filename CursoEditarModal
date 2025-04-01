@@ -1,4 +1,3 @@
-// CursoEditarModal.tsx
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -47,13 +46,11 @@ interface Opcion {
 interface CursoEditarModalProps {
   curso: Curso;
   onClose: () => void;
-  onSave: (curso : Curso) => void;
- 
+  onSave: (curso: Curso) => void;
 }
 
-export default function CursoEditarModal ({curso, onClose, onSave}: CursoEditarModalProps) {
-
-  const [editandoCurso, setEditandoCurso] = useState<Curso | null>(curso);
+export default function CursoEditarModal({ curso, onClose, onSave }: CursoEditarModalProps) {
+  const [editandoCurso, setEditandoCurso] = useState<Curso>({ ...curso });
   const [mensajeExito, setMensajeExito] = useState("");
   const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
   const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
@@ -82,24 +79,16 @@ export default function CursoEditarModal ({curso, onClose, onSave}: CursoEditarM
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    if (!editandoCurso) return;
     const { name, value } = e.target;
+    const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"];
 
-    setEditandoCurso((prev) => {
-      if (!prev) return null;
-
-      const camposNumericos = ["Valor", "Publico", "Horas", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso"];
-
-      return {
-        ...prev,
-        [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
-      };
-    });
+    setEditandoCurso((prev) => ({
+      ...prev,
+      [name]: camposNumericos.includes(name) ? parseInt(value) || 0 : value,
+    }));
   };
 
   const handleGuardarEdicion = async () => {
-    if (!editandoCurso) return;
-
     setIsLoading(true);
     try {
       const response = await fetch(`http://localhost:8090/api/cursos/${editandoCurso.id}`, {
@@ -111,12 +100,12 @@ export default function CursoEditarModal ({curso, onClose, onSave}: CursoEditarM
       if (!response.ok) {
         console.error("Error HTTP al actualizar:", response.status);
         const errorText = await response.text();
-        console.error("Respuesta del servidor:", errorText)
+        console.error("Respuesta del servidor:", errorText);
         return;
       }
 
       setMensajeExito("¡Curso actualizado con éxito!");
-      onSave(editandoCurso); // Actualiza el curso en el listado
+      onSave({ ...editandoCurso }); // Asegura que el curso actualizado se propaga correctamente
       setTimeout(() => {
         setMensajeExito("");
         onClose();
@@ -141,70 +130,67 @@ export default function CursoEditarModal ({curso, onClose, onSave}: CursoEditarM
           </div>
         )}
 
-        {editandoCurso && (
-          <form>
-            {Object.keys(editandoCurso).map((key) =>
-              key !== "id" ? (
-                <div key={key} className="mt-2">
-                  <label className="block text-sm font-bold">{key}</label>
+        <form>
+          {Object.keys(editandoCurso).map((key) =>
+            key !== "id" ? (
+              <div key={key} className="mt-2">
+                <label className="block text-sm font-bold">{key}</label>
 
-                  {key === "Publico" ? (
-                    <select name="Publico" value={editandoCurso.Publico} onChange={handleChange} className="border p-2 w-full rounded">
-                      {opcionesPublico.map((opcion) => (
-                        <option key={opcion.id} value={opcion.id}>
-                          {opcion.Especificacion}
-                        </option>
-                      ))}
-                    </select>
-                  ) : key === "Linea" ? (
-                    <select name="Linea" value={editandoCurso.Linea} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-                      {opcionesLinea.map((opcion) => (
-                        <option key={opcion.id} value={opcion.id}>
-                          {opcion.Especificacion}
-                        </option>
-                      ))}
-                    </select>
-                  ) : key === "Modalidad" ? (
-                    <select name="Modalidad" value={editandoCurso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-                      {opcionesModalidad.map((opcion) => (
-                        <option key={opcion.id} value={opcion.id}>
-                          {opcion.Especificacion}
-                        </option>
-                      ))}
-                    </select>
-                  ) : key === "Estado" ? (
-                    <select name="Estado" value={editandoCurso.Estado} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-                      {opcionesEstado.map((opcion) => (
-                        <option key={opcion.id} value={opcion.id}>
-                          {opcion.Especificacion}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      name={key}
-                      value={editandoCurso[key as keyof Curso]}
-                      onChange={handleChange}
-                      className="border p-2 w-full rounded"
-                    />
-                  )}
-                </div>
-              ) : null
-            )}
+                {key === "Publico" ? (
+                  <select name="Publico" value={editandoCurso.Publico} onChange={handleChange} className="border p-2 w-full rounded">
+                    {opcionesPublico.map((opcion) => (
+                      <option key={opcion.id} value={opcion.id}>
+                        {opcion.Especificacion}
+                      </option>
+                    ))}
+                  </select>
+                ) : key === "Linea" ? (
+                  <select name="Linea" value={editandoCurso.Linea} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                    {opcionesLinea.map((opcion) => (
+                      <option key={opcion.id} value={opcion.id}>
+                        {opcion.Especificacion}
+                      </option>
+                    ))}
+                  </select>
+                ) : key === "Modalidad" ? (
+                  <select name="Modalidad" value={editandoCurso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                    {opcionesModalidad.map((opcion) => (
+                      <option key={opcion.id} value={opcion.id}>
+                        {opcion.Especificacion}
+                      </option>
+                    ))}
+                  </select>
+                ) : key === "Estado" ? (
+                  <select name="Estado" value={editandoCurso.Estado} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                    {opcionesEstado.map((opcion) => (
+                      <option key={opcion.id} value={opcion.id}>
+                        {opcion.Especificacion}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    name={key}
+                    value={editandoCurso[key as keyof Curso]}
+                    onChange={handleChange}
+                    className="border p-2 w-full rounded"
+                  />
+                )}
+              </div>
+            ) : null
+          )}
 
-            <div className="mt-4 flex justify-end space-x-4">
-              <button type="button" className="px-4 py-2 bg-gray-500 text-white rounded" onClick={onClose}>
-                Cancelar
-              </button>
-              <button type="button" className="px-4 py-2 bg-[#990000] text-white rounded" onClick={handleGuardarEdicion}>
-                Guardar cambios
-              </button>
-            </div>
-          </form>
-        )}
+          <div className="mt-4 flex justify-end space-x-4">
+            <button type="button" className="px-4 py-2 bg-gray-500 text-white rounded" onClick={onClose}>
+              Cancelar
+            </button>
+            <button type="button" className="px-4 py-2 bg-[#990000] text-white rounded" onClick={handleGuardarEdicion} disabled={isLoading}>
+              {isLoading ? "Guardando..." : "Guardar cambios"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
-};
-
+}
