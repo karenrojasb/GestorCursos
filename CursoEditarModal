@@ -11,6 +11,7 @@ interface Curso {
   Profesor: number;
   SegundoPro: number;
   IdTipoCurso: number;
+  NombreProfesor?: string;
 }
 
 interface CursoEditarModalProps {
@@ -83,56 +84,60 @@ export default function CursoEditarModal({
   }, [courseId, isOpen]);
 
   // Cargar opciones de modalidad
+ 
+ 
   useEffect(() => {
     async function fetchOpciones() {
       try {
         const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
         if (!response.ok) throw new Error("Error al obtener las opciones");
-
+  
         const data: Opcion[] = await response.json();
-
-        setOpcionesModalidad(data.filter((item) => item.Tipo === 3)); // Filtrar solo las opciones de modalidad
+        console.log("Opciones de modalidad recibidas:", data);
+  
+        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
       } catch (error) {
         console.error("Error cargando las opciones:", error);
       }
     }
-
+  
     fetchOpciones();
   }, []);
-
-  // Cargar unidades
+  
   useEffect(() => {
     async function fetchUnidades() {
       try {
         const response = await fetch("http://localhost:8090/api/cursos/unidad");
         if (!response.ok) throw new Error("Error al obtener las unidades");
-
+  
         const data = await response.json();
+        console.log("Unidades recibidas:", data);
         setUnidad(data);
       } catch (error) {
         console.error("Error cargando lista de unidades:", error);
       }
     }
-
+  
     fetchUnidades();
   }, []);
-
-  // Cargar profesores
+  
   useEffect(() => {
     async function fetchProfesores() {
       try {
         const response = await fetch("http://localhost:8090/api/cursos/profesores");
         if (!response.ok) throw new Error("Error al obtener los profesores");
-
+  
         const data = await response.json();
+        console.log("Profesores recibidos:", data);
         setProfesores(data);
       } catch (error) {
         console.error("Error cargando los profesores:", error);
       }
     }
-
+  
     fetchProfesores();
   }, []);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) =>
@@ -204,48 +209,15 @@ export default function CursoEditarModal({
 
           <label>
             Modalidad:
-            <select name="Modalidad" value={formData.Modalidad} onChange={handleChange} required>
-              {opcionesModalidad.map((opcion) => (
-                <option key={opcion.id} value={opcion.id}>
-                  {opcion.Especificacion}
-                </option>
-              ))}
-            </select>
+            <input type="number" name="Modalidad" value={formData.Modalidad} onChange={handleChange} required />
           </label>
 
           <label>
             Unidad:
-            <select name="Unidad" value={formData.Unidad} onChange={handleChange} required>
-              {unidad.map((unidad) => (
-                <option key={unidad.codigo} value={unidad.codigo}>
-                  {unidad.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Profesor:
-            <select name="Profesor" value={formData.Profesor} onChange={handleChange} required>
-              {profesores.map((profesor) => (
-                <option key={profesor.id_emp} value={profesor.id_emp}>
-                  {profesor.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Segundo Profesor:
-            <select name="SegundoPro" value={formData.SegundoPro} onChange={handleChange} required>
-              {profesores.map((profesor) => (
-                <option key={profesor.id_emp} value={profesor.id_emp}>
-                  {profesor.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
-
+            <input type="number" name="CupoMax" value={formData.Unidad} onChange={handleChange} required />
+          </label>    
+          
+           
           <label>
             Tipo de Curso:
             <input
