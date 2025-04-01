@@ -1,51 +1,136 @@
-Error: A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component. More info: https://react.dev/link/controlled-components
-    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
-    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
-    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
-    at updateProperties (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:9350:82)
-    at commitUpdate (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:9953:9)
-    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
-    at commitHostUpdate (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:5973:13)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6504:100)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6418:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)
-    at recursivelyTraverseMutationEffects (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)
-    at commitMutationEffectsOnFiber (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6418:17)
+import { useState } from "react";
+import { Curso } from "@/types";
+
+interface EditarCursoProps {
+  curso: Curso;
+  onGuardar: (cursoEditado: Curso) => void;
+  onCancelar: () => void;
+}
+
+const EditarCurso: React.FC<EditarCursoProps> = ({ curso, onGuardar, onCancelar }) => {
+  const [editandoCurso, setEditandoCurso] = useState<Curso>({ ...curso });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditandoCurso((prevCurso) => ({
+      ...prevCurso,
+      [name]: value,
+    }));
+  };
+
+  const handleGuardar = () => {
+    onGuardar(editandoCurso);
+  };
+
+  return (
+    <div className="editar-curso">
+      <h2>Editar Curso</h2>
+      <form>
+        <label>
+          Nombre del Curso:
+          <input type="text" name="NombreCurso" value={editandoCurso.NombreCurso} onChange={handleChange} />
+        </label>
+        <label>
+          Valor:
+          <input type="number" name="Valor" value={editandoCurso.Valor} onChange={handleChange} />
+        </label>
+        <label>
+          Público:
+          <select name="Publico" value={editandoCurso.Publico} onChange={handleChange}>
+            <option value={1}>Sí</option>
+            <option value={0}>No</option>
+          </select>
+        </label>
+        <label>
+          Periodo:
+          <input type="text" name="Periodo" value={editandoCurso.Periodo} onChange={handleChange} />
+        </label>
+        <label>
+          Inicio:
+          <input type="date" name="Inicio" value={editandoCurso.Inicio} onChange={handleChange} />
+        </label>
+        <label>
+          Fin:
+          <input type="date" name="Fin" value={editandoCurso.Fin} onChange={handleChange} />
+        </label>
+        <label>
+          Horas:
+          <input type="number" name="Horas" value={editandoCurso.Horas} onChange={handleChange} />
+        </label>
+        <label>
+          Cupo Máximo:
+          <input type="number" name="CupoMax" value={editandoCurso.CupoMax} onChange={handleChange} />
+        </label>
+        <label>
+          Lugar:
+          <input type="text" name="Lugar" value={editandoCurso.Lugar} onChange={handleChange} />
+        </label>
+        <label>
+          Línea:
+          <input type="number" name="Linea" value={editandoCurso.Linea} onChange={handleChange} />
+        </label>
+        <label>
+          Estado:
+          <select name="Estado" value={editandoCurso.Estado} onChange={handleChange}>
+            <option value={1}>Activo</option>
+            <option value={0}>Inactivo</option>
+          </select>
+        </label>
+        <label>
+          Modalidad:
+          <input type="number" name="Modalidad" value={editandoCurso.Modalidad} onChange={handleChange} />
+        </label>
+        <label>
+          Unidad:
+          <input type="number" name="Unidad" value={editandoCurso.Unidad} onChange={handleChange} />
+        </label>
+        <label>
+          Profesor:
+          <input type="number" name="Profesor" value={editandoCurso.Profesor} onChange={handleChange} />
+        </label>
+        <label>
+          Segundo Profesor:
+          <input type="text" name="SegundoPro" value={editandoCurso.SegundoPro} onChange={handleChange} />
+        </label>
+        <label>
+          Profesor Externo:
+          <input type="text" name="Proexterno" value={editandoCurso.Proexterno} onChange={handleChange} />
+        </label>
+        <label>
+          Descripción:
+          <textarea name="Descripcion" value={editandoCurso.Descripcion} onChange={handleChange} />
+        </label>
+        <label>
+          Tipo de Curso:
+          <input type="number" name="IdTipoCurso" value={editandoCurso.IdTipoCurso} onChange={handleChange} />
+        </label>
+
+        {/* Horarios de los días de la semana */}
+        <h3>Horarios</h3>
+        {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"].map((dia) => (
+          <div key={dia}>
+            <label>
+              {dia} Inicio:
+              <input type="time" name={`${dia}Ini`} value={editandoCurso[`${dia}Ini` as keyof Curso] as string} onChange={handleChange} />
+            </label>
+            <label>
+              {dia} Fin:
+              <input type="time" name={`${dia}Fin`} value={editandoCurso[`${dia}Fin` as keyof Curso] as string} onChange={handleChange} />
+            </label>
+          </div>
+        ))}
+
+        <div className="botones">
+          <button type="button" onClick={handleGuardar}>
+            Guardar
+          </button>
+          <button type="button" onClick={onCancelar}>
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default EditarCurso;
