@@ -2,6 +2,8 @@
 import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 
+
+
 interface Curso {
   id: number;
   NombreCurso: string;
@@ -48,7 +50,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
- 
+  const [cursoEditar, setCursoEditar ] = useState <Curso | null>(null);
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
@@ -133,6 +135,20 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
 
 
+  const handleEditarCurso = (curso: Curso) => {
+    setCursoEditar(curso);
+  };
+
+  const handleCerrarEditor = ()  => {
+    setCursoEditar(null);
+  };
+
+  const handleGuardarEdicion = (cursoEditar: Curso) => {
+    console.log("Curso editado:", cursoEditar);
+  };
+
+
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -201,11 +217,12 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                    
                     {/* BOTÓN PARA EDITAR */}
                     <button 
-                   
+                   onClick={() => handleEditarCurso(curso)}
                     className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
                     title="Editar">
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
+                    
                     
                     {/* BOTÓN PARA ELIMINAR */}
                      <button 
@@ -298,6 +315,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       
     </tbody>
   </table>
+ 
 </div>            
                      
               
@@ -316,7 +334,12 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       
 
       
- 
+       {cursoEditar && (
+        <CursoEditarModal 
+        curso={cursoEditar} 
+        onClose={handleCerrarEditor}
+        onSave={handlGuardarEdicion}/>
+      )}
      </div>
    );
  }
