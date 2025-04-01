@@ -137,15 +137,21 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
 
   const handleEditarCurso = (curso: Curso) => {
-    setCursoEditar(curso);
+    setCursoEditar({...curso});
   };
 
   const handleCerrarEditor = ()  => {
     setCursoEditar(null);
   };
 
-  const handleGuardarEdicion = (cursoEditar: Curso) => {
-    console.log("Curso editado:", cursoEditar);
+  const handleGuardarEdicion = (cursoActualizado: Curso) => {
+    setCursos((prevCursos) =>
+    prevCursos.map((curso) => (curso.id === cursoActualizado.id ? cursoActualizado : curso))
+    );
+    setCursosFiltrados((prevCursos) =>
+    prevCursos.map((curso )=> (curso.id === cursoActualizado.id ? cursoActualizado : curso)
+  ));
+  setCursoEditar(null);
   };
 
 
