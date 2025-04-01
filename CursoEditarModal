@@ -1,17 +1,28 @@
 import { useEffect, useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface Curso {
   id: number;
   NombreCurso: string;
   Valor: number;
+  Publico: number;
+  Periodo: string;
+  Inicio: string;
+  Fin: string;
   Horas: number;
   CupoMax: number;
+  Lugar: string;
+  Linea: number;
+  Estado: number;
   Modalidad: number;
   Unidad: number;
   Profesor: number;
-  SegundoPro: number;
+  SegundoPro: string;
+  Proexterno: string;
+  Descripcion: string;
   IdTipoCurso: number;
-  NombreProfesor?: string;
+  
+  
 }
 
 interface CursoEditarModalProps {
@@ -37,13 +48,22 @@ export default function CursoEditarModal({
     id: 0,
     NombreCurso: "",
     Valor: 0,
+    Publico: 0,
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
     Horas: 0,
     CupoMax: 0,
-    Modalidad: 0,
+    Lugar: "",
+    Linea:0,
+    Estado: 0,
+    Modalidad:0,
     Unidad: 0,
     Profesor: 0,
-    SegundoPro: 0,
-    IdTipoCurso: 0,
+    SegundoPro:"",
+    Proexterno: "",
+    Descripcion: "",
+    IdTipoCurso:0,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,43 +103,9 @@ export default function CursoEditarModal({
       });
   }, [courseId, isOpen]);
 
-  // Cargar opciones de modalidad
- 
- 
-  useEffect(() => {
-    async function fetchOpciones() {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
-        if (!response.ok) throw new Error("Error al obtener las opciones");
+
   
-        const data: Opcion[] = await response.json();
-        console.log("Opciones de modalidad recibidas:", data);
-  
-        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
-      } catch (error) {
-        console.error("Error cargando las opciones:", error);
-      }
-    }
-  
-    fetchOpciones();
-  }, []);
-  
-  useEffect(() => {
-    async function fetchUnidades() {
-      try {
-        const response = await fetch("http://localhost:8090/api/cursos/unidad");
-        if (!response.ok) throw new Error("Error al obtener las unidades");
-  
-        const data = await response.json();
-        console.log("Unidades recibidas:", data);
-        setUnidad(data);
-      } catch (error) {
-        console.error("Error cargando lista de unidades:", error);
-      }
-    }
-  
-    fetchUnidades();
-  }, []);
+
   
   useEffect(() => {
     async function fetchProfesores() {
@@ -177,57 +163,215 @@ export default function CursoEditarModal({
   if (!formData) return <p>No se encontró el curso</p>;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="modal relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+      <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
         <h2>Editar Curso</h2>
+        {/* FORMULARIO DE EDITAR CURSO */}
         <form onSubmit={handleSubmit}>
+         
           <label>
             Nombre:
             <input
-              type="text"
-              name="NombreCurso"
-              value={formData.NombreCurso}
-              onChange={handleChange}
-              required
-            />
+  type="text"
+  name="NombreCurso"
+  value={formData.NombreCurso || ""}
+  onChange={handleChange}
+  required
+/>
           </label>
 
           <label>
             Valor:
-            <input type="number" name="Valor" value={formData.Valor} onChange={handleChange} required />
+            <input
+  type="number"
+  name="Valor"
+  value={formData.Valor ?? 0}
+  onChange={handleChange}
+  required
+/>
+          </label>
+
+          <label>
+            Público:
+            <input
+  type="number"
+  name="Publico"
+  value={formData.Publico || ""}
+  onChange={handleChange}
+  required
+/>
+          </label>
+
+          <label>
+            Periodo:
+            <input
+  type="text"
+  name="Periodo"
+  value={formData.Periodo || ""}
+  onChange={handleChange}
+  required
+/>
+          </label>
+
+          <label>
+            Fecha de incio:
+            <input
+  type="text"
+  name="Inicio"
+  value={formData.Inicio || ""}
+  onChange={handleChange}
+  required
+/>
+          </label>
+
+          <label>
+            Fecha fin:
+            <input
+  type="text"
+  name="Fin"
+  value={formData.Fin || ""}
+  onChange={handleChange}
+  required
+/>
           </label>
 
           <label>
             Horas:
-            <input type="number" name="Horas" value={formData.Horas} onChange={handleChange} required />
+            <input
+  type="number"
+  name="Horas"
+  value={formData.Horas ?? 0}
+  onChange={handleChange}
+  required
+/>
           </label>
 
           <label>
             Cupo Máximo:
-            <input type="number" name="CupoMax" value={formData.CupoMax} onChange={handleChange} required />
+            <input
+  type="number"
+  name="CupoMax"
+  value={formData.CupoMax ?? 0}
+  onChange={handleChange}
+  required
+/>
+          </label>
+
+          <label>
+            Lugar:
+            <input
+  type="text"
+  name="Lugar"
+  value={formData.Lugar || ""}
+  onChange={handleChange}
+  required
+/>
+          </label>
+
+          <label>
+            Linea:
+            <input
+  type="number"
+  name="Linea"
+  value={formData.Linea || ""}
+  onChange={handleChange}
+  required
+/>
+          </label>
+
+          <label>
+            Estado:
+            <input
+  type="number"
+  name="Estado"
+  value={formData.Estado || ""}
+  onChange={handleChange}
+  required
+/>
           </label>
 
           <label>
             Modalidad:
-            <input type="number" name="Modalidad" value={formData.Modalidad} onChange={handleChange} required />
+            <input
+  type="number"
+  name="Modalidad"
+  value={formData.Modalidad ?? 0}
+  onChange={handleChange}
+  required
+/>
           </label>
 
           <label>
             Unidad:
-            <input type="number" name="CupoMax" value={formData.Unidad} onChange={handleChange} required />
+            <input
+  type="number"
+  name="Unidad"
+  value={formData.Unidad ?? 0}
+  onChange={handleChange}
+  required
+/>
           </label>    
           
+          <label>
+            Profesor:
+            <input
+  type="number"
+  name="Profesor"
+  value={formData.Profesor ?? 0}
+  onChange={handleChange}
+  required
+/>
+          </label>  
            
+          <label>
+            Segundo Profesor:
+            <input
+  type="number"
+  name="SegundoPro"
+  value={formData.SegundoPro ?? 0}
+  onChange={handleChange}
+  required
+/>
+          </label> 
+
+          <label>
+            Profesor Externo:
+            <input
+  type="text"
+  name="Proexterno"
+  value={formData.Proexterno ?? 0}
+  onChange={handleChange}
+  required
+/>
+          </label>   
+
           <label>
             Tipo de Curso:
             <input
-              type="number"
-              name="IdTipoCurso"
-              value={formData.IdTipoCurso}
-              onChange={handleChange}
-              required
-            />
+  type="number"
+  name="IdTipoCurso"
+  value={formData.IdTipoCurso ?? 0}
+  onChange={handleChange}
+  required
+/>
           </label>
+
+          <label>
+            Descripción:
+            <input
+  type="text"
+  name="Descripcion"
+  value={formData.Descripcion ?? 0}
+  onChange={handleChange}
+  required
+/>
+          </label>  
 
           <div className="modal-actions">
             <button type="submit">Actualizar</button>
