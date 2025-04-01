@@ -211,13 +211,12 @@ async obtenerCursosParaUsuario(id_emp: string) {
 
   // OBTENER CURSO POR ID
   async getCourseId(id: number) {
-   const curso = await this.prisma.cursos.findMany({ where: {id}});
-   if (!curso) {
-    throw new NotFoundException(`El cursp con ID ${id} no fue encontrado`);
+    const curso = await this.prisma.cursos.findMany({ where: {id}});
+    if (!curso) {
+     throw new NotFoundException(`El cursp con ID ${id} no fue encontrado`);
+    }
+    return curso;
    }
-   return curso;
-  }
-  
 
   // ACTUALIZAR CURSO POR ID
   async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
@@ -234,18 +233,12 @@ async obtenerCursosParaUsuario(id_emp: string) {
     }
 }
 
-
   
 
   // ELIMINAR CURSO POR ID
   async deleteCourse(id: number) {
     return this.prisma.cursos.delete({ where: { id } });
   }
-
-
-  
-
-
 
 // OBTENER EL NOMBRE DEL PROFESOR
 async obtenerProfesores(){
@@ -281,6 +274,10 @@ async obtenerPeriodos(){
 
 
 
+
+
+
+
 import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
 import { CursosService } from './cursos.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
@@ -303,13 +300,6 @@ export class CursosController {
     return this.cursosService.getCourses();
   }
 
-
-    // OBTENER TODOS LOS CURSOS POR ID
-    @Get(':id')
-  async getCourseById(@Param('id', ParseIntPipe) id: number) {
-    return this.cursosService.getCourseId(id);
-  }
-
   // OBTENER ESPECIFICACIONES PARA EL DESPLEGABLE
   @Get('especificaciones')
   async getEspecificaciones() {
@@ -317,7 +307,8 @@ export class CursosController {
   }
 
  
-
+    // OBTENER TODOS LOS CURSOS POR ID
+ 
 
 
   // ACTUALIZAR CURSO POR ID
@@ -357,5 +348,14 @@ export class CursosController {
     return this.cursosService.obtenerPeriodos();
   }
 
+  @Get(':id')
+  async getCourseById(@Param('id', ParseIntPipe) id: number) {
+    return this.cursosService.getCourseId(id);
+  }
+
 }
+
+
+
+
 
