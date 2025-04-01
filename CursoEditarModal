@@ -51,7 +51,7 @@ interface Opcion {
 }
 
 export default function CursoEditarModal({  onClose, onSave, cursoEditado }: CursoEditarModalProps) {
-  const [curso, setCurso] = useState({
+  const [curso, setCurso] = useState( cursoEditado || {
     NombreCurso: "",
     Valor: "",
     Publico: "",
@@ -91,9 +91,11 @@ export default function CursoEditarModal({  onClose, onSave, cursoEditado }: Cur
 
   useEffect(() => {
     if (cursoEditado) {
-      setCurso(cursoEditado);
-    }
-  }, [cursoEditado]);
+      setCurso((prevCurso) => ({
+        ...prevCurso,
+        ...cursoEditado,
+      })); }
+    }, [cursoEditado]);
 
   useEffect(()  => {
     async function fetcPeriodos() {
