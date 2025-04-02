@@ -1,3 +1,26 @@
+<select
+  name="Publico"
+  value={formData.Publico ?? ""}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  onChange={(e) =>
+    setFormData((prev) => ({
+      ...prev,
+      Publico: Number(e.target.value), 
+    }))
+  }
+  required
+>
+  <option value="">Seleccione una opción</option>
+  {opcionesPublico.map((opcion) => (
+    <option key={opcion.id} value={opcion.id}>
+      {opcion.Especificacion}
+    </option>
+  ))}
+</select>
+
+
+
+
 useEffect(() => {
   if (!courseId || !isOpen) return;
 
@@ -12,9 +35,12 @@ useEffect(() => {
       return res.json();
     })
     .then((data) => {
-      console.log("Datos del curso recibidos:", data); // <-- Aquí verificas qué datos llegan
+      console.log("Datos del curso recibidos:", data);
       if (data) {
-        setFormData(data);
+        setFormData((prev) => ({
+          ...prev,
+          ...data,  // Actualiza formData con los datos del curso
+        }));
       } else {
         throw new Error("Datos del curso vacíos");
       }
