@@ -1,15 +1,8 @@
-useEffect(()  => {
-  async function fetcProfesores() {
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos/profesores");
-      if (!response.ok) throw new Error("Error al obtener los profesores");
-
-      const data = await response.json();
-      console.log("Lista de profesores obtenida:", data); // <-- Verifica los datos aquí
-      setProfesores(data);
-    } catch(error){
-      console.error("Error cargando los profesores:", error);
-    }
-  }
-  fetcProfesores(); 
-}, []);
+<label>
+  Profesor:
+  <input
+    type="text"
+    value={profesores.find((profesor) => profesor.id_emp === formData.Profesor)?.nombre || "No asignado"}
+    readOnly
+  />
+</label>
