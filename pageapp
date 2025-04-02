@@ -11,11 +11,20 @@
     }
     required
   >
-    <option value="">Selecciona una opción</option>
+    {/* Opción por defecto con el profesor actual */}
+    {profesores.length > 0 && formData.Profesor ? (
+      <option value={formData.Profesor}>
+        {profesores.find((p) => p.id_emp === formData.Profesor)?.nombre || "Cargando..."}
+      </option>
+    ) : (
+      <option value="">Cargando...</option>
+    )}
+
+    {/* Opciones de la lista de profesores */}
     {profesores.map((profesor) => (
-                    <option key={profesor.id_emp} value={profesor.id_emp}>
-                      {profesor.nombre}
-                    </option>
-                  ))}
+      <option key={profesor.id_emp} value={profesor.id_emp}>
+        {profesor.nombre}
+      </option>
+    ))}
   </select>
-</label>  
+</label>
