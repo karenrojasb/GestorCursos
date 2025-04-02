@@ -74,7 +74,7 @@ export default function CursoEditarModal({
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
   const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
   const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
-  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([]);
+ 
 
   // Cargar datos del curso
   useEffect(() => {
@@ -161,21 +161,7 @@ export default function CursoEditarModal({
         fetcUnidades(); 
     }, []);
 
-    useEffect(()  => {
-      async function fetcProfesores() {
-        try {
-          const response = await fetch("http://localhost:8090/api/cursos/profesores")
-          if (!response.ok) throw new Error("Error al obtener los profesores");
-  
-          const data = await response.json();
-          setProfesores(data);
-          } catch(error){
-            console.error("Error cargando los profesores:", error);
-          }
-        }
-        fetcProfesores(); 
-    }, []);
-  
+   
   
 
 
@@ -439,26 +425,15 @@ export default function CursoEditarModal({
 </label>   
           
 <label>
-  Profesor:
-  <select
-    name="Profesor"
-    value={formData.Profesor}
-    onChange={(e) =>
-      setFormData((prev) => ({
-        ...prev,
-        Profesor: Number(e.target.value), 
-      }))
-    }
-    required
-  >
-    <option value="">Selecciona una opción</option>
-    {profesores.map((profesor) => (
-                    <option key={profesor.id_emp} value={profesor.id_emp}>
-                      {profesor.nombre}
-                    </option>
-                  ))}
-  </select>
-</label>  
+    Profesor:
+            <input
+  type="number"
+  name="Profesor"
+  value={formData.Profesor ?? 0}
+  onChange={handleChange}
+  required
+/>
+          </label> 
            
           <label>
             Segundo Profesor:
