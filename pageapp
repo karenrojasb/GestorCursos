@@ -2,25 +2,25 @@
   Profesor:
   <select
     name="Profesor"
-    value={formData.Profesor}
+    value={formData.Profesor} // Se asegura de que el select tenga el ID correcto
     onChange={(e) =>
       setFormData((prev) => ({
         ...prev,
-        Profesor: Number(e.target.value), 
+        Profesor: Number(e.target.value),
       }))
     }
     required
   >
-    {/* Opción por defecto con el profesor actual */}
-    {profesores.length > 0 && formData.Profesor ? (
+    {/* Mostrar el profesor actual como opción por defecto */}
+    {formData.Profesor && profesores.some((p) => p.id_emp === formData.Profesor) ? (
       <option value={formData.Profesor}>
-        {profesores.find((p) => p.id_emp === formData.Profesor)?.nombre || "Cargando..."}
+        {profesores.find((p) => p.id_emp === formData.Profesor)?.nombre}
       </option>
     ) : (
-      <option value="">Cargando...</option>
+      <option value="">Seleccione un profesor</option>
     )}
 
-    {/* Opciones de la lista de profesores */}
+    {/* Lista de profesores disponibles */}
     {profesores.map((profesor) => (
       <option key={profesor.id_emp} value={profesor.id_emp}>
         {profesor.nombre}
