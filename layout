@@ -23,7 +23,7 @@ export default function RootLayout({ children }: LayoutProps) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Recuperar id_emp del localStorage al iniciar la aplicación
+    // RECUPERAR ID_EMP DEL LOCALSTORAGE AL INICIAR LA APLICACIÓN
     const storedIdEmp = localStorage.getItem("id_emp");
     if (storedIdEmp) {
       console.log("ID de empleado recuperado:", storedIdEmp);
@@ -53,21 +53,21 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error(data.message || "El email no es correcto.");
       }
 
-      // Verificar si el usuario tiene un ID válido
+      // VERIFICA SI EL USUARIO TIENE UN ID VALIDO
       if (!data.id_emp) {
         throw new Error("No se encontró el documento del usuario.");
       }
 
-      // Verificar si el usuario tiene un rol permitido
+      // VERIFIVAR SI EL USUARIO TIENE UN ROL PERMITIDO
       const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
       if (!esUsuarioValido) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      // Guardar `id_emp` en localStorage
+      // GUARDAR ID_EMP EN LOCALSTORAGE
       localStorage.setItem("id_emp", data.id_emp);
 
-      // Guardar usuario en el estado
+      // GUARDAR USUARIO EN EL ESTADO
       setUsuario({
         nombre: data.nombre,
         publico: data.publico,
