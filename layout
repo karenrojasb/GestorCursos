@@ -1,5 +1,3 @@
-
-
 "use client";
 import { ReactNode, useState, useEffect } from "react";
 import Image from "next/image";
@@ -14,7 +12,7 @@ interface LayoutProps {
 interface Usuario {
   nombre: string;
   publico: number;
-  esAdmin: boolean; 
+  esAdmin: boolean;
 }
 
 export default function RootLayout({ children }: LayoutProps) {
@@ -22,15 +20,36 @@ export default function RootLayout({ children }: LayoutProps) {
   const [e_mail, setEmail] = useState("");
   const [error, setError] = useState("");
 
+  // Verificar si hay un usuario en localStorage al cargar la aplicación
   useEffect(() => {
-    // RECUPERAR ID_EMP DEL LOCALSTORAGE AL INICIAR LA APLICACIÓN
     const storedIdEmp = localStorage.getItem("id_emp");
+
     if (storedIdEmp) {
-      console.log("ID de empleado recuperado:", storedIdEmp);
+      const fetchUser = async () => {
+        try {
+          const response = await fetch(`http://localhost:8090/api/usuario/${storedIdEmp}`);
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error("No se pudo recuperar la sesión.");
+          }
+
+          setUsuario({
+            nombre: data.nombre,
+            publico: data.publico,
+            esAdmin: Boolean(data.esAdmin),
+          });
+        } catch (error) {
+          console.error("Error al recuperar usuario:", error);
+          localStorage.removeItem("id_emp"); // Elimina el ID si la sesión ya no es válida
+        }
+      };
+
+      fetchUser();
     }
   }, []);
 
-  // FUNCIÓN PARA INICIAR SESIÓN Y OBTENER DATOS DEL USUARIO
+  // Función para iniciar sesión
   const iniciarSesion = async () => {
     setError("");
 
@@ -53,21 +72,17 @@ export default function RootLayout({ children }: LayoutProps) {
         throw new Error(data.message || "El email no es correcto.");
       }
 
-      // VERIFICA SI EL USUARIO TIENE UN ID VALIDO
       if (!data.id_emp) {
         throw new Error("No se encontró el documento del usuario.");
       }
 
-      // VERIFIVAR SI EL USUARIO TIENE UN ROL PERMITIDO
       const esUsuarioValido = data.publico === 1 || data.publico === 2 || Boolean(data.esAdmin);
       if (!esUsuarioValido) {
         throw new Error("No tiene permisos para ingresar al sistema.");
       }
 
-      // GUARDAR ID_EMP EN LOCALSTORAGE
       localStorage.setItem("id_emp", data.id_emp);
 
-      // GUARDAR USUARIO EN EL ESTADO
       setUsuario({
         nombre: data.nombre,
         publico: data.publico,
@@ -78,13 +93,13 @@ export default function RootLayout({ children }: LayoutProps) {
     }
   };
 
-  // FUNCIÓN PARA CERRAR SESIÓN
+  // Función para cerrar sesión
   const cerrarSesion = () => {
     setUsuario(null);
-    localStorage.removeItem("id_emp"); 
+    localStorage.removeItem("id_emp");
   };
 
-  // RENDERIZA EL FORMULARIO DE LOGIN SI NO HAY USUARIO
+  // Renderiza el formulario de login si no hay usuario autenticado
   if (!usuario) {
     return (
       <html lang="es">
@@ -111,7 +126,7 @@ export default function RootLayout({ children }: LayoutProps) {
     );
   }
 
-  // SI EL USUARIO YA ESTÁ AUTENTICADO, MUESTRA LA INTERFAZ PRINCIPAL
+  // Si el usuario ya está autenticado, muestra la interfaz principal
   return (
     <html lang="es">
       <body className="bg-gray-100 flex flex-col min-h-screen">
@@ -142,23 +157,21 @@ export default function RootLayout({ children }: LayoutProps) {
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
-          {/* PASAMOS LOS ROLES AL COMPONENTE DE BOTONES */}
+          {/* Pasamos los roles al componente de botones */}
           <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
 
           {children}
         </main>
-        
-        <div className="ml-4 bg-blue-800 text-white rounded w-52 h-20 flex justify-center items-center "> 
+
+        <div className="ml-4 bg-blue-800 text-white rounded w-52 h-20 flex justify-center items-center">
           <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={200} height={60} />
-          </div>
+        </div>
 
         <footer className="bg-white items-center text-center py-4 shadow-inner w-full">
-        
           <div className="flex items-center justify-between px-6">
             <p className="text-gray-700 text-center">
               &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
             </p>
-           
           </div>
         </footer>
       </body>
