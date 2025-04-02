@@ -14,7 +14,6 @@
       onBlur={() => setEditandoProfesor(false)} // Si el usuario hace clic fuera, vuelve a mostrar el nombre
       autoFocus
     >
-      <option value="">Seleccione un profesor</option>
       {profesores.map((profesor) => (
         <option key={profesor.id_emp} value={profesor.id_emp}>
           {profesor.nombre}
@@ -22,8 +21,11 @@
       ))}
     </select>
   ) : (
-    <span onClick={() => setEditandoProfesor(true)} className="cursor-pointer border-b border-dashed border-gray-500 hover:text-blue-600">
-      {profesores.find((p) => p.id_emp === formData.Profesor)?.nombre || "Seleccionar profesor"}
+    <span 
+      onClick={() => setEditandoProfesor(true)} 
+      className="cursor-pointer border-b border-dashed border-gray-500 hover:text-blue-600"
+    >
+      {profesores.find((p) => p.id_emp === formData.Profesor)?.nombre || "Profesor no asignado"}
     </span>
   )}
 </label>
