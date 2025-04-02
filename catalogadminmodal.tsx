@@ -144,14 +144,16 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     setCursoEditar(null);
   };
 
-  const handleGuardarEdicion = (cursoActualizado: Curso) => {
-    setCursos((prevCursos) =>
-    prevCursos.map((curso) => (curso.id === cursoActualizado.id ? cursoActualizado : curso))
-    );
-    setCursosFiltrados((prevCursos) =>
-    prevCursos.map((curso )=> (curso.id === cursoActualizado.id ? cursoActualizado : curso)
-  ));
-  setCursoEditar(null);
+  const handleGuardarEdicion = () => {
+    if (cursoEditar) {
+      setCursos((prevCursos) =>
+        prevCursos.map((curso) => (curso.id === cursoEditar.id ? cursoEditar : curso))
+      );
+      setCursosFiltrados((prevCursos) =>
+        prevCursos.map((curso) => (curso.id === cursoEditar.id ? cursoEditar : curso))
+      );
+      setCursoEditar(null);
+    }
   };
 
 
@@ -345,7 +347,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         <CursoEditarModal
         courseId={cursoEditar.id} 
         onClose={handleCerrarEditor}
-        onUpdate={handleGuardarEdicion}/>
+        onUpdate={handleGuardarEdicion}
+        isOpen={true}/>
       ) }
      </div>
    );
