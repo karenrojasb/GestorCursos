@@ -22,6 +22,20 @@ async getCourseId(id: number) {
       Proexterno: string | null;
       Descripcion: string;
       IdTipoCurso: number;
+      LunesIni: string | null;
+      LunesFin: string | null;
+      MartesIni: string | null;
+      MartesFin: string | null;
+      MiercolesIni: string | null;
+      MiercolesFin: string | null;
+      JuevesIni: string | null;
+      JuevesFin: string | null;
+      ViernesIni: string | null;
+      ViernesFin: string | null;
+      SabadoIni: string | null;
+      SabadoFin: string | null;
+      DomingoIni: string | null;
+      DomingoFin: string | null;
     }>
   >`
     SELECT 
@@ -49,7 +63,21 @@ async getCourseId(id: number) {
       c.Proexterno,
       c.Descripcion,
       c.IdTipoCurso,
-      tc.Especificacion AS IdTipoCurso
+      tc.Especificacion AS IdTipoCurso,
+      c.LunesIni, 
+      c.LunesFin,
+      c.MartesIni, 
+      c.MartesFin,
+      c.MiercolesIni, 
+      c.MiercolesFin,
+      c.JuevesIni, 
+      c.JuevesFin,
+      c.ViernesIni, 
+      c.ViernesFin,
+      c.SabadoIni, 
+      c.SabadoFin,
+      c.DomingoIni, 
+      c.DomingoFin
     FROM gescur.cursos c
     LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
     LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
