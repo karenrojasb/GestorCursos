@@ -1,23 +1,23 @@
- <label className="block font-semibold text-gray-700">
-                {etiquetas[key as keyof typeof etiquetas] || key}</label>
-              { key === "Inicio" || key === "Fin" ? (
-                <input 
-                type="date"
-                name={key}
-                value={curso[key as keyof typeof curso]}
-                onChange={handleChange}
-                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-                />
-              ) : key === "Periodo" ? (
-                <select
-                name={key}
-                value={curso[key as keyof typeof curso]}
-                onChange={handleChange}
-                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-                  <option value="">Selecciona una opción</option>
-                  {opcionesPeriodos.map((opcion, index) => (
-                    <option key={index} value={opcion.periodo}>
-                      {opcion.periodo}
-                    </option>
-                  ))}
-                </select>
+<label className="block font-semibold text-gray-700">
+  Fecha de inicio:
+  <input
+    type="date"
+    name="Inicio"
+    value={formData.Inicio ? formData.Inicio.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
+
+<label className="block font-semibold text-gray-700">
+  Fecha fin:
+  <input
+    type="date"
+    name="Fin"
+    value={formData.Fin ? formData.Fin.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
