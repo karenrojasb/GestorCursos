@@ -74,6 +74,7 @@ export default function CursoEditarModal({
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
   const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
   const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
+ 
 
   // Cargar datos del curso
   useEffect(() => {
@@ -159,8 +160,8 @@ export default function CursoEditarModal({
         }
         fetcUnidades(); 
     }, []);
-  
-  
+
+   
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -265,17 +266,17 @@ export default function CursoEditarModal({
     onChange={(e) =>
       setFormData((prev) => ({
         ...prev,
-        Periodo: Number(e.target.value), 
+        Periodo: String(e.target.value), 
       }))
     }
     required
   >
     <option value="">Seleccione una opción</option>
     {opcionesPeriodos.map((opcion, index) => (
-                    <option key={index} value={opcion.periodo}>
-                      {opcion.periodo}
-                    </option>
-                  ))}
+      <option key={index} value={opcion.periodo}>
+        {opcion.periodo}
+      </option>
+    ))}
   </select>
 </label>
 
@@ -400,27 +401,38 @@ export default function CursoEditarModal({
   </select>
 </label>
 
-          <label>
-            Unidad:
-            <input
-  type="number"
-  name="Unidad"
-  value={formData.Unidad ?? 0}
-  onChange={handleChange}
-  required
-/>
-          </label>    
+<label>
+  Unidad:
+  <select
+    name="Unidad"
+    value={formData.Unidad}
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Unidad: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {unidad.map((unidad) => (
+                    <option key={unidad.codigo} value={unidad.codigo}>
+                      {unidad.nombre}
+                    </option>
+                  ))}
+  </select>
+</label>   
           
-          <label>
-            Profesor:
-            <input
+<label>
+  Profesor:
+  <input
   type="number"
   name="Profesor"
   value={formData.Profesor ?? 0}
   onChange={handleChange}
   required
 />
-          </label>  
+</label>  
            
           <label>
             Segundo Profesor:
