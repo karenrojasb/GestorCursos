@@ -1,30 +1,29 @@
 <label>
   Profesor:
-  <select
-    name="Profesor"
-    value={formData.Profesor} // Se asegura de que el select tenga el ID correcto
-    onChange={(e) =>
-      setFormData((prev) => ({
-        ...prev,
-        Profesor: Number(e.target.value),
-      }))
-    }
-    required
-  >
-    {/* Mostrar el profesor actual como opción por defecto */}
-    {formData.Profesor && profesores.some((p) => p.id_emp === formData.Profesor) ? (
-      <option value={formData.Profesor}>
-        {profesores.find((p) => p.id_emp === formData.Profesor)?.nombre}
-      </option>
-    ) : (
+  {editandoProfesor ? (
+    <select
+      name="Profesor"
+      value={formData.Profesor}
+      onChange={(e) => {
+        setFormData((prev) => ({
+          ...prev,
+          Profesor: Number(e.target.value),
+        }));
+        setEditandoProfesor(false);
+      }}
+      onBlur={() => setEditandoProfesor(false)} // Si el usuario hace clic fuera, vuelve a mostrar el nombre
+      autoFocus
+    >
       <option value="">Seleccione un profesor</option>
-    )}
-
-    {/* Lista de profesores disponibles */}
-    {profesores.map((profesor) => (
-      <option key={profesor.id_emp} value={profesor.id_emp}>
-        {profesor.nombre}
-      </option>
-    ))}
-  </select>
+      {profesores.map((profesor) => (
+        <option key={profesor.id_emp} value={profesor.id_emp}>
+          {profesor.nombre}
+        </option>
+      ))}
+    </select>
+  ) : (
+    <span onClick={() => setEditandoProfesor(true)} className="cursor-pointer border-b border-dashed border-gray-500 hover:text-blue-600">
+      {profesores.find((p) => p.id_emp === formData.Profesor)?.nombre || "Seleccionar profesor"}
+    </span>
+  )}
 </label>
