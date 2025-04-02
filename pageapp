@@ -5,3 +5,27 @@
     }
     return curso;
    }
+
+
+async getCourseId(id: number) {
+  const curso = await this.prisma.cursos.findUnique({
+    where: { id },
+    include: {
+      profesor: {
+        select: {
+          id_emp: true,
+          nombre: true, // Asegúrate de que "nombre" es el campo correcto en la tabla gescur.emp_nomina
+        },
+      },
+    },
+  });
+
+  if (!curso) {
+    throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
+  }
+
+  return {
+    ...curso,
+    Profesor: curso.profesor ? curso.profesor.nombre : "No asignado", // Reemplaza el ID con el nombre
+  };
+}
