@@ -1,6 +1,29 @@
 // OBTENER CURSO POR ID
 async getCourseId(id: number) {
-  const curso = await this.prisma.$queryRaw`
+  const curso = await this.prisma.$queryRaw<
+    Array<{
+      id: number;
+      NombreCurso: string;
+      Valor: number;
+      Publico: string;
+      Periodo: string;
+      Inicio: Date;
+      Fin: Date;
+      Horas: number;
+      CupoMax: number;
+      Lugar: string;
+      Linea: string;
+      Estado: string;
+      Modalidad: string;
+      Unidad: string;
+      Profesor: string;
+      NombreProfesor: string;
+      SegundoPro: string | null;
+      Proexterno: string | null;
+      Descripcion: string;
+      IdTipoCurso: number;
+    }>
+  >`
     SELECT 
       c.id,
       c.NombreCurso,
@@ -42,5 +65,6 @@ async getCourseId(id: number) {
   if (!curso || curso.length === 0) {
     throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
   }
-  return curso[0]; // Retornamos solo el primer resultado, ya que el ID es único.
+
+  return curso[0]; // Retornamos solo el primer resultado.
 }
