@@ -1,13 +1,38 @@
- ) : key === "Profesor" || key === "SegundoPro" ? (
-                <select
-                name={key}
-                value={curso[key as keyof typeof curso]}
-                onChange={handleChange}
-                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
-                  <option value="">Selecciona una opción</option>
-                  {profesores.map((profesor) => (
-                    <option key={profesor.id_emp} value={profesor.id_emp}>
-                      {profesor.nombre}
-                    </option>
-                  ))}
-                </select>
+const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string }[]>([]);
+
+useEffect(() => {
+  if (!isOpen) return;
+
+  async function fetchProfesores() {
+    try {
+      const response = await fetch("http://localhost:8090/api/profesores"); // Ajusta la URL según tu API
+      if (!response.ok) throw new Error("Error al obtener los profesores");
+
+      const data = await response.json();
+      setProfesores(data);
+    } catch (error) {
+      console.error("Error cargando profesores:", error);
+    }
+  }
+
+  fetchProfesores();
+}, [isOpen]);
+
+
+
+<label className="block font-semibold text-gray-700">
+  Profesor:
+  <select
+    name="Profesor"
+    value={formData.Profesor}
+    onChange={handleChange}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]"
+  >
+    <option value="">Seleccione un profesor</option>
+    {profesores.map((profesor) => (
+      <option key={profesor.id_emp} value={profesor.id_emp}>
+        {profesor.nombre}
+      </option>
+    ))}
+  </select>
+</label>
