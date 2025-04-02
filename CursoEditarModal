@@ -74,8 +74,7 @@ export default function CursoEditarModal({
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
   const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
   const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
-  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([]);
-  const [editandoProfesor, setEditandoProfesor]= useState(false);
+ 
 
   // Cargar datos del curso
   useEffect(() => {
@@ -162,21 +161,7 @@ export default function CursoEditarModal({
         fetcUnidades(); 
     }, []);
 
-    useEffect(()  => {
-      async function fetcProfesores() {
-        try {
-          const response = await fetch("http://localhost:8090/api/cursos/profesores");
-          if (!response.ok) throw new Error("Error al obtener los profesores");
-    
-          const data = await response.json();
-          console.log("Lista de profesores obtenida:", data); // <-- Verifica los datos aquí
-          setProfesores(data);
-        } catch(error){
-          console.error("Error cargando los profesores:", error);
-        }
-      }
-      fetcProfesores(); 
-    }, []);
+   
   
 
 
@@ -439,11 +424,8 @@ export default function CursoEditarModal({
   </select>
 </label>   
           
-
-
-
 <label>
-           Profesor:
+    Profesor:
             <input
   type="number"
   name="Profesor"
@@ -451,10 +433,7 @@ export default function CursoEditarModal({
   onChange={handleChange}
   required
 />
-          </label>
-
-
-
+          </label> 
            
           <label>
             Segundo Profesor:
