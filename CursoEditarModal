@@ -184,6 +184,7 @@ export default function CursoEditarModal({
           if (!response.ok) throw new Error("Error al obtener los profesores");
   
           const data = await response.json();
+          console.log("Profesores cargados:", data);
           setProfesores(data);
           } catch(error){
             console.error("Error cargando los profesores:", error);
@@ -246,7 +247,7 @@ export default function CursoEditarModal({
         >
           <XMarkIcon className="w-6 h-6" />
         </button>
-        <h2 className="text-2xl font-bold text-[#990000] text-center- mb-6 ">Editar Curso</h2>
+        <h2 className="text-3xl font-bold text-[#990000] text-center- mb-6 ">Editar Curso</h2>
         {/* FORMULARIO DE EDITAR CURSO */}
         <form onSubmit={handleSubmit} className="space-y-4">
          
@@ -468,7 +469,7 @@ export default function CursoEditarModal({
            <label className="block font-semibold text-gray-700">
   Modalidad:
   <select
-    name="Modalida"
+    name="Modalidad"
     value={formData.Modalidad}
     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
     onChange={(e) =>
