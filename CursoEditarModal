@@ -1,20 +1,3 @@
-Error: `value` prop on `select` should not be null. Consider using an empty string to clear the component or `undefined` for uncontrolled components.
-    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
-    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
-    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
-    at validatePropertiesInDevelopment (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8838:400)
-    at setInitialProperties (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:9114:9)
-    at completeWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7326:35)
-    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
-    at completeUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8020:23)
-    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7957:28)
-    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
-    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
-    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7565:211)
-    at performWorkOnRootViaSchedulerTask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8394:9)
-    at MessagePort.performWorkUntilDeadline (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:2353:64)
-
-
 import { useEffect, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
@@ -529,16 +512,27 @@ export default function CursoEditarModal({
 </label>   
           
 <label className="block font-semibold text-gray-700">
-             Profesor:
-            <input
-  type="number"
-  name="Profesor"
-  value={formData.Profesor ?? 0}
-  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-  onChange={handleChange}
-  required
-/>
-          </label> 
+ Profesor:
+  <select
+    name="Profesor"
+    value={formData.Profesor}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Profesor : Number(e.target.value), 
+      }))
+    }
+    required
+  >
+   <option value="">Selecciona una opción</option>
+                  {profesores.map((profesor) => (
+                    <option key={profesor.id_emp} value={profesor.id_emp}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
+  </select>
+</label>  
            
           <label className="block font-semibold text-gray-700">
  Segundo Profesor:
