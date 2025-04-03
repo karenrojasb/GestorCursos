@@ -132,7 +132,7 @@ export default function RootLayout({ children }: LayoutProps) {
           </div>
         </header>
 
-        <main className="flex flex-col items-center justify-start flex-grow px-6 py-2">
+        <main className="flex flex-col items-center justify-start flex-1 px-6 py-2">
           <motion.h1
             className="text-4xl font-bold text-[#990000] mb-6 text-center"
             initial={{ opacity: 0, y: -10 }}
@@ -143,12 +143,14 @@ export default function RootLayout({ children }: LayoutProps) {
           </motion.h1>
 
           {/* PASAMOS LOS ROLES AL COMPONENTE DE BOTONES */}
+
           <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
+
 
           {children}
         </main>
         
-        <div className="ml-4 bg-blue-800 text-white rounded w-52 h-20 flex justify-center items-center "> 
+        <div className="ml-4 bg-blue-800 text-white rounded w-48 h-20 flex justify-center items-center "> 
           <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={200} height={60} />
           </div>
 
