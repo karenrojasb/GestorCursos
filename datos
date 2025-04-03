@@ -1,49 +1,8 @@
-<input
-  type="text"
-  name="NombreCurso"
-  value={formData.NombreCurso || ""}
-  onChange={handleChange}
-  required
-/>
-<input
-  type="number"
-  name="Valor"
-  value={formData.Valor ?? 0}
-  onChange={handleChange}
-  required
-/>
-<input
-  type="number"
-  name="Horas"
-  value={formData.Horas ?? 0}
-  onChange={handleChange}
-  required
-/>
-<input
-  type="number"
-  name="CupoMax"
-  value={formData.CupoMax ?? 0}
-  onChange={handleChange}
-  required
-/>
-<input
-  type="number"
-  name="Modalidad"
-  value={formData.Modalidad ?? 0}
-  onChange={handleChange}
-  required
-/>
-<input
-  type="number"
-  name="Unidad"
-  value={formData.Unidad ?? 0}
-  onChange={handleChange}
-  required
-/>
-<input
-  type="number"
-  name="IdTipoCurso"
-  value={formData.IdTipoCurso ?? 0}
-  onChange={handleChange}
-  required
-/>
+useEffect(() => {
+  if (formData.Profesor && !profesores.some(p => p.id_emp === formData.Profesor)) {
+    setFormData((prev) => ({ ...prev, Profesor: "" }));
+  }
+  if (formData.SegundoPro && !profesores.some(p => p.id_emp === formData.SegundoPro)) {
+    setFormData((prev) => ({ ...prev, SegundoPro: "" }));
+  }
+}, [profesores, formData.Profesor, formData.SegundoPro]);
