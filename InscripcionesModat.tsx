@@ -169,21 +169,21 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
 
 
         {/* LISTA DE INSCRIPCIONES */}
-        <div className="w-full max-h-[600px] overflow-auto border border-gray-300 rounded-md shadow-sm">
+        <div className="w-full max-h-[600px] overflow-auto border border-white rounded-md shadow-sm">
         
           {isLoading ? (
              <div className="flex justify-center py-4">
-             <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+             <div className="w-8 h-8 border-4 border-white border-t-[#990000] rounded-full animate-spin"></div>
            </div>
           )
           : Object.entries(groupedInscripciones).length > 0 ? (
-            <table className="w-full border-collapse border border-gray-300">
-              <thead className="bg-[#990000] text-white">
+            <table className="w-full border-collapse border border-white">
+              <thead className="bg-[#990000] text-white border-gray-100">
                 <tr>
-                  <th className="border border-gray-300 p-3">ID Curso</th>
-                  <th className="border border-gray-300 p-3">Nombre del Curso</th>
-                  <th className="border border-gray-300 p-3">Fecha Registro</th>
-                  <th className="border border-gray-300 p-3">Acciones</th>
+                  <th className="border  p-3">ID Curso</th>
+                  <th className="border  p-3">Nombre del Curso</th>
+                  <th className="border  p-3">Fecha Registro</th>
+                  <th className="border  p-3">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -199,7 +199,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                           
                           <button
                             onClick={() => toggleExpand(Number(cursoId))}
-                            className="bg-[#990000] text-white px-3 py-1 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95"
+                            className="bg-[#990000] text-white px-3 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95"
                           >
                             {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
                           </button>
