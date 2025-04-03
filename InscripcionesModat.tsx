@@ -191,7 +191,7 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                   const curso = inscripciones[0];
                   return (
                     <React.Fragment key={cursoId}>
-                      <tr className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
+                      <tr className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} text-center transition`}>
                         <td className="border border-gray-300 p-3">{cursoId}</td>
                         <td className="border border-gray-300 p-3">{curso.NombreCurso || curso.Cursos?.NombreCurso || curso.curso?.NombreCurso || "Desconocido"}</td>
                         <td className="border border-gray-300 p-3">{new Date(curso.fecreg).toLocaleDateString()}</td>
@@ -199,14 +199,14 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                           
                           <button
                             onClick={() => toggleExpand(Number(cursoId))}
-                            className="bg-[#990000] text-white px-3 py-1 rounded-md hover:bg-red-700 transition"
+                            className="bg-[#990000] text-white px-3 py-1 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95"
                           >
                             {expandedCourses[Number(cursoId)] ? "Ver menos" : "Ver más"}
                           </button>
 
                           <button
                           onClick={() => handleDownloadExcelByCurso (Number(cursoId))}
-                          className="flex items-center gap-2 bg-green-600 text-white px-1 py-1 rounded-md hover:bg-green-700 transition">
+                          className="flex items-center gap-2 bg-green-600 text-white px-1 py-1 rounded-md hover:bg-green-700 transition hover:scale-110 active:scale-95">
                             <ArrowDownTrayIcon className="w-5 h-5"/>
                             Descargar
                           </button>
@@ -216,9 +216,9 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                       {expandedCourses[Number(cursoId)] && (
                         <tr>
                           <td colSpan={4}>
-                            <div className="p-4 bg-gray-50 border border-gray-300 rounded-md shadow-md mt-2">
+                            <div className="p-4 bg-white border border- rounded-md shadow-md mt-2">
                               <h3 className="text-lg font-semibold text-[#990000]">Inscritos:</h3>
-                              
+
                               <table className="w-full border-collapse border border-gray-500">
                                 <thead className="bg-[#990000] text-white">
                                   <tr >
@@ -230,9 +230,9 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
                                 <tbody>
                                   {inscripciones
                                   .filter((inscripciones) => Number(inscripciones.est) ===1)
-                                  .map((inscripciones) => (
+                                  .map((inscripciones, index) => (
                                     <tr key={inscripciones.id} className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} text-center transition`}>
-                                      <td className="border border-gray-300 p-1">{inscripciones.nombre}</td>
+                                      <td className="border border-gray-300 p-1">{inscripciones.nombre || "No disponible"}</td>
                                       <td className="border border-gray-300 p-1 ">{inscripciones.docInscr}</td>
                                       <td className="border border-gray-300 p-1">{inscripciones.fecreg}</td>
                                     </tr>
