@@ -18,7 +18,7 @@ interface Curso {
   Modalidad: number;
   Unidad: number;
   Profesor: number;
-  SegundoPro: string;
+  SegundoPro: number;
   Proexterno: string;
   Descripcion: string;
   IdTipoCurso: number;
@@ -74,7 +74,7 @@ export default function CursoEditarModal({
     Modalidad:0,
     Unidad: 0,
     Profesor: 0,
-    SegundoPro:"",
+    SegundoPro:0,
     Proexterno: "",
     Descripcion: "",
     IdTipoCurso:0,
@@ -532,7 +532,7 @@ export default function CursoEditarModal({
     onChange={(e) =>
       setFormData((prev) => ({
         ...prev,
-        SegundoPro : (e.target.value), 
+        SegundoPro : Number(e.target.value), 
       }))
     }
     required
