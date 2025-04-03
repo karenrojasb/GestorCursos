@@ -1,31 +1,26 @@
-  async getCourseId(id: number) {
-    const curso = await this.prisma.cursos.findUnique({ where: {id}});
-    if (!curso) {
-     throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
-    }
-    return curso;
-   }
+const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const texto = e.target.value.toLowerCase();
+  setBusqueda(texto);
 
+  const filtrados = inscripciones.filter((inscripcion) => {
+    const cursoNombre = inscripcion.Cursos?.NombreCurso || inscripcion.curso?.NombreCurso || inscripcion.NombreCurso || "";
+    const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
+    const idCurso = inscripcion.idCur?.toString() || inscripcion.Cursos?.id?.toString() || inscripcion.curso?.id?.toString() || "";
 
-async getCourseId(id: number) {
-  const curso = await this.prisma.cursos.findUnique({
-    where: { id },
-    include: {
-      profesor: {
-        select: {
-          id_emp: true,
-          nombre: true, // Asegúrate de que "nombre" es el campo correcto en la tabla gescur.emp_nomina
-        },
-      },
-    },
+    console.log("Buscando:", texto);
+    console.log("Nombre Curso:", cursoNombre);
+    console.log("ID Curso:", idCurso);
+    console.log("Fecha Registro:", fechaRegistro);
+    
+    return (
+      idCurso.includes(texto) ||
+      cursoNombre.toLowerCase().includes(texto) || // Se filtra por nombre del curso
+      fechaRegistro.includes(texto) ||
+      inscripcion.nombre.toLowerCase().includes(texto) ||
+      inscripcion.docInscr.includes(texto)
+    );
   });
 
-  if (!curso) {
-    throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
-  }
-
-  return {
-    ...curso,
-    Profesor: curso.profesor ? curso.profesor.nombre : "No asignado", // Reemplaza el ID con el nombre
-  };
-}
+  console.log("Filtrados:", filtrados);
+  setInscripcionesFiltradas(filtrados);
+};
