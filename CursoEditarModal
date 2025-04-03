@@ -36,6 +36,7 @@ interface Curso {
   SabadoFin?: string;
   DomingoIni?: string;
   DomingoFin?: string;
+  NombreProfesor?: string;
 }
 
 interface CursoEditarModalProps {
@@ -87,6 +88,8 @@ export default function CursoEditarModal({
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
   const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
   const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
+  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([]);
+  
  
 
   // Cargar datos del curso
@@ -174,8 +177,20 @@ export default function CursoEditarModal({
         fetcUnidades(); 
     }, []);
 
-   
+    useEffect(()  => {
+      async function fetcProfesores() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/profesores")
+          if (!response.ok) throw new Error("Error al obtener los profesores");
   
+          const data = await response.json();
+          setProfesores(data);
+          } catch(error){
+            console.error("Error cargando los profesores:", error);
+          }
+        }
+        fetcProfesores(); 
+    }, []);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -217,7 +232,7 @@ export default function CursoEditarModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className=" relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+      <div className=" relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
       <motion.div
         className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto"
         initial={{ opacity: 0}}
@@ -305,29 +320,31 @@ export default function CursoEditarModal({
   </select>
 </label>
 
-          <label className="block font-semibold text-gray-700">
-            Fecha de incio:
-            <input
-  type="text"
-  name="Inicio"
-  value={formData.Inicio || ""}
-   className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-  onChange={handleChange}
-  required
-/>
-          </label>
+         
+<label className="block font-semibold text-gray-700">
+  Fecha de inicio:
+  <input
+    type="date"
+    name="Inicio"
+    value={formData.Inicio ? formData.Inicio.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
 
-          <label className="block font-semibold text-gray-700">
-            Fecha fin:
-            <input
-  type="text"
-  name="Fin"
-  value={formData.Fin || ""}
-  onChange={handleChange}
-  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-  required
-/>
-          </label>
+<label className="block font-semibold text-gray-700">
+  Fecha fin:
+  <input
+    type="date"
+    name="Fin"
+    value={formData.Fin ? formData.Fin.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
+
 
           <label className="block font-semibold text-gray-700">
             Horas:
@@ -494,8 +511,8 @@ export default function CursoEditarModal({
   </select>
 </label>   
           
-                <label className="block font-semibold text-gray-700">
-    Profesor:
+<label className="block font-semibold text-gray-700">
+             Profesor:
             <input
   type="number"
   name="Profesor"
@@ -506,17 +523,28 @@ export default function CursoEditarModal({
 />
           </label> 
            
-          <label className="block font-semibold text-gray-700">
-            Segundo Profesor:
-            <input
-  type="number"
-  name="SegundoPro"
-  value={formData.SegundoPro ?? 0}
-  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-  onChange={handleChange}
-  required
-/>
-          </label> 
+          <label>
+ Segundo Profesor:
+  <select
+    name="SegundoPro"
+    value={formData.SegundoPro}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        SegundoPro : Number(e.target.value), 
+      }))
+    }
+    required
+  >
+   <option value="">Selecciona una opción</option>
+                  {profesores.map((profesor) => (
+                    <option key={profesor.id_emp} value={profesor.id_emp}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
+  </select>
+</label> 
 
           <label className="block font-semibold text-gray-700">
             Profesor Externo:
@@ -565,15 +593,15 @@ export default function CursoEditarModal({
 />
           </label>  
 
-          <div className="modal-actions">
+          <div className="modal-actions p-3 flex justify-center gap-3">
             <button type="submit"
-             className="mt-6 h-14 w-36 bg-green-600 text-white py-2 rounded-lg hover:scale-105 transition">
+             className="mt-6 h-14 w-44 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg hover:scale-105 transition">
               Actualizar
               </button>
             <button 
             type="button" 
             onClick={onClose}
-            className="mt-4 h-14 w-36 bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
+            className="mt-6 h-14 w-44 bg-[#990000]  hover:bg-red-700 text-white py-2 rounded-lg hover:scale-105 transition">
               Cancelar
             </button>
           </div>
