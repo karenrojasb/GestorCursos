@@ -1,30 +1,45 @@
-useEffect(() => {
-  if (!courseId || !isOpen || profesores.length === 0) return; // Esperar a que profesores se cargue
+<label className="block font-semibold text-gray-700">
+  Profesor:
+  <select
+    name="Profesor"
+    value={formData.Profesor || ""} // Asegurar que no sea `undefined`
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Profesor: Number(e.target.value), // Convertir a número
+      }))
+    }
+    required
+  >
+    <option value="">Selecciona una opción</option>
+    {profesores.map((profesor) => (
+      <option key={profesor.id_emp} value={profesor.id_emp}>
+        {profesor.nombre}
+      </option>
+    ))}
+  </select>
+</label>
 
-  setLoading(true);
-  setError(null);
-
-  console.log("Cargando curso con ID:", courseId);
-
-  fetch(`http://localhost:8090/api/cursos/${courseId}`)
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error("Error al cargar el curso");
-      }
-      return res.json();
-    })
-    .then((data) => {
-      console.log("Datos del curso recibidos:", data);
-      if (data) {
-        setFormData(data);
-      } else {
-        throw new Error("Datos del curso vacíos");
-      }
-    })
-    .catch((err) => {
-      setError(err.message || "No se pudo cargar el curso");
-    })
-    .finally(() => {
-      setLoading(false);
-    });
-}, [courseId, isOpen, profesores]); // Agregar `profesores` como dependencia
+<label className="block font-semibold text-gray-700">
+  Segundo Profesor:
+  <select
+    name="SegundoPro"
+    value={formData.SegundoPro || ""} // Asegurar que no sea `undefined`
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        SegundoPro: Number(e.target.value), // Convertir a número
+      }))
+    }
+    required
+  >
+    <option value="">Selecciona una opción</option>
+    {profesores.map((profesor) => (
+      <option key={profesor.id_emp} value={profesor.id_emp}>
+        {profesor.nombre}
+      </option>
+    ))}
+  </select>
+</label>
