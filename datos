@@ -1,8 +1,5 @@
-useEffect(() => {
-  if (formData.Profesor && !profesores.some(p => p.id_emp === formData.Profesor)) {
-    setFormData((prev) => ({ ...prev, Profesor: "" }));
-  }
-  if (formData.SegundoPro && !profesores.some(p => p.id_emp === formData.SegundoPro)) {
-    setFormData((prev) => ({ ...prev, SegundoPro: "" }));
-  }
-}, [profesores, formData.Profesor, formData.SegundoPro]);
+Argument of type '(prev: Curso) => { Profesor: string; id: number; NombreCurso: string; Valor: number; Publico: number; Periodo: string; Inicio: string; Fin: string; Horas: number; CupoMax: number; Lugar: string; ... 22 more ...; NombreProfesor?: string | undefined; }' is not assignable to parameter of type 'SetStateAction<Curso>'.
+  Type '(prev: Curso) => { Profesor: string; id: number; NombreCurso: string; Valor: number; Publico: number; Periodo: string; Inicio: string; Fin: string; Horas: number; CupoMax: number; Lugar: string; ... 22 more ...; NombreProfesor?: string | undefined; }' is not assignable to type '(prevState: Curso) => Curso'.
+    Call signature return types '{ Profesor: string; id: number; NombreCurso: string; Valor: number; Publico: number; Periodo: string; Inicio: string; Fin: string; Horas: number; CupoMax: number; Lugar: string; Linea: number; Estado: number; ... 20 more ...; NombreProfesor?: string | undefined; }' and 'Curso' are incompatible.
+      The types of 'Profesor' are incompatible between these types.
+        Type 'string' is not assignable to type 'number'.ts(2345)
