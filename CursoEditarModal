@@ -488,7 +488,7 @@ export default function CursoEditarModal({
   </select>
 </label>
 
-<label>
+<label className="block font-semibold text-gray-700">
   Unidad:
   <select
     name="Unidad"
@@ -523,7 +523,7 @@ export default function CursoEditarModal({
 />
           </label> 
            
-          <label>
+          <label className="block font-semibold text-gray-700">
  Segundo Profesor:
   <select
     name="SegundoPro"
@@ -532,7 +532,7 @@ export default function CursoEditarModal({
     onChange={(e) =>
       setFormData((prev) => ({
         ...prev,
-        SegundoPro : Number(e.target.value), 
+        SegundoPro : (e.target.value), 
       }))
     }
     required
