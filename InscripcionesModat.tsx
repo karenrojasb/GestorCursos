@@ -14,7 +14,7 @@
         <React.Fragment key={cursoId}>
           <tr className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} text-center transition`}>
             <td className="border border-gray-300 p-3">{cursoId}</td>
-            <td className="border border-gray-300 p-3 truncate max-w-[200px]">
+            <td className="border border-gray-300 p-3 max-w-[250px] break-words">
               {curso.NombreCurso || curso.Cursos?.NombreCurso || curso.curso?.NombreCurso || "Desconocido"}
             </td>
             <td className="border border-gray-300 p-3">{new Date(curso.fecreg).toLocaleDateString()}</td>
@@ -34,4 +34,3 @@
                 Descargar
               </button>
             </td>
-          </tr>
