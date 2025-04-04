@@ -88,6 +88,7 @@ export default function CursoEditarModal({
   const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
   const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
   const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
+  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([])
   
  
 
@@ -176,6 +177,20 @@ export default function CursoEditarModal({
         fetcUnidades(); 
     }, []);
 
+    useEffect(()  => {
+      async function fetcProfesores() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/profesores")
+          if (!response.ok) throw new Error("Error al obtener las profesores");
+  
+          const data = await response.json();
+          setProfesores(data.filter((profesores: any) => profesores.publico ===1));
+          } catch(error){
+            console.error("Error cargando lista de unidades:", error);
+          }
+        }
+        fetcProfesores(); 
+    }, []);
 
 
 
@@ -232,7 +247,7 @@ export default function CursoEditarModal({
         >
           <XMarkIcon className="w-6 h-6" />
         </button>
-        <h2 className="text-2xl font-bold text-[#990000] text-center- mb-6 ">Editar Curso</h2>
+        <h2 className="text-3xl font-bold text-[#990000] text-center mb-6 ">Editar Curso</h2>
         {/* FORMULARIO DE EDITAR CURSO */}
         <form onSubmit={handleSubmit} className="space-y-4">
          
@@ -454,7 +469,7 @@ export default function CursoEditarModal({
            <label className="block font-semibold text-gray-700">
   Modalidad:
   <select
-    name="Modalida"
+    name="Modalidad"
     value={formData.Modalidad}
     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
     onChange={(e) =>
@@ -474,7 +489,7 @@ export default function CursoEditarModal({
   </select>
 </label>
 
-<label>
+<label className="block font-semibold text-gray-700">
   Unidad:
   <select
     name="Unidad"
@@ -495,19 +510,31 @@ export default function CursoEditarModal({
                     </option>
                   ))}
   </select>
-</label>   
-          
-<label className="block font-semibold text-gray-700">
-             Profesor:
-            <input
-  type="number"
-  name="Profesor"
-  value={formData.Profesor ?? 0}
+</label>  
+
+
+   <label>       
+Profesor:
+  <select
+  name="Unidad"
+  value={formData.Unidad}
   className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
-  onChange={handleChange}
+  onChange={(e) =>
+    setFormData((prev) => ({
+      ...prev,
+      Unidad: Number(e.target.value), 
+    }))
+  }
   required
-/>
-          </label> 
+>
+  <option value="">Seleccione una opción</option>
+  {unidad.map((unidad) => (
+                  <option key={unidad.codigo} value={unidad.codigo}>
+                    {unidad.nombre}
+                  </option>
+                ))}
+  </select>
+</label>
            
           <label className="block font-semibold text-gray-700">
             Segundo Profesor:
@@ -568,15 +595,15 @@ export default function CursoEditarModal({
 />
           </label>  
 
-          <div className="modal-actions">
+          <div className="flex modal-actions justify-center gap-4 ">
             <button type="submit"
-             className="mt-6 h-14 w-36 bg-green-600 text-white py-2 rounded-lg hover:scale-105 transition">
+             className="mt-6 h-14 w-64  bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg hover:scale-105 transition">
               Actualizar
               </button>
             <button 
             type="button" 
             onClick={onClose}
-            className="mt-4 h-14 w-36 bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
+            className="mt-6 h-14 w-64 bg-[#990000] hover:bg-red-700 text-white py-2 rounded-lg hover:scale-105 transition">
               Cancelar
             </button>
           </div>
