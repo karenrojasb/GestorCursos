@@ -1,21 +1,4 @@
- <td className="border p-2 text-left space-y-1 text-sm leading-tight">
-  {[curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
-    .filter((prof) => typeof prof === "string" && prof.trim() !== "")
-    .map((profesor, index) => (
-      <div key={index} className="flex items-center gap-2">
-        <UserIcon className="h-10 w-10 text-gray-700" />
-        <span >{profesor}</span>
-      </div>
-    ))}
-
-  {[curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
-    .every((prof) => !prof || (typeof prof === "string" && prof.trim() === "")) && (
-      <span className="text-gray-400 italic">Sin profesor asignado</span>
-  )}
-</td>
-
-
-<td className="border px-2 py-1 text-left align-top text-xs space-y-1">
+<td className="border px-2 py-1 text-left align-top text-xs space-y-2">
   {[curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
     .filter((prof) => typeof prof === "string" && prof.trim() !== "")
     .map((profesor, index) => (
@@ -30,5 +13,3 @@
       <span className="text-gray-400 italic">Sin profesor asignado</span>
   )}
 </td>
-
-     
