@@ -1,16 +1,23 @@
-<td className="border p-2 text-left">
-  {(() => {
-    const profesores = [curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
-      .filter((profesor) => typeof profesor === "string" && profesor.trim() !== "");
+<td className="border p-2 text-left space-y-1">
+  {curso.NombreProfesor?.trim() ? (
+    <div>
+      <span className="font-semibold">Principal:</span> {curso.NombreProfesor}
+    </div>
+  ) : null}
 
-    return profesores.length > 0 ? (
-      <div className="space-y-1">
-        {profesores.map((profesor, index) => (
-          <div key={index} className="bg-gray-100 px-2 py-1 rounded-md">{profesor}</div>
-        ))}
-      </div>
-    ) : (
-      <span className="text-gray-500">Sin profesor asignado</span>
-    );
-  })()}
+  {curso.SegundoPro?.toString().trim() && curso.SegundoPro !== 0 ? (
+    <div>
+      <span className="font-semibold">Segundo:</span> {curso.SegundoPro}
+    </div>
+  ) : null}
+
+  {curso.Proexterno?.trim() ? (
+    <div>
+      <span className="font-semibold">Externo:</span> {curso.Proexterno}
+    </div>
+  ) : null}
+
+  {!curso.NombreProfesor?.trim() && !curso.SegundoPro?.toString().trim() && !curso.Proexterno?.trim() && (
+    <span className="text-gray-500">Sin profesor asignado</span>
+  )}
 </td>
