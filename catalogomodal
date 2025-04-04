@@ -1,15 +1,15 @@
-<td className="border p-2 text-left space-y-1">
+<td className="border p-2 text-left space-y-1 text-sm leading-tight">
   {[curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
     .filter((prof) => typeof prof === "string" && prof.trim() !== "")
     .map((profesor, index) => (
-      <div key={index} className="flex items-center space-x-1 text-sm">
-        <UserIcon className="h-4 w-4 text-gray-600" />
-        <span>{profesor}</span>
+      <div key={index} className="flex items-center gap-2">
+        <UserIcon className="h-4 w-4 text-gray-700" />
+        <span className="truncate">{profesor}</span>
       </div>
     ))}
 
   {[curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
     .every((prof) => !prof || (typeof prof === "string" && prof.trim() === "")) && (
-      <span className="text-gray-500">Sin profesor asignado</span>
+      <span className="text-gray-400 italic">Sin profesor asignado</span>
   )}
 </td>
