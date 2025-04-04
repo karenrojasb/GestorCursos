@@ -1,16 +1,16 @@
-<td className="border p-2">
+<td className="border p-2 text-left">
   {(() => {
     const profesores = [curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
       .filter((profesor) => typeof profesor === "string" && profesor.trim() !== "");
 
     return profesores.length > 0 ? (
-      <ul>
+      <div className="space-y-1">
         {profesores.map((profesor, index) => (
-          <li key={index}>{profesor}</li>
+          <div key={index} className="bg-gray-100 px-2 py-1 rounded-md">{profesor}</div>
         ))}
-      </ul>
+      </div>
     ) : (
-      <span>Sin profesor asignado</span>
+      <span className="text-gray-500">Sin profesor asignado</span>
     );
   })()}
 </td>
