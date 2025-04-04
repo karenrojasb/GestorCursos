@@ -1,11 +1,15 @@
-const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  const { name, value } = e.target;
-  console.log(`Cambio detectado: ${name} = ${value}`);
-  
-  setFormData((prev) => ({
-    ...prev,
-    [name]: value ? Number(value) : null,  // Convertimos el valor a número si existe
-  }));
+useEffect(() => {
+  async function fetchProfesores() {
+    try {
+      const response = await fetch("http://localhost:8090/api/cursos/profesores");
+      if (!response.ok) throw new Error("Error al obtener los profesores");
 
-  console.log("Nuevo formData:", formData);
-};
+      const data = await response.json();
+      setProfesores(data);
+    } catch (error) {
+      console.error("Error cargando profesores:", error);
+    }
+  }
+
+  fetchProfesores();
+}, []);
