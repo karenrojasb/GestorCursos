@@ -1,12 +1,16 @@
 <td className="border p-2">
-  <ul>
-    {[curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
-      .filter((profesor) => profesor && profesor.trim() !== "")
-      .map((profesor, index) => (
-        <li key={index}>{profesor}</li>
-      ))}
-  </ul>
-  {![curso.NombreProfesor, curso.SegundoPro, curso.Proexterno].some((profesor) => profesor && profesor.trim() !== "") && (
-    <span>Sin profesor asignado</span>
-  )}
+  {(() => {
+    const profesores = [curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
+      .filter((profesor) => typeof profesor === "string" && profesor.trim() !== "");
+
+    return profesores.length > 0 ? (
+      <ul>
+        {profesores.map((profesor, index) => (
+          <li key={index}>{profesor}</li>
+        ))}
+      </ul>
+    ) : (
+      <span>Sin profesor asignado</span>
+    );
+  })()}
 </td>
