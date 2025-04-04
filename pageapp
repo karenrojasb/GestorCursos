@@ -1,13 +1,29 @@
-import { ViewEntity, ViewColumn } from 'typeorm';
+import { Module } from '@nestjs/common';
 
-@ViewEntity({ name: 'gescur.emp_nomina' })
-export class EmpNomina {
-  @ViewColumn()
-  id_emp: number;
+import { CursosModule } from './cursos/cursos.module';
+import { PrismaService } from './prisma/prisma.service';
+import { ListasModule } from './listas/listas.module';
+import { NotasModule } from './notas/notas.module';
+import { CursosController } from './cursos/cursos.controller';
+import { CursosService } from './cursos/cursos.service';
+import { RolesModule } from './roles/roles.module';
+import { RolUsuarioModule } from './rol_usuario/rol_usuario.module';
+import { UsuarioModule } from './usuario/usuario.module';
+import { InscripcionesModule } from './inscripciones/inscripciones.module';
 
-  @ViewColumn()
-  nombre: string;
 
-  @ViewColumn()
-  publico: number;
-}
+
+
+
+@Module({
+  imports: [ CursosModule, 
+    ListasModule, 
+    NotasModule, 
+    RolesModule, 
+    RolUsuarioModule, 
+    UsuarioModule, 
+    InscripcionesModule],
+  controllers: [CursosController],
+  providers: [CursosService, PrismaService],
+})
+export class AppModule {}
