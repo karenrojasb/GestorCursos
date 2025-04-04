@@ -1,60 +1,274 @@
-async getCourseId(id: number) {
-    const cursos = await this.prisma.$queryRaw`
-        SELECT 
-            c.id,
-            c.NombreCurso,
-            c.Valor,
-            lp.Especificacion AS Publico,
-            c.Periodo,
-            c.Inicio,
-            c.Fin,
-            c.Horas,
-            c.CupoMax,
-            c.Lugar,
-            c.LunesIni,                          
-            c.LunesFin,                         
-            c.MartesIni,                       
-            c.MartesFin,                        
-            c.MiercolesIni,                      
-            c.MiercolesFin,                      
-            c.JuevesIni,                         
-            c.JuevesFin,                         
-            c.ViernesIni,                        
-            c.ViernesFin,                        
-            c.SabadoIni,                         
-            c.SabadoFin,                         
-            c.DomingoIni,                        
-            c.DomingoFin,
-            c.Linea,
-            l.Especificacion AS Linea,
-            c.Estado,
-            est.Especificacion AS Estado,
-            c.Modalidad,
-            m.Especificacion AS Modalidad,
-            u.nombre AS Unidad,
-            c.Profesor,
-            e.nombre AS NombreProfesor,
-            c.SegundoPro,
-            sp.nombre AS SegundoPro,
-            c.Proexterno,
-            c.Descripcion,
-            c.IdTipoCurso,
-            tc.Especificacion AS TipoCurso
-        FROM gescur.cursos c
-        LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
-        LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
-        LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
-        LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
-        LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
-        LEFT JOIN gescur.emp_nomina e ON TRY_CAST(c.Profesor AS VARCHAR) = e.id_emp    
-        LEFT JOIN gescur.emp_nomina sp ON TRY_CAST(RTRIM(c.SegundoPro) AS VARCHAR) = sp.id_emp
-        LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
-        WHERE c.id = ${id}
-    `;
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { CreateCursoDto } from './dto/create-curso.dto';
 
-    if (!Array.isArray(cursos) || cursos.length === 0) {
-        throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
+@Injectable()
+export class CursosService {
+  constructor(private readonly prisma: PrismaService) {}
+
+//  OBTENER CURSOS
+  async getCourses() {
+    return this.prisma.$queryRaw`
+    SELECT 
+      c.id,
+      c.NombreCurso,
+      c.Valor,
+      lp.Especificacion AS Publico,
+      c.Periodo,
+      c.Inicio,
+      c.Fin,
+      c.Horas,
+      c.CupoMax,
+      c.Lugar,                          
+      c.LunesIni,                          
+      c.LunesFin,                         
+      c.MartesIni,                       
+      c.MartesFin,                        
+      c.MiercolesIni,                      
+      c.MiercolesFin,                      
+      c.JuevesIni,                         
+      c.JuevesFin,                         
+      c.ViernesIni,                        
+      c.ViernesFin,                        
+      c.SabadoIni,                         
+      c.SabadoFin,                         
+      c.DomingoIni,                        
+      c.DomingoFin,                        
+      c.Linea,
+      l.Especificacion AS Linea,    
+      c.Estado,
+      est.Especificacion AS Estado, 
+      c.Modalidad,
+      m.Especificacion AS Modalidad,
+      u.nombre AS Unidad,                            
+      c.Profesor,                          
+      c.SegundoPro,
+      sp.nombre AS SegundoPro,                        
+      c.Proexterno,                       
+      c.Descripcion,                       
+      c.IdTipoCurso,
+      tc.Especificacion AS IdTipoCurso,
+      e.nombre AS NombreProfesor
+    FROM gescur.cursos c
+    LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+    LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+    LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+    LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+    LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
+    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
+    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+    LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+
+    ;
+    `
+}
+
+
+async obtenerCursosParaUsuario(id_emp: string) {
+  try {
+      // OBTENER EL VALOR DE "PÚBLICO" DEL USUARIO
+      const usuario = await this.prisma.$queryRaw<{ publico: number }[]>`
+          SELECT publico FROM gescur.emp_nomina WHERE id_emp = CAST(${id_emp} AS VARCHAR)
+      `;
+
+      if (!usuario || usuario.length === 0) {
+          throw new Error('Usuario no encontrado en gescur.emp_nomina');
+      }
+
+      const publico = usuario[0].publico;
+
+      console.log(`Usuario ${id_emp} tiene publico: ${publico}`);
+
+      // OBTENER CURSOS SEGÚN EL PÚBLICO
+      let cursos;
+      if (publico === 3) {
+          cursos = await this.prisma.$queryRaw`
+              SELECT 
+                  c.id,
+                  c.NombreCurso,
+                  c.Valor,
+                  lp.Especificacion AS Publico,
+                  c.Periodo,
+                  c.Inicio,
+                  c.Fin,
+                  c.Horas,
+                  c.LunesIni,                          
+                  c.LunesFin,                         
+                  c.MartesIni,                       
+                  c.MartesFin,                        
+                  c.MiercolesIni,                      
+                  c.MiercolesFin,                      
+                  c.JuevesIni,                         
+                  c.JuevesFin,                         
+                  c.ViernesIni,                        
+                  c.ViernesFin,                        
+                  c.SabadoIni,                         
+                  c.SabadoFin,                         
+                  c.DomingoIni,                        
+                  c.DomingoFin,
+                  c.CupoMax,
+                  c.Lugar,
+                  c.Linea,
+                  l.Especificacion AS Linea,
+                  c.Estado,
+                  est.Especificacion AS Estado,
+                  c.Modalidad,
+                  m.Especificacion AS Modalidad,
+                  u.nombre AS Unidad,
+                  e.nombre AS NombreProfesor,
+                  sp.nombre AS SegundoPro
+              FROM gescur.cursos c
+              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+              ORDER BY c.id
+          `;
+      } else {
+          cursos = await this.prisma.$queryRaw`
+              SELECT 
+                  c.id,
+                  c.NombreCurso,
+                  c.Valor,
+                  lp.Especificacion AS Publico,
+                  c.Periodo,
+                  c.Inicio,
+                  c.Fin,
+                  c.Horas,
+                  c.LunesIni,                          
+                  c.LunesFin,                         
+                  c.MartesIni,                       
+                  c.MartesFin,                        
+                  c.MiercolesIni,                      
+                  c.MiercolesFin,                      
+                  c.JuevesIni,                         
+                  c.JuevesFin,                         
+                  c.ViernesIni,                        
+                  c.ViernesFin,                        
+                  c.SabadoIni,                         
+                  c.SabadoFin,                         
+                  c.DomingoIni,                        
+                  c.DomingoFin,    
+                  c.CupoMax,
+                  c.Lugar,
+                  c.Linea,
+                  l.Especificacion AS Linea,
+                  c.Estado,
+                  est.Especificacion AS Estado,
+                  c.Modalidad,
+                  m.Especificacion AS Modalidad,
+                  u.nombre AS Unidad,
+                  e.nombre AS NombreProfesor,
+                  sp.nombre AS SegundoPro
+              FROM gescur.cursos c
+              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+              WHERE c.publico = ${publico} OR c.publico = 3
+              ORDER BY c.id
+              
+          `;
+      }
+
+      console.log(`Cursos obtenidos para usuario ${id_emp}:`, cursos);
+
+      return cursos;
+  } catch (error) {
+      console.error('Error al obtener cursos:', error.message);
+      throw new Error('No se pudieron obtener los cursos.');
+  }
+}
+
+
+  // CREAR CURSO
+  async createCourses(data: CreateCursoDto) {
+    console.log("Data recibida:", data);
+    try {
+      return await this.prisma.cursos.create({ data });
+    } catch (error) {
+      console.error("Error al crear el curso en el backend", error);
+      throw new Error("Error al crear el curso");
     }
+  }
 
-    return cursos[0]; 
+
+  // OBTENER OPCIONES PARA EL DESPLEGABLE
+  async getEspecificaciones() {
+    try {
+      return await this.prisma.listas.findMany(); // Asegúrate de que 'listas' es la tabla correcta
+    } catch (error) {
+      console.error("Error al obtener las especificaciones:", error);
+      throw new Error("Error al obtener las especificaciones");
+    }
+  }
+
+  // OBTENER CURSO POR ID
+  async getCourseId(id: number) {
+    const curso = await this.prisma.cursos.findUnique({ where: {id}});
+    if (!curso) {
+     throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
+    }
+    return curso;
+   }
+
+  // ACTUALIZAR CURSO POR ID
+  async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
+    console.log('ID recibido:', id);
+    console.log('Datos recibidos:', data);
+    try {
+      return await this.prisma.cursos.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      console.error('Error al actualizar el curso:', error);
+      throw new Error('El curso no se pudo actualizar');
+    }
+}
+
+  
+
+  // ELIMINAR CURSO POR ID
+  async deleteCourse(id: number) {
+    return this.prisma.cursos.delete({ where: { id } });
+  }
+
+// OBTENER EL NOMBRE DEL PROFESOR
+async obtenerProfesores(){
+  const query = `SELECT id_emp, nombre FROM gescur.emp_nomina WHERE publico = 1`;
+  const profesores = await this.prisma.$queryRawUnsafe(query);
+  return profesores;
+}
+
+
+async obtenerUnidad () {
+  return this.prisma.$queryRaw<
+  Array<{ codigo: number; nombre: string}>
+  >(Prisma.sql`
+    SELECT codigo, nombre FROM gescur.unidad`);
+}
+
+
+async obtenerPeriodos(){
+  return this.prisma.$queryRaw<
+  {  periodo: string; fecha_ini: Date; fecha_fin: Date}[]
+  >`
+  SELECT  periodo, fecha_ini, fecha_fin
+  FROM gescur.periodos
+  WHERE YEAR(fecha_ini) = YEAR(GETDATE())
+  ORDER BY fecha_ini ASC
+  `;
+}
+
+
+
+
 }
