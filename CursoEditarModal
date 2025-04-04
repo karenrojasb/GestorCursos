@@ -1,5 +1,7 @@
 async getCourseId(id: number) {
-  const curso = await this.prisma.$queryRaw`
+  const curso = await this.prisma.$queryRaw<
+    Array<any>
+  >`
     SELECT 
       c.*, 
       e.id_emp AS ProfesorId,
@@ -13,5 +15,5 @@ async getCourseId(id: number) {
     throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
   }
 
-  return curso[0]; // Porque $queryRaw devuelve un arreglo
+  return curso[0];
 }
