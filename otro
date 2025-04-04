@@ -1,15 +1,22 @@
-useEffect(() => {
-  async function fetchProfesores() {
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos/profesores");
-      if (!response.ok) throw new Error("Error al obtener los profesores");
-
-      const data = await response.json();
-      setProfesores(data);
-    } catch (error) {
-      console.error("Error cargando profesores:", error);
+<label className="block font-semibold text-gray-700">
+  Profesor:
+  <select
+    name="Profesor"
+    value={formData.Profesor}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Profesor: Number(e.target.value),
+      }))
     }
-  }
-
-  fetchProfesores();
-}, []);
+    required
+  >
+    <option value="">Seleccione un profesor</option>
+    {profesores.map((prof) => (
+      <option key={prof.id_emp} value={prof.id_emp}>
+        {prof.nombre}
+      </option>
+    ))}
+  </select>
+</label>
