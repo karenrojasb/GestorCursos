@@ -1,74 +1,83 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+
+interface Curso {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  Profesor: number | null;
+}
 
 interface Profesor {
   id_emp: number;
   nombre: string;
 }
 
-interface CursoEditarModalProps {
-  curso: {
-    id: number;
-    Profesor: number | null;
-  };
+interface Props {
+  curso: Curso;
   onClose: () => void;
   onSave: () => void;
 }
 
-const CursoEditarModal: React.FC<CursoEditarModalProps> = ({ curso, onClose, onSave }) => {
+const CursoEditarModal: React.FC<Props> = ({ curso, onClose, onSave }) => {
+  const [nombre, setNombre] = useState(curso?.nombre || '');
+  const [descripcion, setDescripcion] = useState(curso?.descripcion || '');
+  const [profesorSeleccionado, setProfesorSeleccionado] = useState<number | null>(curso?.Profesor ?? null);
   const [profesores, setProfesores] = useState<Profesor[]>([]);
-  const [profesorSeleccionado, setProfesorSeleccionado] = useState<number | null>(curso.Profesor);
 
   useEffect(() => {
-    const cargarProfesores = async () => {
+    const obtenerProfesores = async () => {
       try {
-        const res = await fetch("http://localhost/api/cursos/profe");
-        const data = await res.json();
+        const response = await fetch('http://localhost/api/cursos/profe');
+        const data = await response.json();
         setProfesores(data);
       } catch (error) {
-        console.error("Error al cargar profesores:", error);
+        console.error('Error al obtener profesores:', error);
       }
     };
 
-    cargarProfesores();
+    obtenerProfesores();
   }, []);
 
   const handleGuardar = async () => {
     const dataToSend = {
+      nombre,
+      descripcion,
       Profesor: profesorSeleccionado,
     };
 
     try {
-      const res = await fetch(`http://localhost/api/cursos/${curso.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch(`http://localhost/api/cursos/${curso.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Error en el servidor:", errorText);
-        alert("No se pudo actualizar el curso");
-        return;
+      if (!response.ok) {
+        throw new Error('No se pudo actualizar el curso');
       }
 
       onSave();
       onClose();
     } catch (error) {
-      console.error("Error al guardar curso:", error);
-      alert("Ocurrió un error al actualizar el curso");
+      console.error('Error al guardar:', error);
     }
   };
 
   return (
     <div className="modal">
-      <h2>Editar Profesor del Curso</h2>
+      <h2>Editar Curso</h2>
+      <label>Nombre:</label>
+      <input value={nombre} onChange={(e) => setNombre(e.target.value)} />
 
-      <label>Profesor</label>
+      <label>Descripción:</label>
+      <input value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+
+      <label>Profesor:</label>
       <select
-        value={profesorSeleccionado ?? ""}
+        value={profesorSeleccionado ?? ''}
         onChange={(e) => setProfesorSeleccionado(Number(e.target.value))}
       >
-        <option value="">Selecciona un profesor</option>
+        <option value="">Seleccione un profesor</option>
         {profesores.map((prof) => (
           <option key={prof.id_emp} value={prof.id_emp}>
             {prof.nombre}
@@ -76,8 +85,10 @@ const CursoEditarModal: React.FC<CursoEditarModalProps> = ({ curso, onClose, onS
         ))}
       </select>
 
-      <button onClick={handleGuardar}>Guardar</button>
-      <button onClick={onClose}>Cancelar</button>
+      <div className="modal-actions">
+        <button onClick={handleGuardar}>Guardar</button>
+        <button onClick={onClose}>Cancelar</button>
+      </div>
     </div>
   );
 };
