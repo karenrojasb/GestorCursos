@@ -1,20 +1,27 @@
-async getCourseId(id: number) {
-  const curso = await this.prisma.$queryRaw<
-    Array<any>
-  >(Prisma.sql`
-    SELECT 
-      c.*,
-      e.nombre AS NombreProfesor,
-      sp.nombre AS NombreSegundoPro
-    FROM gescur.cursos c
-    LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
-    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-    WHERE c.id = ${id}
-  `);
-
-  if (!curso || curso.length === 0) {
-    throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
-  }
-
-  return curso[0];
-}
+<label className="block font-semibold text-gray-700">
+  Segundo Profesor:
+  <select
+    name="SegundoPro"
+    value={formData.SegundoPro}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        SegundoPro: Number(e.target.value),
+      }))
+    }
+  >
+    <option value={formData.SegundoPro}>
+      {formData.SegundoPro
+        ? profesores.find((p) => p.id_emp === formData.SegundoPro)?.nombre || "Seleccione una opción"
+        : "Seleccione una opción"}
+    </option>
+    {profesores
+      .filter((p) => p.id_emp !== formData.SegundoPro) // evitar que se repita el seleccionado arriba
+      .map((profesor) => (
+        <option key={profesor.id_emp} value={profesor.id_emp}>
+          {profesor.nombre}
+        </option>
+      ))}
+  </select>
+</label>
