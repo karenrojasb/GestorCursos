@@ -1,30 +1,33 @@
-// OBTENER NOMBRE DEL PROFESOR POR ID
-async obtenerNombreProfesor(id_emp: string): Promise<string | null> {
-  try {
-    const resultado = await this.prisma.$queryRaw<{ nombre: string }[]>`
-      SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${id_emp} AS VARCHAR)
-    `;
+async getInscripciones() {
+  const resultados = await this.prisma.$queryRawUnsafe<
+    Array<{
+      id: number;
+      idCur: number;
+      NombreCurso: string;
+      docInscr: string;
+      nombre: string | null;
+      est: boolean;
+      fecreg: Date;
+      calificacion: boolean;
+    }>
+  >(
+    `SELECT 
+      i.id, 
+      i.idCur, 
+      c.NombreCurso, 
+      i.docInscr, 
+      e.nombre, 
+      i.est, 
+      i.fecreg,
+      i.calificacion
+    FROM gescur.Inscripciones i
+    LEFT JOIN gescur.Cursos c ON i.idCur = c.id
+    LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp`
+  );
 
-    if (resultado.length > 0) {
-      return resultado[0].nombre;
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error('Error al obtener el nombre del profesor:', error);
-    throw new Error('No se pudo obtener el nombre del profesor');
-  }
-}
-
-
-
-
-// OBTENER NOMBRE DEL PROFESOR POR ID
-@Get('nombre-profesor/:id_emp')
-async obtenerNombreProfesor(@Param('id_emp') id_emp: string) {
-  const nombre = await this.cursosService.obtenerNombreProfesor(id_emp);
-  if (!nombre) {
-    throw new NotFoundException(`No se encontró un profesor con id_emp ${id_emp}`);
-  }
-  return { nombre };
+  // Mapeamos el booleano a texto
+  return resultados.map((inscripcion) => ({
+    ...inscripcion,
+    calificacionTexto: inscripcion.calificacion ? 'Aprobado' : 'Reprobado',
+  }));
 }
