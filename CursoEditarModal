@@ -93,9 +93,9 @@ export default function CursoEditarModal({
   
  
 
-  // Cargar datos del curso
+  // CARGAR DATOS DE CURSO
   useEffect(() => {
-    if (!courseId || !isOpen) return; // No ejecutar si no hay ID o el modal está cerrado
+    if (!courseId || !isOpen) return; 
 
     setLoading(true);
     setError(null);
@@ -112,7 +112,7 @@ export default function CursoEditarModal({
       .then((data) => {
         console.log("Datos del curso recibidos:", data);
         if (data) {
-          setFormData(data); // Actualiza formData con los datos del curso
+          setFormData(data);
         } else {
           throw new Error("Datos del curso vacíos");
         }
@@ -178,19 +178,22 @@ export default function CursoEditarModal({
         fetcUnidades(); 
     }, []);
 
-    useEffect(()  => {
-      async function fetcProfesores() {
+    useEffect(() => {
+      async function fetchProfesores() {
         try {
-          const response = await fetch("http://localhost:8090/api/cursos/profesores")
+          const response = await fetch("http://localhost:8090/api/cursos/profesores");
           if (!response.ok) throw new Error("Error al obtener los profesores");
-  
+    
           const data = await response.json();
-          setProfesores(data);
-          } catch(error){
-            console.error("Error cargando los profesores:", error);
-          }
+          const profesoresPublicos = data.filter((prof: any) => prof.publico === 1);
+          setProfesores(profesoresPublicos);
+          console.log("Profesores públicos:", profesoresPublicos);
+        } catch (error) {
+          console.error("Error cargando los profesores:", error);
         }
-        fetcProfesores(); 
+      }
+    
+      fetchProfesores();
     }, []);
 
 
@@ -231,7 +234,7 @@ export default function CursoEditarModal({
     }
   };
 
-  if (!isOpen) return null; // No renderizar si el modal está cerrado
+  if (!isOpen) return null; 
   if (loading) return <p>Cargando...</p>;
   if (error) return <p>{error}</p>;
   if (!formData) return <p>No se encontró el curso</p>;
@@ -519,50 +522,62 @@ export default function CursoEditarModal({
 
 
 <label className="block font-semibold text-gray-700">
-            Profesor:
-            <select
+  Profesor:
+  <select
     name="Profesor"
     value={formData.Profesor}
     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
     onChange={(e) =>
       setFormData((prev) => ({
         ...prev,
-       Profesor: Number(e.target.value), 
+        Profesor: Number(e.target.value), 
       }))
     }
-    
+    required
   >
-    <option value={formData.Profesor}>Seleccione una opción</option>
-    {profesores.map((profesores) => (
-                    <option key={profesores.id_emp} value={profesores.id_emp}>
-                      {profesores.nombre}
-                    </option>
-                  ))}
+    <option value={formData.Profesor}>
+      {formData.NombreProfesor || "Seleccione una opción"}
+    </option>
+    {profesores
+      .filter((p) => p.id_emp !== formData.Profesor)
+      .map((profesor) => (
+        <option key={profesor.id_emp} value={profesor.id_emp}>
+          {profesor.nombre}
+        </option>
+      ))}
   </select>
-          </label> 
+</label>
            
-          <label className="block font-semibold text-gray-700">
-            Segundo Profesor:
-            <select
+       
+<label className="block font-semibold text-gray-700">
+  Segundo Profesor:
+  <select
     name="SegundoPro"
     value={formData.SegundoPro}
     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
     onChange={(e) =>
       setFormData((prev) => ({
         ...prev,
-        SegundoPro: Number(e.target.value), 
+        SegundoPro: Number(e.target.value),
       }))
     }
-    
   >
-    <option value={0}>Seleccione una opción</option>
-    {profesores.map((profesores) => (
-                    <option key={profesores.id_emp} value={profesores.id_emp}>
-                      {profesores.nombre}
-                    </option>
-                  ))}
+    <option value={formData.SegundoPro}>
+      {formData.SegundoPro
+        ? profesores.find((p) => Number(p.id_emp) === Number(formData.SegundoPro))?.nombre || "Seleccione una opción"
+        : "Seleccione una opción"}
+    </option>
+    
+    {profesores
+      .filter((p) => Number(p.id_emp) !== Number(formData.SegundoPro)) // evitar duplicado
+      .map((profesor) => (
+        <option key={profesor.id_emp} value={profesor.id_emp}>
+          {profesor.nombre}
+        </option>
+      ))}
   </select>
-          </label> 
+</label>
+
 
           <label className="block font-semibold text-gray-700">
             Profesor Externo:
