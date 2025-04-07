@@ -1,122 +1,83 @@
-generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
+
+@Injectable()
+export class InscripcionesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async crearInscripcion(data: CreateInscripcionDto) {
+    // Buscar si ya existe una inscripción con el mismo curso e id de usuario
+    const inscripcionExistente = await this.prisma.inscripciones.findFirst({
+      where: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+      },
+    });
+
+    if (inscripcionExistente) {
+      // Si la inscripción ya existe, actualizar estado a `true`
+      return this.prisma.inscripciones.update({
+        where: { id: inscripcionExistente.id },
+        data: { est: true },
+      });
+    }
+
+    // Si no existe, crear nueva inscripción
+    return this.prisma.inscripciones.create({
+      data: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+        est: true, // Estado siempre inicia en `true`
+        fecreg: new Date(),
+      },
+    });
+  }
+
+  async getInscripciones() {
+    return this.prisma.$queryRawUnsafe<
+      Array<{
+        id: number;
+        idCur: number;
+        NombreCurso: string;
+        docInscr: string;
+        nombre: string | null;
+        est: boolean;
+        fecreg: Date;
+        calificacion: boolean
+      }>
+    >(
+      `SELECT 
+        i.id, 
+        i.idCur, 
+        c.NombreCurso, 
+        i.docInscr, 
+        e.nombre, 
+        i.est, 
+        i.fecreg
+
+      FROM gescur.Inscripciones i
+      LEFT JOIN gescur.Cursos c ON i.idCur = c.id
+      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp`
+    );
+  }
+
+  async obtenerPorId(id: number) {
+    const inscripcion = await this.prisma.inscripciones.findUnique({ where: { id } });
+    if (!inscripcion) throw new NotFoundException('Inscripción no encontrada');
+    return inscripcion;
+  }
+
+  async actualizarEstado(id: number, dto: UpdateInscripcionDto) {
+    return this.prisma.inscripciones.update({
+      where: { id },
+      data: { est: Boolean(dto.est) }, 
+    });
+  }
+
+  async eliminarInscripcion(id: number) {
+    return this.prisma.inscripciones.delete({ where: { id } });
+  }
 }
 
-datasource db {
-  provider = "sqlserver"
-  url      = env("DATABASE_URL")
-  schemas  = ["gescur"]
-}
-
-model Cursos {
-  id                                Int             @id(map: "PK__Cursos__3213E83FF1A9718F") @default(autoincrement())
-  NombreCurso                       String?         @db.VarChar(100)
-  Valor                             Int?
-  Publico                           Int?
-  Periodo                           String?         @db.VarChar(10)
-  Inicio                            String?         @db.VarChar(15)
-  Fin                               String?         @db.VarChar(15)
-  Horas                             Int?
-  CupoMax                           Int?
-  Lugar                             String?         @db.VarChar(50)
-  LunesIni                          String?         @db.VarChar(15)
-  LunesFin                          String?         @db.VarChar(15)
-  MartesIni                         String?         @db.VarChar(15)
-  MartesFin                         String?         @db.VarChar(15)
-  MiercolesIni                      String?         @db.VarChar(15)
-  MiercolesFin                      String?         @db.VarChar(15)
-  JuevesIni                         String?         @db.VarChar(15)
-  JuevesFin                         String?         @db.VarChar(15)
-  ViernesIni                        String?         @db.VarChar(15)
-  ViernesFin                        String?         @db.VarChar(15)
-  SabadoIni                         String?         @db.VarChar(15)
-  SabadoFin                         String?         @db.VarChar(15)
-  DomingoIni                        String?         @db.VarChar(15)
-  DomingoFin                        String?         @db.VarChar(15)
-  Linea                             Int?
-  Estado                            Int?
-  Modalidad                         Int?
-  Unidad                            Int?
-  Profesor                          Int?
-  SegundoPro                        Int?
-  Proexterno                        String?         @db.VarChar(50)
-  Descripcion                       String?         @db.VarChar(400)
-  IdTipoCurso                       Int?
-  Listas_Cursos_EstadoToListas      Listas?         @relation("Cursos_EstadoToListas", fields: [Estado], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Estado__59063A47")
-  Listas_Cursos_IdTipoCursoToListas Listas?         @relation("Cursos_IdTipoCursoToListas", fields: [IdTipoCurso], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__IdTipoCu__59FA5E80")
-  Listas_Cursos_LineaToListas       Listas?         @relation("Cursos_LineaToListas", fields: [Linea], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Linea__5AEE82B9")
-  Listas_Cursos_ModalidadToListas   Listas?         @relation("Cursos_ModalidadToListas", fields: [Modalidad], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Modalida__5BE2A6F2")
-  Listas_Cursos_PublicoToListas     Listas?         @relation("Cursos_PublicoToListas", fields: [Publico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Cursos__Publico__5CD6CB2B")
-  Inscripciones                     Inscripciones[]
-
-  @@schema("gescur")
-}
-
-model Inscripciones {
-  id           Int       @id(map: "PK__Inscripc__3213E83FF1560A49") @default(autoincrement())
-  idCur        Int?
-  docInscr     Int?
-  est          Boolean?
-  fecreg       DateTime? @db.Date
-  calificacion Boolean   @default(false, map: "DF__Inscripci__calif__0F624AF8")
-  Cursos       Cursos?   @relation(fields: [idCur], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Inscripci__idCur__76969D2E")
-  Notas        Notas[]
-
-  @@schema("gescur")
-}
-
-model Listas {
-  id                                Int      @id(map: "PK__Listas__3213E83F66C0FB4F") @default(autoincrement())
-  Especificacion                    String?  @db.VarChar(50)
-  Tipo                              Int?
-  EspecificacionTipo                String?  @db.VarChar(50)
-  DependenciaTipo                   Int?
-  Cursos_Cursos_EstadoToListas      Cursos[] @relation("Cursos_EstadoToListas")
-  Cursos_Cursos_IdTipoCursoToListas Cursos[] @relation("Cursos_IdTipoCursoToListas")
-  Cursos_Cursos_LineaToListas       Cursos[] @relation("Cursos_LineaToListas")
-  Cursos_Cursos_ModalidadToListas   Cursos[] @relation("Cursos_ModalidadToListas")
-  Cursos_Cursos_PublicoToListas     Cursos[] @relation("Cursos_PublicoToListas")
-  Notas                             Notas[]
-
-  @@schema("gescur")
-}
-
-model Notas {
-  id            Int            @id(map: "PK__Notas__3213E83FC9F3E9E8") @default(autoincrement())
-  idCurso       Int?
-  idInscrito    Int?
-  Nota          Int?
-  idRegistro    Int?
-  FechaRegistro DateTime?      @db.Date
-  Inscripciones Inscripciones? @relation(fields: [idCurso], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Notas__idCurso__7F2BE32F")
-  Listas        Listas?        @relation(fields: [Nota], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Notas__Nota__00200768")
-
-  @@schema("gescur")
-}
-
-model periodos {
-  strm        String  @id(map: "periodos_pk") @db.VarChar(4)
-  periodo     String? @db.VarChar(6)
-  descripcion String? @db.VarChar(30)
-  fecha_ini   String? @db.VarChar(10)
-  fecha_fin   String? @db.VarChar(10)
-
-  @@ignore
-  @@schema("gescur")
-}
-
-model rol_usuario {
-  id      Int     @id(map: "PK_rol_usuario") @default(autoincrement())
-  id_rol  Int?
-  usuario String? @db.VarChar(50)
-
-  @@schema("gescur")
-}
-
-model roles {
-  id          Int     @id(map: "PK_roles") @default(autoincrement())
-  descripcion String? @db.VarChar(50)
-
-  @@schema("gescur")
-}
