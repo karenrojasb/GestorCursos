@@ -1,5 +1,19 @@
-async obtenerProfesorPorId(id: number): Promise<{ id_emp: number; nombre: string } | null> {
-  const query = `SELECT id_emp, nombre FROM gescur.emp_nomina WHERE id_emp = ${id}`;
-  const profesor = await this.prisma.$queryRawUnsafe<{ id_emp: number; nombre: string }[]>(query);
-  return profesor[0] || null;
+async obtenerNombreProfesorPorCursoId(cursoId: number): Promise<string | null> {
+  // Paso 1: Obtener el número del profesor desde el curso
+  const curso = await this.prisma.curso.findUnique({
+    where: { id: cursoId },
+    select: { profesor: true }, // Aquí 'profesor' es el número (id_emp)
+  });
+
+  if (!curso || !curso.profesor) {
+    return null; // Curso no encontrado o sin profesor asignado
+  }
+
+  const idProfesor = curso.profesor;
+
+  // Paso 2: Buscar el nombre en la vista emp_nomina
+  const query = `SELECT nombre FROM gescur.emp_nomina WHERE id_emp = ${Number(idProfesor)}`;
+  const resultado = await this.prisma.$queryRawUnsafe<{ nombre: string }[]>(query);
+
+  return resultado.length > 0 ? resultado[0].nombre : null;
 }
