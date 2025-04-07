@@ -1,5 +1,24 @@
-Argument of type '(prev: Curso) => { Profesor: string; id: number; NombreCurso: string; Valor: number; Publico: number; Periodo: string; Inicio: string; Fin: string; Horas: number; CupoMax: number; Lugar: string; ... 22 more ...; NombreProfesor?: string | undefined; }' is not assignable to parameter of type 'SetStateAction<Curso>'.
-  Type '(prev: Curso) => { Profesor: string; id: number; NombreCurso: string; Valor: number; Publico: number; Periodo: string; Inicio: string; Fin: string; Horas: number; CupoMax: number; Lugar: string; ... 22 more ...; NombreProfesor?: string | undefined; }' is not assignable to type '(prevState: Curso) => Curso'.
-    Call signature return types '{ Profesor: string; id: number; NombreCurso: string; Valor: number; Publico: number; Periodo: string; Inicio: string; Fin: string; Horas: number; CupoMax: number; Lugar: string; Linea: number; Estado: number; ... 20 more ...; NombreProfesor?: string | undefined; }' and 'Curso' are incompatible.
-      The types of 'Profesor' are incompatible between these types.
-        Type 'string' is not assignable to type 'number'.ts(2345)
+<label className="block font-semibold text-gray-700">
+  Profesor:
+  <select
+    name="Profesor"
+    value={formData.Profesor}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Profesor: Number(e.target.value),
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione un profesor</option>
+    {profesores
+      .filter((prof) => prof.id_emp !== 0 && formData.Publico === 1) // si deseas filtrar solo públicos
+      .map((prof) => (
+        <option key={prof.id_emp} value={prof.id_emp}>
+          {prof.nombre}
+        </option>
+      ))}
+  </select>
+</label>
