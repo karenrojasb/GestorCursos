@@ -1,17 +1,38 @@
-useEffect(() => {
-  async function fetchProfesores() {
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos/profesores");
-      if (!response.ok) throw new Error("Error al obtener los profesores");
+[Nest] 260  - 07/04/2025, 9:20:05 a. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRaw()` invocation:
 
-      const data = await response.json();
-      const profesoresPublicos = data.filter((prof: any) => prof.publico === 1);
-      setProfesores(profesoresPublicos);
-      console.log("Profesores públicos:", profesoresPublicos);
-    } catch (error) {
-      console.error("Error cargando los profesores:", error);
-    }
+
+Raw query failed. Code: `102`. Message: `Incorrect syntax near '|'.`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async CursosService.obtenerProfesores (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.service.ts:248:22)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2010',
+  clientVersion: '6.3.1',
+  meta: {
+    code: '102',
+    message: "Incorrect syntax near '|'."
   }
+}
+[Nest] 260  - 07/04/2025, 9:20:15 a. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRaw()` invocation:
 
-  fetchProfesores();
-}, []);
+
+Raw query failed. Code: `102`. Message: `Incorrect syntax near '|'.`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async CursosService.obtenerProfesores (C:\Users\desarrollador5\Documents\gestor_cursos\src\cursos\cursos.service.ts:248:22)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2010',
+  clientVersion: '6.3.1',
+  meta: {
+    code: '102',
+    message: "Incorrect syntax near '|'."
+  }
+}
