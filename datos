@@ -1,33 +1,3 @@
-async getInscripciones() {
-  const resultados = await this.prisma.$queryRawUnsafe<
-    Array<{
-      id: number;
-      idCur: number;
-      NombreCurso: string;
-      docInscr: string;
-      nombre: string | null;
-      est: boolean;
-      fecreg: Date;
-      calificacion: boolean;
-    }>
-  >(
-    `SELECT 
-      i.id, 
-      i.idCur, 
-      c.NombreCurso, 
-      i.docInscr, 
-      e.nombre, 
-      i.est, 
-      i.fecreg,
-      i.calificacion
-    FROM gescur.Inscripciones i
-    LEFT JOIN gescur.Cursos c ON i.idCur = c.id
-    LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp`
-  );
-
-  // Mapeamos el booleano a texto
-  return resultados.map((inscripcion) => ({
-    ...inscripcion,
-    calificacionTexto: inscripcion.calificacion ? 'Aprobado' : 'Reprobado',
-  }));
-}
+<td className=" p-1">
+  {inscripciones.calificacion ? "Aprobado" : "Reprobado"}
+</td>
