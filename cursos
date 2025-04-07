@@ -1,3 +1,5 @@
-await this.prisma.$queryRawUnsafe(
-  `SELECT id_emp, nombre FROM gescur.emp_nomina WHERE publico = 1`
-);
+async obtenerProfesores(){
+  const query = `SELECT id_emp, nombre, publico FROM gescur.emp_nomina WHERE publico = 1`;
+  const profesores = await this.prisma.$queryRawUnsafe(query);
+  return profesores;
+}
