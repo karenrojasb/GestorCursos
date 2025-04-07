@@ -1,29 +1,29 @@
-import { Module } from '@nestjs/common';
+<label htmlFor="profesor" className="block text-sm font-medium text-gray-700">
+  Profesor
+</label>
+<select
+  id="profesor"
+  name="Profesor"
+  value={formData.Profesor}
+  onChange={handleChange}
+  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+>
+  <option value={0}>Selecciona un profesor</option>
+  {profesores.map((profesor) => (
+    <option key={profesor.id_emp} value={profesor.id_emp}>
+      {profesor.nombre}
+    </option>
+  ))}
+</select>
 
-import { CursosModule } from './cursos/cursos.module';
-import { PrismaService } from './prisma/prisma.service';
-import { ListasModule } from './listas/listas.module';
-import { NotasModule } from './notas/notas.module';
-import { CursosController } from './cursos/cursos.controller';
-import { CursosService } from './cursos/cursos.service';
-import { RolesModule } from './roles/roles.module';
-import { RolUsuarioModule } from './rol_usuario/rol_usuario.module';
-import { UsuarioModule } from './usuario/usuario.module';
-import { InscripcionesModule } from './inscripciones/inscripciones.module';
 
-
-
-
-
-@Module({
-  imports: [ CursosModule, 
-    ListasModule, 
-    NotasModule, 
-    RolesModule, 
-    RolUsuarioModule, 
-    UsuarioModule, 
-    InscripcionesModule],
-  controllers: [CursosController],
-  providers: [CursosService, PrismaService],
-})
-export class AppModule {}
+{formData.Profesor !== 0 && (
+  <p className="mt-2 text-gray-600">
+    Profesor seleccionado:{" "}
+    <span className="font-semibold">
+      {
+        profesores.find((prof) => prof.id_emp === formData.Profesor)?.nombre || "Desconocido"
+      }
+    </span>
+  </p>
+)}
