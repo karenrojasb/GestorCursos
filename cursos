@@ -1,5 +1,11 @@
-async obtenerProfesores(){
-  const query = `SELECT id_emp, nombre, publico FROM gescur.emp_nomina WHERE publico = 1`;
-  const profesores = await this.prisma.$queryRawUnsafe(query);
-  return profesores;
+async obtenerProfesorPorId(id: number) {
+  const query = `SELECT id_emp, nombre FROM gescur.emp_nomina WHERE id_emp = ${id}`;
+  const profesor = await this.prisma.$queryRawUnsafe(query);
+  return profesor[0]; // Solo un resultado
+}
+
+
+@Get('profesor/:id')
+async obtenerProfesorPorId(@Param('id') id: number) {
+  return this.cursosService.obtenerProfesorPorId(Number(id));
 }
