@@ -13,11 +13,12 @@
   >
     <option value={formData.SegundoPro}>
       {formData.SegundoPro
-        ? profesores.find((p) => p.id_emp === formData.SegundoPro)?.nombre || "Seleccione una opción"
+        ? profesores.find((p) => Number(p.id_emp) === Number(formData.SegundoPro))?.nombre || "Seleccione una opción"
         : "Seleccione una opción"}
     </option>
+    
     {profesores
-      .filter((p) => p.id_emp !== formData.SegundoPro) // evitar que se repita el seleccionado arriba
+      .filter((p) => Number(p.id_emp) !== Number(formData.SegundoPro)) // evitar duplicado
       .map((profesor) => (
         <option key={profesor.id_emp} value={profesor.id_emp}>
           {profesor.nombre}
