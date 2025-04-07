@@ -1,9 +1,2 @@
-async actualizarInscripcion(id: number, dto: UpdateInscripcionDto) {
-  return this.prisma.inscripciones.update({
-    where: { id },
-    data: {
-      est: dto.est !== undefined ? Boolean(dto.est) : undefined,
-      calificacion: dto.calificacion !== undefined ? Boolean(dto.calificacion) : undefined,
-    },
-  });
-}
+Object literal may only specify known properties, and 'calificacion' does not exist in type '(Without<InscripcionesUpdateInput, InscripcionesUncheckedUpdateInput> & InscripcionesUncheckedUpdateInput) | (Without<...> & InscripcionesUpdateInput)'.ts(2353)
+index.d.ts(3734, 5): The expected type comes from property 'data' which is declared here on type '{ select?: InscripcionesSelect<DefaultArgs> | null | undefined; omit?: InscripcionesOmit<DefaultArgs> | null | undefined; include?: InscripcionesInclude<...> | ... 1 more ... | undefined; data: (Without<...> & InscripcionesUncheckedUpdateInput) | (Without<...> & InscripcionesUpdateInput); where: InscripcionesWhereUn...'
