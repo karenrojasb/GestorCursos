@@ -1,30 +1,4 @@
-async findAll() {
-  const notas = await this.prisma.notas.findMany({
-    include: {
-      Listas: {
-        select: {
-          Especificacion: true,
-        },
-      },
-    },
-  });
-
-  const notasConInscrito = await Promise.all(notas.map(async (nota) => {
-    const inscrito = await this.prisma.inscripciones.findFirst({
-      where: {
-        docInscri: nota.idInscrito,
-      },
-      select: {
-        nombre: true,
-        docInscri: true,
-      },
-    });
-
-    return {
-      ...nota,
-      inscrito: inscrito || null,
-    };
-  }));
-
-  return notasConInscrito;
-}
+<td className="p-1">
+  {nota.find(n => n.idInscrito === inscripciones.docInscr)?.Listas?.Especificacion || "Sin Nota"}
+  <button className="bg-[#990000] text-white px-3 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95 ml-2">Calificar</button>
+</td>
