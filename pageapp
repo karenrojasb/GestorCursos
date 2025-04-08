@@ -1,19 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { CreateNotaDto } from './dto/create-nota.dto';
-import { UpdateNotaDto } from './dto/update-nota.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
-
-@Injectable()
-export class NotasService {
-  updateNote(arg0: number, UpdateNotaDto: UpdateNotaDto) {
-    throw new Error('Method not implemented.');
-  }
-  constructor(private readonly prisma: PrismaService) {}
-
-//  OBTENER TODAS LAS NOTAS
 async findAll() {
-  return this.prisma.notas.findMany({
+  const notas = await this.prisma.notas.findMany({
     include: {
       Listas: {
         select: {
@@ -22,44 +8,23 @@ async findAll() {
       },
     },
   });
-}
 
-  //  MÉTODO PARA CREAR NOTA
-    async createNote(CreateNotaDto: CreateNotaDto) {
-      const newNote = await this.prisma.notas.create({
-        data: {
-          idCurso: CreateNotaDto.idCurso,
-          idInscrito: CreateNotaDto.idInscrito,
-          Nota: CreateNotaDto.Nota,
-          // FechaRegistro: CreateNotaDto.FechaRegistro  
-        },
-      });
-      return newNote;
-    }
+  const notasConInscrito = await Promise.all(notas.map(async (nota) => {
+    const inscrito = await this.prisma.inscripciones.findFirst({
+      where: {
+        docInscri: nota.idInscrito,
+      },
+      select: {
+        nombre: true,
+        docInscri: true,
+      },
+    });
 
+    return {
+      ...nota,
+      inscrito: inscrito || null,
+    };
+  }));
 
-    // MÉTODO PARA ACTUALIZAR
-    async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
-      console.log ('id received:', id);
-      console.log ('data received:', data);
-
-      try {
-        const UpdateNote = await this.prisma.notas.update({
-          where: {id},
-          data,
-        });
-        console.log ('update note:', UpdateNote);
-        return UpdateNote;
-      }
-      catch (error){
-        console.error ('error when updating note:', error);
-        throw new error('the note was not updated');
-      }
-    }
-
-    // MÉTODO PARA ELIMINAR
-    async deleteNote(id:number){
-      return this.prisma.notas.delete({where: {id}});
-    }
-
+  return notasConInscrito;
 }
