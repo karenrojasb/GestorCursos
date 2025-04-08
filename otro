@@ -1,6 +1,2 @@
-Msg 5074, Level 16, State 1, Line 12
-The object 'DF__Inscripci__calif__0F624AF8' is dependent on column 'calificacion'.
-Msg 4922, Level 16, State 9, Line 12
-ALTER TABLE DROP COLUMN calificacion failed because one or more objects access this column.
-
-Completion time: 2025-04-08T08:20:14.9675154-05:00
+ALTER TABLE Inscripciones
+DROP CONSTRAINT DF__Inscripci__calif__0F624AF8;
