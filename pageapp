@@ -1,9 +1,6 @@
-// OBTENER NOTAS POR IDINSCRITO CON ESPECIFICACION
 async obtenerPorIdInscrito(idInscrito: number) {
   const notas = await this.prisma.notas.findMany({
-    where: {
-      idInscrito: idInscrito,
-    },
+    where: { idInscrito },
     include: {
       Listas: {
         select: {
@@ -13,12 +10,23 @@ async obtenerPorIdInscrito(idInscrito: number) {
     },
   });
 
-  return notas;
-}
+  const notasConNombreCurso = await Promise.all(
+    notas.map(async (nota) => {
+      const curso = await this.prisma.cursos.findFirst({
+        where: {
+          id: nota.idCurso, // este es el id del curso
+        },
+        select: {
+          NombreCurso: true,
+        },
+      });
 
+      return {
+        ...nota,
+        NombreCurso: curso?.NombreCurso || null,
+      };
+    })
+  );
 
-
-@Get(':idInscrito')
-async obtenerPorIdInscrito(@Param('idInscrito') idInscrito: string) {
-  return this.notasService.obtenerPorIdInscrito(Number(idInscrito));
+  return notasConNombreCurso;
 }
