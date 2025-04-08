@@ -1,87 +1,31 @@
-import { Injectable } from '@nestjs/common';
-import { CreateNotaDto } from './dto/create-nota.dto';
-import { UpdateNotaDto } from './dto/update-nota.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
-
-@Injectable()
-export class NotasService {
-  updateNote(arg0: number, UpdateNotaDto: UpdateNotaDto) {
-    throw new Error('Method not implemented.');
-  }
-  constructor(private readonly prisma: PrismaService) {}
-
-//  OBTENER TODAS LAS NOTAS
-
-async findAll() {
+async obtenerCursosPorId(idInscrito: string) {
   const notas = await this.prisma.notas.findMany({
+    where: {
+      idInscrito: idInscrito,
+      Nota: 33,
+    },
     include: {
       Listas: {
         select: {
           Especificacion: true,
         },
       },
+      Cursos: {
+        select: {
+          NombreCurso: true,
+        },
+      },
     },
   });
 
-  const notasConInscrito = await Promise.all(notas.map(async (nota) => {
-    const inscrito = await this.prisma.inscripciones.findFirst({
-      where: {
-        docInscr: nota.idInscrito,
-      },
-      select: {
-        
-        docInscr: true,
-      },
-    });
-
-    return {
-      ...nota,
-      inscrito: inscrito || null,
-    };
+  return notas.map(nota => ({
+    nombreCurso: nota.Cursos?.NombreCurso || 'Curso no encontrado',
+    especificacion: nota.Listas?.Especificacion || 'Sin especificación',
   }));
-
-  return notasConInscrito;
 }
 
 
-  //  MÉTODO PARA CREAR NOTA
-    async createNote(CreateNotaDto: CreateNotaDto) {
-      const newNote = await this.prisma.notas.create({
-        data: {
-          idCurso: CreateNotaDto.idCurso,
-          idInscrito: CreateNotaDto.idInscrito,
-          Nota: CreateNotaDto.Nota,
-          idRegistro: CreateNotaDto.idRegistro,
-          FechaRegistro:  new Date()  ,
-        },
-      });
-      return newNote;
-    }
-
-
-    // MÉTODO PARA ACTUALIZAR
-    async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
-      console.log ('id received:', id);
-      console.log ('data received:', data);
-
-      try {
-        const UpdateNote = await this.prisma.notas.update({
-          where: {id},
-          data,
-        });
-        console.log ('update note:', UpdateNote);
-        return UpdateNote;
-      }
-      catch (error){
-        console.error ('error when updating note:', error);
-        throw new error('the note was not updated');
-      }
-    }
-
-    // MÉTODO PARA ELIMINAR
-    async deleteNote(id:number){
-      return this.prisma.notas.delete({where: {id}});
-    }
-
+@Get(':idInscrito')
+async obtenerCursosPorId(@Param('idInscrito') idInscrito: string) {
+  return this.notasService.obtenerCursosPorId(idInscrito);
 }
