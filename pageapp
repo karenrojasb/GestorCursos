@@ -1,2 +1,39 @@
-Type 'number | null' is not assignable to type 'number | IntFilter<"Cursos"> | undefined'.
-  Type 'null' is not assignable to type 'number | IntFilter<"Cursos"> | undefined'.ts(2322)
+async obtenerPorIdInscrito(idInscrito: number) {
+  const notas = await this.prisma.notas.findMany({
+    where: { idInscrito },
+    include: {
+      Listas: {
+        select: {
+          Especificacion: true,
+        },
+      },
+    },
+  });
+
+  const notasConNombreCurso = await Promise.all(
+    notas.map(async (nota) => {
+      if (!nota.idCurso) {
+        return {
+          ...nota,
+          NombreCurso: null,
+        };
+      }
+
+      const curso = await this.prisma.cursos.findFirst({
+        where: {
+          id: nota.idCurso,
+        },
+        select: {
+          NombreCurso: true,
+        },
+      });
+
+      return {
+        ...nota,
+        NombreCurso: curso?.NombreCurso || null,
+      };
+    })
+  );
+
+  return notasConNombreCurso;
+}
