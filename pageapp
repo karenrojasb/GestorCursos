@@ -1,4 +1,4 @@
-async obtenerCursosPorId(idInscrito: string) {
+async obtenerCursosPorId(idInscrito: number) {
   const notas = await this.prisma.notas.findMany({
     where: {
       idInscrito: idInscrito,
@@ -10,19 +10,24 @@ async obtenerCursosPorId(idInscrito: string) {
           Especificacion: true,
         },
       },
-      Cursos: {
+      Inscripciones: {
         select: {
-          NombreCurso: true,
+          docInscr: true,
+          nombre: true,
+          idCur: true,
         },
       },
     },
   });
 
   return notas.map(nota => ({
-    nombreCurso: nota.Cursos?.NombreCurso || 'Curso no encontrado',
+    nombre: nota.Inscripciones?.nombre || 'Desconocido',
+    documento: nota.Inscripciones?.docInscr || 'Sin documento',
+    idCurso: nota.Inscripciones?.idCur || 'Sin curso',
     especificacion: nota.Listas?.Especificacion || 'Sin especificación',
   }));
 }
+
 
 
 @Get(':idInscrito')
