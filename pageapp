@@ -10,12 +10,15 @@ async obtenerPorIdInscrito(idInscrito: number) {
     },
   });
 
-  const notasConNombreCurso = await Promise.all(
+  const notasConCurso = await Promise.all(
     notas.map(async (nota) => {
       if (!nota.idCurso) {
         return {
           ...nota,
           NombreCurso: null,
+          Lugar: null,
+          Inicio: null,
+          Fin: null,
         };
       }
 
@@ -25,15 +28,21 @@ async obtenerPorIdInscrito(idInscrito: number) {
         },
         select: {
           NombreCurso: true,
+          Lugar: true,
+          Inicio: true,
+          Fin: true,
         },
       });
 
       return {
         ...nota,
         NombreCurso: curso?.NombreCurso || null,
+        Lugar: curso?.Lugar || null,
+        Inicio: curso?.Inicio || null,
+        Fin: curso?.Fin || null,
       };
     })
   );
 
-  return notasConNombreCurso;
+  return notasConCurso;
 }
