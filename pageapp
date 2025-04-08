@@ -1,46 +1,87 @@
-// components/CalificarModal.tsx
-import React, { useState } from "react";
+import { Injectable } from '@nestjs/common';
+import { CreateNotaDto } from './dto/create-nota.dto';
+import { UpdateNotaDto } from './dto/update-nota.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
-interface CalificarModalProps {
-  onClose: () => void;
-  nombre: string;
-  documento: string;
-  onGuardar: (nota: string) => void;
+@Injectable()
+export class NotasService {
+  updateNote(arg0: number, UpdateNotaDto: UpdateNotaDto) {
+    throw new Error('Method not implemented.');
+  }
+  constructor(private readonly prisma: PrismaService) {}
+
+//  OBTENER TODAS LAS NOTAS
+
+async findAll() {
+  const notas = await this.prisma.notas.findMany({
+    include: {
+      Listas: {
+        select: {
+          Especificacion: true,
+        },
+      },
+    },
+  });
+
+  const notasConInscrito = await Promise.all(notas.map(async (nota) => {
+    const inscrito = await this.prisma.inscripciones.findFirst({
+      where: {
+        docInscr: nota.idInscrito,
+      },
+      select: {
+        
+        docInscr: true,
+      },
+    });
+
+    return {
+      ...nota,
+      inscrito: inscrito || null,
+    };
+  }));
+
+  return notasConInscrito;
 }
 
-const CalificarModal = ({ onClose, nombre, documento, onGuardar }: CalificarModalProps) => {
-  const [nuevaNota, setNuevaNota] = useState("");
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-[#990000]">
-          X
-        </button>
-        <h2 className="text-xl font-semibold mb-4 text-[#990000]">Calificar</h2>
-        <p><strong>Nombre:</strong> {nombre}</p>
-        <p><strong>Documento:</strong> {documento}</p>
+  //  MÉTODO PARA CREAR NOTA
+    async createNote(CreateNotaDto: CreateNotaDto) {
+      const newNote = await this.prisma.notas.create({
+        data: {
+          idCurso: CreateNotaDto.idCurso,
+          idInscrito: CreateNotaDto.idInscrito,
+          Nota: CreateNotaDto.Nota,
+          idRegistro: CreateNotaDto.idRegistro,
+          FechaRegistro:  new Date()  ,
+        },
+      });
+      return newNote;
+    }
 
-        <input
-          type="text"
-          placeholder="Escribe la nota"
-          value={nuevaNota}
-          onChange={(e) => setNuevaNota(e.target.value)}
-          className="w-full border px-3 py-2 rounded-md mt-3"
-        />
 
-        <button
-          onClick={() => {
-            onGuardar(nuevaNota);
-            onClose();
-          }}
-          className="mt-4 bg-[#990000] text-white px-4 py-2 rounded-md hover:bg-red-700"
-        >
-          Guardar Nota
-        </button>
-      </div>
-    </div>
-  );
-};
+    // MÉTODO PARA ACTUALIZAR
+    async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
+      console.log ('id received:', id);
+      console.log ('data received:', data);
 
-export default CalificarModal;
+      try {
+        const UpdateNote = await this.prisma.notas.update({
+          where: {id},
+          data,
+        });
+        console.log ('update note:', UpdateNote);
+        return UpdateNote;
+      }
+      catch (error){
+        console.error ('error when updating note:', error);
+        throw new error('the note was not updated');
+      }
+    }
+
+    // MÉTODO PARA ELIMINAR
+    async deleteNote(id:number){
+      return this.prisma.notas.delete({where: {id}});
+    }
+
+}
