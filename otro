@@ -1,11 +1,17 @@
-                 {notaEncontrada ? (
-                <>
-                  <PencilIcon className="w-4 h-4" />
-                  Editar
-                </>
-              ) : (
-                <>
-                  <PlusCircleIcon className="w-4 h-4" />
-                  Calificar
-                </>
-              )}
+className={`inline-flex items-center gap-1 px-3 py-1 rounded-md transition hover:scale-110 active:scale-95 ${
+      notaEncontrada
+        ? "bg-blue-600 hover:bg-blue-700"
+        : "bg-green-600 hover:bg-green-700"
+    } text-white`}
+  >
+    {notaEncontrada ? (
+      <>
+        <PencilIcon className="w-4 h-4" />
+        <span>Editar</span>
+      </>
+    ) : (
+      <>
+        <PlusCircleIcon className="w-4 h-4" />
+        <span>Calificar</span>
+      </>
+    )}
