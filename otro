@@ -1,24 +1,15 @@
-<td className="p-1 flex flex-col items-center gap-1">
-  {
-    (() => {
-      const notaEncontrada = nota.find(n => 
-        n.idInscrito === Number(inscripciones.docInscr) && 
-        n.idCurso === Number(cursoId)
-      );
-      return (
-        <>
-          {notaEncontrada && (
-            <span className="text-green-700 font-semibold text-sm">
-              {notaEncontrada.Especificacion} ({notaEncontrada.Nota})
-            </span>
-          )}
-          <button 
-            onClick={() => abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)}
-            className="bg-[#990000] text-white px-2 py-1 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95 text-sm">
-            {notaEncontrada ? "Editar" : "Calificar"}
-          </button>
-        </>
-      );
-    })()
-  }
-</td>
+    <button 
+      onClick={() => abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)}
+      className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition hover:scale-110 active:scale-95"
+    >
+      <PencilIcon className="w-4 h-4" />
+      Editar
+    </button>
+  ) : (
+    <button 
+      onClick={() => abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)}
+      className="flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition hover:scale-110 active:scale-95"
+    >
+      <PlusCircleIcon className="w-4 h-4" />
+      Calificar
+    </button>
