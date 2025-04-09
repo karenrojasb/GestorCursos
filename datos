@@ -195,3 +195,10 @@ async findAll() {
     }
 
 }
+
+
+  @Get(':idInscrito')
+async obtenerPorIdInscrito(@Param('idInscrito') idInscrito: string) {
+  return this.notasService.obtenerPorIdInscrito(Number(idInscrito));
+}
+
