@@ -27,6 +27,15 @@ interface InscripcionesModalProps {
   onClose: () => void;
 }
 
+interface Nota {
+  id: number;
+  idCurso:  number;
+  idInscrito: number; 
+  Nota: number;
+  Especificacion: string; 
+  NombreCurso: string;
+}
+
 export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
@@ -97,33 +106,32 @@ const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 
 
-useEffect(()  => {
-  async function fetcNotas() {
-    try {
-      const response = await fetch("http://localhost:8090/api/Notas");
-      if (!response.ok) throw new Error("Error al obtener los periodos");
 
-      const data = await response.json();
-      console.log("Notas recibidas:", data);  // <-- Agrega esto
-      setNota(data);
-    } catch(error){
-      console.error("Error cargando lista de periodos:", error);
-    }
-  }
-  fetcNotas(); 
-}, []);
 
-const abrirModalCalificar = (nombre: string, doc: string) => {
-  setInscritoSeleccionado({nombre, doc});
+const abrirModalCalificar = async (nombre: string, doc: string) => {
+  setInscritoSeleccionado({ nombre, doc });
   setModalCalificarAbierto(true);
-  
+
+  try {
+    const response = await fetch(`http://localhost:8090/api/Notas/${doc}`);
+    if (!response.ok) throw new Error("Error al obtener notas");
+
+    const notasData: Nota[] = await response.json();
+    
+    console.log("Notas del inscrito:", notasData);
 
 
+    setNota(notasData);
+  } catch (error) {
+    console.error("Error al obtener notas del inscrito:", error);
   }
-  const guardarNota = (nota: string) => {
+};
 
-    console.log(`Guardar nota ${nota} para ${inscritoSeleccionado?.doc}`);
-  };
+const guardarNota = (nota: string) => {
+
+  console.log(`Guardar nota ${nota} para ${inscritoSeleccionado?.doc}`);
+};
+
 
 
 
@@ -293,12 +301,6 @@ const abrirModalCalificar = (nombre: string, doc: string) => {
                                       <td className=" p-1 ">{inscripciones.docInscr}</td>
                                       <td className=" p-1">{inscripciones.fecreg}</td>
                                       <td className="p-1">
-  
-
-                                     
-
-
-
   <button 
   onClick={() => abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)}
   className="bg-[#990000] text-white px-3 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95 ml-2">Calificar</button>
@@ -323,13 +325,13 @@ const abrirModalCalificar = (nombre: string, doc: string) => {
           )} 
         </div>
         {modalCalificarAbierto && inscritoSeleccionado && (
-        <CalificarModal
-          nombre={inscritoSeleccionado.nombre}
-          documento={inscritoSeleccionado.doc}
-          onClose={() => setModalCalificarAbierto(false)}
-          onGuardar={guardarNota}
-        />
-      )}
+  <CalificarModal
+    nombre={inscritoSeleccionado.nombre}
+    documento={inscritoSeleccionado.doc}
+    onClose={() => setModalCalificarAbierto(false)}
+    onGuardar={guardarNota}
+  />
+)}
       </div>
       
     </div>
