@@ -3,6 +3,7 @@ import { XMarkIcon, MagnifyingGlassIcon, ArrowDownTrayIcon } from "@heroicons/re
 import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import CalificarModal from "./calificarmodal";
 
 interface Inscripcion {
   NombreCurso: string | undefined;
@@ -34,6 +35,8 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
   const [isLoading, setIsLoading] = useState(true);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [nota, setNota] = useState<any[]>([]);
+  const [modalCalificarAbierto, setModalCalificarAbierto] = useState(false);
+  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:string} | null>(null);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -55,9 +58,22 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
       }
     };
 
+    
+
     fetchInscripciones();
   }, []);
 
+  const abrirModalCalificar = (nombre: string, doc: string) => {
+    setInscritoSeleccionado({nombre, doc});
+    setModalCalificarAbierto(true);
+    
+
+  
+    }
+    const guardarNota = (nota: string) => {
+
+      console.log(`Guardar nota ${nota} para ${inscritoSeleccionado?.doc}`);
+    };
   // FILTRAR INSCRIPCIONES EN TIEMPO REAL
   
 const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -271,9 +287,11 @@ useEffect(()  => {
                                       <td className=" p-1 ">{inscripciones.docInscr}</td>
                                       <td className=" p-1">{inscripciones.fecreg}</td>
                                       <td className="p-1">
-                                        {nota.find(n => n.idInscrito === inscripciones.id)?.Lista?.Especificacion || "Sin Nota"}
-                                        <button className="bg-[#990000] text-white px-3 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95">calificar</button>
-                                      </td>
+  {nota.find(n => n.idInscrito === inscripciones.docInscr)?.Listas?.Especificacion || "Sin Nota"}
+  <button 
+  onClick={() => abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)}
+  className="bg-[#990000] text-white px-3 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95 ml-2">Calificar</button>
+</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -293,7 +311,16 @@ useEffect(()  => {
             <div className="text-center py-4 text-gray-500">No hay inscripciones registradas.</div>
           )} 
         </div>
+        {modalCalificarAbierto && inscritoSeleccionado && (
+        <CalificarModal
+          nombre={inscritoSeleccionado.nombre}
+          documento={inscritoSeleccionado.doc}
+          onClose={() => setModalCalificarAbierto(false)}
+          onGuardar={guardarNota}
+        />
+      )}
       </div>
+      
     </div>
   );
 }
