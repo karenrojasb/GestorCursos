@@ -103,13 +103,13 @@ export default function Certificados({ onClose }: { onClose: () => void }) {
               placeholder="Busque el nombre del curso"
               value={busqueda}
               onChange={handleBuscar}
-              className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+              className={`px-5 py-2 border rounded-full transition-all duration-500 ease-in-out  
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
             />     
 
          
         </div>
-        <button onClick={onClose} className="text-gray-500 hover:text-[#990000]">
+        <button onClick={onClose} className="text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
@@ -120,7 +120,7 @@ export default function Certificados({ onClose }: { onClose: () => void }) {
           {loading ? (
             <div className="text-center py-8">Cargando certificados...</div>
           ) : notas.length > 0 ? (
-            <table className="w-full text-sm border border-gray-300">
+            <table className="w-full mt-4 text-sm border border-gray-300">
               <thead className="bg-[#990000] text-white">
                 <tr>
                   <th className="p-2 border">Curso</th>
@@ -134,7 +134,7 @@ export default function Certificados({ onClose }: { onClose: () => void }) {
               </thead>
               <tbody>
                 {notas.map((curso, index) => (
-                  <tr key={index} className="text-center border-t">
+                  <tr key={index} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} text-center transition`}>
                     <td className="p-2 border text-left font-semibold">{curso.NombreCurso}</td>
                     <td className="p-2 border text-left">
                       {[curso.ProfesorNombre, curso.SegundoProNombre, curso.ProExterno]
