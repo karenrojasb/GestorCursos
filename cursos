@@ -1,33 +1,66 @@
-const guardarNota = async (notaTexto: string, idRegistroTexto: string) => {
-  if (!inscritoSeleccionado) return;
+import React, { useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
-  const cursoId = Object.keys(groupedInscripciones).find(cursoId =>
-    groupedInscripciones[Number(cursoId)].some(ins =>
-      ins.docInscr === inscritoSeleccionado.doc
-    )
+interface CalificarModalProps {
+  onClose: () => void;
+  nombre: string;
+  documento: string;
+  onGuardar: (nota: string, idRegistro: string) => void;
+}
+
+const CalificarModal = ({ onClose, nombre, documento, onGuardar }: CalificarModalProps) => {
+  const [nuevaNota, setNuevaNota] = useState("");
+  const [idRegistro, setIdRegistro] = useState("");
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
+        {/* Botón para cerrar */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+
+        {/* Título */}
+        <h2 className="text-xl font-semibold mb-4 text-[#990000]">Calificar</h2>
+
+        {/* Datos del inscrito */}
+        <p><strong>Nombre:</strong> {nombre}</p>
+        <p><strong>Documento:</strong> {documento}</p>
+
+        {/* Input para la nota */}
+        <input
+          type="text"
+          placeholder="Escribe la nota"
+          value={nuevaNota}
+          onChange={(e) => setNuevaNota(e.target.value)}
+          className="w-full border px-3 py-2 rounded-md mt-3"
+        />
+
+        {/* Input para el ID del calificador */}
+        <input
+          type="text"
+          placeholder="ID de quien califica"
+          value={idRegistro}
+          onChange={(e) => setIdRegistro(e.target.value)}
+          className="w-full border px-3 py-2 rounded-md mt-3"
+        />
+
+        {/* Botón para guardar */}
+        <button
+          onClick={() => {
+            onGuardar(nuevaNota, idRegistro);
+            onClose();
+          }}
+          className="mt-4 bg-[#990000] text-white px-4 py-2 rounded-md hover:bg-red-700"
+        >
+          Guardar Nota
+        </button>
+      </div>
+    </div>
   );
-
-  const idCurso = Number(cursoId);
-  const idInscrito = Number(inscritoSeleccionado.doc);
-  const Nota = Number(notaTexto);
-  const idRegistro = Number(idRegistroTexto);
-
-  try {
-    const response = await fetch("http://localhost:8090/api/Notas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        idCurso,
-        idInscrito,
-        Nota,
-        idRegistro,
-      }),
-    });
-
-    if (!response.ok) throw new Error("Error al guardar la nota");
-
-    console.log("Nota guardada exitosamente");
-  } catch (error) {
-    console.error("Error al guardar nota:", error);
-  }
 };
+
+export default CalificarModal;
