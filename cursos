@@ -1,4 +1,4 @@
-const guardarNota = async (notaTexto: string) => {
+const guardarNota = async (notaTexto: string, idRegistroTexto: string) => {
   if (!inscritoSeleccionado) return;
 
   const cursoId = Object.keys(groupedInscripciones).find(cursoId =>
@@ -8,9 +8,9 @@ const guardarNota = async (notaTexto: string) => {
   );
 
   const idCurso = Number(cursoId);
-  const idInscrito = Number(inscritoSeleccionado.doc); // o usar como string si tu backend lo trata así
-  const Nota = Number(notaTexto); // asegúrate de que sea número si lo esperas así
-  const idRegistro = 1; // aquí deberías poner el ID del usuario que registra (puede ser dinámico)
+  const idInscrito = Number(inscritoSeleccionado.doc);
+  const Nota = Number(notaTexto);
+  const idRegistro = Number(idRegistroTexto);
 
   try {
     const response = await fetch("http://localhost:8090/api/Notas", {
