@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { XMarkIcon, MagnifyingGlassIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, MagnifyingGlassIcon, ArrowDownTrayIcon, PencilIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -106,7 +106,21 @@ const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 
 
+useEffect(()  => {
+  async function fetcNotas() {
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas");
+      if (!response.ok) throw new Error("Error al obtener los periodos");
 
+      const data = await response.json();
+      console.log("Notas recibidas:", data);  // <-- Agrega esto
+      setNota(data);
+    } catch(error){
+      console.error("Error cargando lista de periodos:", error);
+    }
+  }
+  fetcNotas(); 
+}, []);
 
 const abrirModalCalificar = async (nombre: string, doc: string) => {
   setInscritoSeleccionado({ nombre, doc });
@@ -300,10 +314,46 @@ const guardarNota = (nota: string) => {
                                       <td className=" p-1">{inscripciones.nombre || "No disponible"}</td>
                                       <td className=" p-1 ">{inscripciones.docInscr}</td>
                                       <td className=" p-1">{inscripciones.fecreg}</td>
-                                      <td className="p-1">
-  <button 
-  onClick={() => abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)}
-  className="bg-[#990000] text-white px-3 rounded-md hover:bg-red-700 transition hover:scale-110 active:scale-95 ml-2">Calificar</button>
+                                      <td className="p-1 flex flex-col items-center gap-1">
+  {
+    (() => {
+      const notaEncontrada = nota.find(n => 
+        n.idInscrito === Number(inscripciones.docInscr) && 
+        n.idCurso === Number(cursoId)
+      );
+      return (
+        <>
+          {notaEncontrada && (
+            <span className="text-black font-semibold text-sm">
+               {notaEncontrada.Listas?.Especificacion}
+            </span>
+          )}
+          <button
+    onClick={() =>
+      abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)
+    }
+    className={`inline-flex items-center gap-1 px-3 py-1 rounded-md transition hover:scale-110 active:scale-95 ${
+      notaEncontrada
+        ? "bg-blue-600 hover:bg-blue-700"
+        : "bg-green-600 hover:bg-green-700"
+    } text-white`}
+  >
+    {notaEncontrada ? (
+      <>
+        <PencilIcon className="w-4 h-4" />
+        <span>Editar</span>
+      </>
+    ) : (
+      <>
+        <PlusCircleIcon className="w-4 h-4" />
+        <span>Calificar</span>
+      </>
+    )}
+  </button>
+        </>
+      );
+    })()
+  }
 </td>
                                     </tr>
                                   ))}
