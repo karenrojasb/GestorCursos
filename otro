@@ -1,15 +1,11 @@
-    <button 
-      onClick={() => abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)}
-      className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition hover:scale-110 active:scale-95"
-    >
-      <PencilIcon className="w-4 h-4" />
-      Editar
-    </button>
-  ) : (
-    <button 
-      onClick={() => abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)}
-      className="flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition hover:scale-110 active:scale-95"
-    >
-      <PlusCircleIcon className="w-4 h-4" />
-      Calificar
-    </button>
+                 {notaEncontrada ? (
+                <>
+                  <PencilIcon className="w-4 h-4" />
+                  Editar
+                </>
+              ) : (
+                <>
+                  <PlusCircleIcon className="w-4 h-4" />
+                  Calificar
+                </>
+              )}
