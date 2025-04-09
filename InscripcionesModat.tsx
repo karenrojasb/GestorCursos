@@ -122,6 +122,7 @@ useEffect(()  => {
   fetcNotas(); 
 }, []);
 
+
 const abrirModalCalificar = async (nombre: string, doc: string) => {
   setInscritoSeleccionado({ nombre, doc });
   setModalCalificarAbierto(true);
@@ -131,11 +132,16 @@ const abrirModalCalificar = async (nombre: string, doc: string) => {
     if (!response.ok) throw new Error("Error al obtener notas");
 
     const notasData: Nota[] = await response.json();
-    
-    console.log("Notas del inscrito:", notasData);
 
-
-    setNota(notasData);
+    // Fusiona las nuevas notas con las anteriores, reemplazando las del mismo idInscrito
+    setNota((prevNotas) => {
+      const nuevasNotas = notasData.map(notaNueva => ({
+        ...notaNueva,
+        idInscrito: Number(doc)
+      }));
+      const otrasNotas = prevNotas.filter(n => n.idInscrito !== Number(doc));
+      return [...otrasNotas, ...nuevasNotas];
+    });
   } catch (error) {
     console.error("Error al obtener notas del inscrito:", error);
   }
