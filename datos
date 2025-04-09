@@ -1,24 +1,89 @@
 
-const abrirModalCalificar = async (nombre: string, doc: string) => {
-  setInscritoSeleccionado({ nombre, doc });
-  setModalCalificarAbierto(true);
+// components/CalificarModal.tsx
 
-  try {
-    const response = await fetch(`http://localhost:8090/api/Notas/${doc}`);
-    if (!response.ok) throw new Error("Error al obtener notas");
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import React, { useState } from "react";
 
-    const notasData: Nota[] = await response.json();
+interface CalificarModalProps {
+  onClose: () => void;
+  nombre: string;
+  documento: string;
+  idCurso: number;
+  idRegistro: number;
+  onGuardar: (nota: string) => void;
+}
 
-    // Fusiona las nuevas notas con las anteriores, reemplazando las del mismo idInscrito
-    setNota((prevNotas) => {
-      const nuevasNotas = notasData.map(notaNueva => ({
-        ...notaNueva,
-        idInscrito: Number(doc)
-      }));
-      const otrasNotas = prevNotas.filter(n => n.idInscrito !== Number(doc));
-      return [...otrasNotas, ...nuevasNotas];
-    });
-  } catch (error) {
-    console.error("Error al obtener notas del inscrito:", error);
-  }
+const CalificarModal = ({
+  onClose,
+  nombre,
+  documento,
+  idCurso,
+  idRegistro,
+  onGuardar,
+}: CalificarModalProps) => {
+  const [nuevaNota, setNuevaNota] = useState("");
+
+  const guardarNota = async () => {
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idCurso,
+          idInscrito: Number(documento),
+          Nota: parseFloat(nuevaNota),
+          idRegistro,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error al guardar la nota");
+
+      const data = await response.json();
+      console.log("Nota guardada con éxito:", data);
+      onGuardar(nuevaNota); // actualizar estado en componente padre
+      onClose(); // cerrar modal
+    } catch (error) {
+      console.error("Error guardando nota:", error);
+      alert("Hubo un problema al guardar la nota.");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+        <h2 className="text-xl font-semibold mb-4 text-[#990000]">Calificar</h2>
+        <p>
+          <strong>Nombre:</strong> {nombre}
+        </p>
+        <p>
+          <strong>Documento:</strong> {documento}
+        </p>
+
+        <input
+          type="text"
+          placeholder="Escribe la nota"
+          value={nuevaNota}
+          onChange={(e) => setNuevaNota(e.target.value)}
+          className="w-full border px-3 py-2 rounded-md mt-3"
+        />
+
+        <button
+          onClick={guardarNota}
+          className="mt-4 bg-[#990000] text-white px-4 py-2 rounded-md hover:bg-red-700"
+        >
+          Guardar Nota
+        </button>
+      </div>
+    </div>
+  );
 };
+
+export default CalificarModal;
