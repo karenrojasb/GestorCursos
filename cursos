@@ -1,22 +1,71 @@
 // components/CalificarModal.tsx
-import { XMarkIcon } from "@heroicons/react/16/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import React, { useState } from "react";
 
 interface CalificarModalProps {
   onClose: () => void;
   nombre: string;
   documento: string;
-  onGuardar: (nota: string) => void;
+  idCurso: number;
+  idInscrito: number;
+  idRegistro: string; // id del calificador
 }
 
-const CalificarModal = ({ onClose, nombre, documento, onGuardar }: CalificarModalProps) => {
+const CalificarModal = ({
+  onClose,
+  nombre,
+  documento,
+  idCurso,
+  idInscrito,
+  idRegistro,
+}: CalificarModalProps) => {
   const [nuevaNota, setNuevaNota] = useState("");
+  const [cargando, setCargando] = useState(false);
+
+  const handleGuardar = async () => {
+    if (!nuevaNota || !idRegistro) {
+      alert("Debes completar todos los campos");
+      return;
+    }
+
+    setCargando(true);
+
+    try {
+      const res = await fetch("/api/notas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idCurso,
+          idInscrito,
+          Nota: nuevaNota,
+          idRegistro,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al guardar la nota");
+      }
+
+      alert("Nota guardada correctamente");
+      onClose();
+    } catch (error) {
+      console.error(error);
+      alert("Ocurrió un error al guardar la nota");
+    } finally {
+      setCargando(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90">
-        <XMarkIcon className="h-6 w-6" />
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="h-6 w-6" />
         </button>
         <h2 className="text-xl font-semibold mb-4 text-[#990000]">Calificar</h2>
         <p><strong>Nombre:</strong> {nombre}</p>
@@ -31,13 +80,11 @@ const CalificarModal = ({ onClose, nombre, documento, onGuardar }: CalificarModa
         />
 
         <button
-          onClick={() => {
-            onGuardar(nuevaNota);
-            onClose();
-          }}
-          className="mt-4 bg-[#990000] text-white px-4 py-2 rounded-md hover:bg-red-700"
+          onClick={handleGuardar}
+          disabled={cargando}
+          className="mt-4 bg-[#990000] text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50"
         >
-          Guardar Nota
+          {cargando ? "Guardando..." : "Guardar Nota"}
         </button>
       </div>
     </div>
