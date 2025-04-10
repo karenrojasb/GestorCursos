@@ -1,21 +1,26 @@
-// CREAR CURSO
-async createCourses(data: CreateCursoDto) {
-  console.log("Data recibida:", data);
+// ACTUALIZAR CURSO POR ID
+async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
+  console.log('ID recibido:', id);
+  console.log('Datos recibidos:', data);
 
   try {
-    // Crear el curso
-    const cursoCreado = await this.prisma.cursos.create({ data });
+    // Actualizar el curso
+    const cursoActualizado = await this.prisma.cursos.update({
+      where: { id },
+      data,
+    });
 
-    // Insertar en rol_usuario si hay profesor
-    if (data.Profesor) {
+    // Si viene un nuevo Profesor
+    if (data.Profesor && typeof data.Profesor === 'object' && 'set' in data.Profesor) {
+      const idProfesor = data.Profesor.set;
+
       const profesorEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${data.Profesor} AS VARCHAR)
+        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${idProfesor} AS VARCHAR)
       `;
 
       if (profesorEmail.length > 0) {
         const email = profesorEmail[0].e_mail;
 
-        // Verificar si ya existe el usuario
         const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
           SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
         `;
@@ -29,10 +34,12 @@ async createCourses(data: CreateCursoDto) {
       }
     }
 
-    // Insertar en rol_usuario si hay SegundoPro
-    if (data.SegundoPro) {
+    // Si viene un nuevo SegundoPro
+    if (data.SegundoPro && typeof data.SegundoPro === 'object' && 'set' in data.SegundoPro) {
+      const idSegundoPro = data.SegundoPro.set;
+
       const segundoEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${data.SegundoPro} AS VARCHAR)
+        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${idSegundoPro} AS VARCHAR)
       `;
 
       if (segundoEmail.length > 0) {
@@ -51,9 +58,9 @@ async createCourses(data: CreateCursoDto) {
       }
     }
 
-    return cursoCreado;
+    return cursoActualizado;
   } catch (error) {
-    console.error("Error al crear el curso en el backend", error);
-    throw new Error("Error al crear el curso");
+    console.error('Error al actualizar el curso:', error);
+    throw new Error('El curso no se pudo actualizar');
   }
 }
