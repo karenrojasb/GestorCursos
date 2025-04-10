@@ -1,44 +1,69 @@
-// components/CalificarModal.tsx
-import { XMarkIcon } from "@heroicons/react/24/solid";
+
+// calificarmodal.tsx
 import React, { useState } from "react";
 
 interface CalificarModalProps {
-  onClose: () => void;
   nombre: string;
   documento: string;
-  onGuardar: (nota: string) => void;
+  onClose: () => void;
+  onGuardar: (notaTexto: string) => void;
 }
 
-const CalificarModal = ({ onClose, nombre, documento, onGuardar }: CalificarModalProps) => {
-  const [nuevaNota, setNuevaNota] = useState("");
+const CalificarModal: React.FC<CalificarModalProps> = ({
+  nombre,
+  documento,
+  onClose,
+  onGuardar,
+}) => {
+  const [nota, setNota] = useState("");
+
+  const handleGuardar = () => {
+    if (!nota.trim()) {
+      alert("Ingrese una nota válida");
+      return;
+    }
+
+    onGuardar(nota);
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90">
-        <XMarkIcon className="h-6 w-6" />
-        </button>
-        <h2 className="text-xl font-semibold mb-4 text-[#990000]">Calificar</h2>
-        <p><strong>Nombre:</strong> {nombre}</p>
-        <p><strong>Documento:</strong> {documento}</p>
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-[400px] max-w-full text-center">
+        <h2 className="text-2xl font-bold text-[#990000] mb-4">
+          Calificar a {nombre}
+        </h2>
 
-        <input
-          type="text"
-          placeholder="Escribe la nota"
-          value={nuevaNota}
-          onChange={(e) => setNuevaNota(e.target.value)}
-          className="w-full border px-3 py-2 rounded-md mt-3"
-        />
+        <div className="mb-4">
+          <label htmlFor="nota" className="block text-sm font-medium mb-1">
+            Nota:
+          </label>
+          <input
+            type="number"
+            id="nota"
+            value={nota}
+            onChange={(e) => setNota(e.target.value)}
+            className="w-full border px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-[#990000]"
+            placeholder="Ej: 95"
+            min={0}
+            max={100}
+          />
+        </div>
 
-        <button
-          onClick={() => {
-            onGuardar(nuevaNota);
-            onClose();
-          }}
-          className="mt-4 bg-[#990000] text-white px-4 py-2 rounded-md hover:bg-red-700"
-        >
-          Guardar Nota
-        </button>
+        <div className="flex justify-center gap-4 mt-6">
+          <button
+            onClick={handleGuardar}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition"
+          >
+            Guardar
+          </button>
+          <button
+            onClick={onClose}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition"
+          >
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   );
