@@ -1,18 +1,19 @@
+<label>Profesor:</label>
 <select
-  name="Modalidad"
-  value={formData.Modalidad ?? ""}
+  name="Profesor"
+  value={formData.Profesor ?? ""}
   onChange={(e) =>
     setFormData((prev) => ({
       ...prev,
-      Modalidad: Number(e.target.value),
+      Profesor: Number(e.target.value),
     }))
   }
   required
 >
   <option value="">Seleccione una opción</option>
-  {opcionesModalidad.map((opcion) => (
-    <option key={opcion.id} value={opcion.id}>
-      {opcion.Especificacion}
+  {profesores.map((profesor) => (
+    <option key={profesor.id_emp} value={profesor.id_emp}>
+      {profesor.nombre}
     </option>
   ))}
 </select>
