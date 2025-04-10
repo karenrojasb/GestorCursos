@@ -1,35 +1,57 @@
 // CREAR CURSO
 async createCourses(data: CreateCursoDto) {
   console.log("Data recibida:", data);
-  const { Profesor } = data;
 
   try {
-    // 1. Crear el curso
-    const nuevoCurso = await this.prisma.cursos.create({ data });
+    // Crear el curso
+    const cursoCreado = await this.prisma.cursos.create({ data });
 
-    // 2. Verificar si hay profesor seleccionado
-    if (Profesor) {
-      // 3. Buscar el e_mail del profesor
-      const resultado = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${Profesor} AS VARCHAR)
+    // Insertar en rol_usuario si hay profesor
+    if (data.Profesor) {
+      const profesorEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
+        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${data.Profesor} AS VARCHAR)
       `;
 
-      if (resultado.length > 0) {
-        const email = resultado[0].e_mail;
+      if (profesorEmail.length > 0) {
+        const email = profesorEmail[0].e_mail;
 
-        // 4. Insertar en la tabla gescur.rol_usuario
-        await this.prisma.$executeRaw`
-          INSERT INTO gescur.rol_usuario (usuario, id_rol)
-          VALUES (${email}, 2)
+        // Verificar si ya existe el usuario
+        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
+          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
         `;
-        
-        console.log(`Se insertó el profesor ${email} en rol_usuario con rol 2`);
-      } else {
-        console.warn(`No se encontró el e_mail del profesor con id_emp = ${Profesor}`);
+
+        if (yaExiste[0].count === 0) {
+          await this.prisma.$executeRaw`
+            INSERT INTO gescur.rol_usuario (usuario, id_rol)
+            VALUES (${email}, 2)
+          `;
+        }
       }
     }
 
-    return nuevoCurso;
+    // Insertar en rol_usuario si hay SegundoPro
+    if (data.SegundoPro) {
+      const segundoEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
+        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${data.SegundoPro} AS VARCHAR)
+      `;
+
+      if (segundoEmail.length > 0) {
+        const email = segundoEmail[0].e_mail;
+
+        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
+          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
+        `;
+
+        if (yaExiste[0].count === 0) {
+          await this.prisma.$executeRaw`
+            INSERT INTO gescur.rol_usuario (usuario, id_rol)
+            VALUES (${email}, 2)
+          `;
+        }
+      }
+    }
+
+    return cursoCreado;
   } catch (error) {
     console.error("Error al crear el curso en el backend", error);
     throw new Error("Error al crear el curso");
