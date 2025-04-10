@@ -1,197 +1,131 @@
-import { Injectable } from '@nestjs/common';
-import { CreateNotaDto } from './dto/create-nota.dto';
-import { UpdateNotaDto } from './dto/update-nota.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
-@Injectable()
-export class NotasService {
-  updateNote(arg0: number, UpdateNotaDto: UpdateNotaDto) {
-    throw new Error('Method not implemented.');
-  }
-  constructor(private readonly prisma: PrismaService) {}
-
-//  OBTENER TODAS LAS NOTAS
-
-async findAll() {
-  const notas = await this.prisma.notas.findMany({
-    include: {
-      Listas: {
-        select: {
-          Especificacion: true,
-        },
-      },
-    },
-  });
-
-  const notasConInscrito = await Promise.all(notas.map(async (nota) => {
-    const inscrito = await this.prisma.inscripciones.findFirst({
-      where: {
-        docInscr: nota.idInscrito,
-      },
-      select: {
-        
-        docInscr: true,
-      },
-    });
-
-    return {
-      ...nota,
-      inscrito: inscrito || null,
-    };
-  }));
-
-  return notasConInscrito;
+interface CalificarModalProps {
+  nombre: string;
+  documento: string;
+  idCurso: number;
+  onClose: () => void;
+  onGuardar: (nota: string) => void;
 }
 
+interface OpcionLista {
+  id: number;
+  Especificacion: string;
+}
 
-  //  MÉTODO PARA CREAR NOTA
-    async createNote(CreateNotaDto: CreateNotaDto) {
-      const newNote = await this.prisma.notas.create({
-        data: {
-          idCurso: CreateNotaDto.idCurso,
-          idInscrito: CreateNotaDto.idInscrito,
-          Nota: CreateNotaDto.Nota,
-          idRegistro: CreateNotaDto.idRegistro,
-          FechaRegistro:  new Date()  ,
-        },
-      });
-      return newNote;
-    }
+export default function CalificarModal({
+  nombre,
+  documento,
+  idCurso,
+  onClose,
+  onGuardar,
+}: CalificarModalProps) {
+  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
+  const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
 
-
-    // OBTENER NOTAS POR IDINSCRITO 
-    async obtenerPorIdInscrito(idInscrito: number) {
-      const notas = await this.prisma.notas.findMany({
-        where: { idInscrito },
-        include: {
-          Listas: {
-            select: {
-              Especificacion: true,
-            },
-          },
-        },
-      });
-    
-      const notasConCurso = await Promise.all(
-        notas.map(async (nota) => {
-          if (!nota.idCurso) {
-            return {
-              ...nota,
-              NombreCurso: null,
-              Lugar: null,
-              Inicio: null,
-              Fin: null,
-              LunesIni: null,
-              LunesFin: null,
-              MartesIni: null,
-              MartesFin: null,
-              MiercolesIni: null,
-              MiercolesFin: null,
-              JuevesIni: null,
-              JuevesFin: null,
-              ViernesIni: null,
-              ViernesFin: null,
-              SabadoIni: null,
-              SabadoFin: null,
-              Profesor: null,
-              Proexterno: null,
-              SegundoPro: null,
-              ProfesorNombre: null,
-              SegundoProNombre: null,
-            };
-          }
-    
-          const curso = await this.prisma.cursos.findFirst({
-            where: {
-              id: nota.idCurso,
-            },
-            select: {
-              NombreCurso: true,
-              Lugar: true,
-              Inicio: true,
-              Fin: true,
-              LunesIni: true,
-              LunesFin: true,
-              MartesIni: true,
-              MartesFin: true,
-              MiercolesIni: true,
-              MiercolesFin: true,
-              JuevesIni: true,
-              JuevesFin: true,
-              ViernesIni: true,
-              ViernesFin: true,
-              SabadoIni: true,
-              SabadoFin: true,
-              Profesor: true,
-              SegundoPro: true,
-              Proexterno: true,
-            },
-          });
-    
-          const profesorId = curso?.Profesor?.toString() || '0';
-          const segundoProId = curso?.SegundoPro?.toString() || '0';
-    
-          const [profesor] = await this.prisma.$queryRaw<
-            { nombre: string }[]
-          >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
-    
-          const [segundoPro] = await this.prisma.$queryRaw<
-            { nombre: string }[]
-          >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
-    
-          return {
-            ...nota,
-            NombreCurso: curso?.NombreCurso || null,
-            Lugar: curso?.Lugar || null,
-            Inicio: curso?.Inicio || null,
-            Fin: curso?.Fin || null,
-            LunesIni: curso?.LunesIni || null,
-            LunesFin: curso?.LunesFin || null,
-            MartesIni: curso?.MartesIni || null,
-            MartesFin: curso?.MartesFin || null,
-            MiercolesIni: curso?.MiercolesIni || null,
-            MiercolesFin: curso?.MiercolesFin || null,
-            JuevesIni: curso?.JuevesIni || null,
-            JuevesFin: curso?.JuevesFin || null,
-            ViernesIni: curso?.ViernesIni || null,
-            ViernesFin: curso?.ViernesFin || null,
-            SabadoIni: curso?.SabadoIni || null,
-            SabadoFin: curso?.SabadoFin || null,
-            ProExterno: curso?.Proexterno || null,
-            Profesor: curso?.Profesor || null,
-            SegundoPro: curso?.SegundoPro || null,
-            ProfesorNombre: profesor?.nombre ?? null,
-            SegundoProNombre: segundoPro?.nombre ?? null,
-          };
-        })
-      );
-    
-      return notasConCurso;
-    }
-
-    // MÉTODO PARA ACTUALIZAR
-    async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
-      console.log ('id received:', id);
-      console.log ('data received:', data);
-
+  useEffect(() => {
+    const fetchOpciones = async () => {
       try {
-        const UpdateNote = await this.prisma.notas.update({
-          where: {id},
-          data,
-        });
-        console.log ('update note:', UpdateNote);
-        return UpdateNote;
+        const response = await fetch("http://localhost:8090/api/listas");
+        if (!response.ok) throw new Error("Error al obtener lista de notas");
+        const data = await response.json();
+        setOpciones(data);
+      } catch (error) {
+        console.error("Error cargando lista:", error);
       }
-      catch (error){
-        console.error ('error when updating note:', error);
-        throw new error('the note was not updated');
-      }
+    };
+
+    fetchOpciones();
+  }, []);
+
+  const handleGuardar = async () => {
+    if (notaSeleccionada === null) {
+      alert("Por favor selecciona una nota");
+      return;
     }
 
-    // MÉTODO PARA ELIMINAR
-    async deleteNote(id:number){
-      return this.prisma.notas.delete({where: {id}});
-    }
+    setGuardando(true);
 
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idCurso,
+          idInscrito: documento,
+          Nota: notaSeleccionada,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error al guardar la nota");
+
+      onGuardar(String(notaSeleccionada));
+      onClose();
+    } catch (error) {
+      console.error("Error al guardar nota:", error);
+      alert("Hubo un error al guardar la nota.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform transform hover:scale-125"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+
+        <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
+
+        <p className="text-center mb-2">
+          <strong>Nombre:</strong> {nombre}
+        </p>
+        <p className="text-center mb-4">
+          <strong>Documento:</strong> {documento}
+        </p>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Selecciona una calificación:
+          </label>
+          <select
+            className="w-full border rounded px-3 py-2"
+            value={notaSeleccionada ?? ""}
+            onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
+          >
+            <option value="">-- Selecciona --</option>
+            {opciones.map((op) => (
+              <option key={op.id} value={op.id}>
+                {op.Especificacion}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={handleGuardar}
+            disabled={guardando}
+            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition"
+          >
+            {guardando ? "Guardando..." : "Guardar"}
+          </button>
+          <button
+            onClick={onClose}
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
