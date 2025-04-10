@@ -1,417 +1,682 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
-import { CreateCursoDto } from './dto/create-curso.dto';
+Error: `value` prop on `select` should not be null. Consider using an empty string to clear the component or `undefined` for uncontrolled components.
+    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
+    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
+    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
+    at validatePropertiesInDevelopment (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8838:400)
+    at setInitialProperties (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:9114:9)
+    at completeWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7326:35)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
+    at completeUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8020:23)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7957:28)
+    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
+    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7565:211)
+    at performWorkOnRootViaSchedulerTask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8394:9)
+    at MessagePort.performWorkUntilDeadline (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:2353:64)
 
-@Injectable()
-export class CursosService {
-  constructor(private readonly prisma: PrismaService) {}
 
-//  OBTENER CURSOS
-  async getCourses() {
-    return this.prisma.$queryRaw`
-    SELECT 
-      c.id,
-      c.NombreCurso,
-      c.Valor,
-      lp.Especificacion AS Publico,
-      c.Periodo,
-      c.Inicio,
-      c.Fin,
-      c.Horas,
-      c.CupoMax,
-      c.Lugar,                          
-      c.LunesIni,                          
-      c.LunesFin,                         
-      c.MartesIni,                       
-      c.MartesFin,                        
-      c.MiercolesIni,                      
-      c.MiercolesFin,                      
-      c.JuevesIni,                         
-      c.JuevesFin,                         
-      c.ViernesIni,                        
-      c.ViernesFin,                        
-      c.SabadoIni,                         
-      c.SabadoFin,                         
-      c.DomingoIni,                        
-      c.DomingoFin,                        
-      c.Linea,
-      l.Especificacion AS Linea,    
-      c.Estado,
-      est.Especificacion AS Estado, 
-      c.Modalidad,
-      m.Especificacion AS Modalidad,
-      u.nombre AS Unidad,                            
-      c.Profesor,                          
-      c.SegundoPro,
-      sp.nombre AS SegundoPro,                        
-      c.Proexterno,                       
-      c.Descripcion,                       
-      c.IdTipoCurso,
-      tc.Especificacion AS IdTipoCurso,
-      e.nombre AS NombreProfesor
-    FROM gescur.cursos c
-    LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
-    LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
-    LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
-    LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
-    LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
-    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
-    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-    LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
 
-    ;
-    `
+import { useEffect, useState } from "react";
+import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { motion } from "framer-motion";
+
+interface Curso {
+  id: number;
+  NombreCurso: string;
+  Valor: number;
+  Publico: number;
+  Periodo: string;
+  Inicio: string;
+  Fin: string;
+  Horas: number;
+  CupoMax: number;
+  Lugar: string;
+  Linea: number;
+  Estado: number;
+  Modalidad: number;
+  Unidad: number;
+  Profesor: number;
+  SegundoPro?: number;
+  Proexterno?: string;
+  Descripcion: string;
+  IdTipoCurso: number;
+  LunesIni?: string;
+  LunesFin?: string;
+  MartesIni?: string;
+  MartesFin?: string;
+  MiercolesIni?: string;
+  MiercolesFin?: string;
+  JuevesIni?: string;
+  JuevesFin?: string;
+  ViernesIni?: string;
+  ViernesFin?: string;
+  SabadoIni?: string;
+  SabadoFin?: string;
+  DomingoIni?: string;
+  DomingoFin?: string;
+  NombreProfesor?: string;
 }
 
-
-async obtenerCursosParaUsuario(id_emp: string) {
-  try {
-      // OBTENER EL VALOR DE "PÚBLICO" DEL USUARIO
-      const usuario = await this.prisma.$queryRaw<{ publico: number }[]>`
-          SELECT publico FROM gescur.emp_nomina WHERE id_emp = CAST(${id_emp} AS VARCHAR)
-      `;
-
-      if (!usuario || usuario.length === 0) {
-          throw new Error('Usuario no encontrado en gescur.emp_nomina');
-      }
-
-      const publico = usuario[0].publico;
-
-      console.log(`Usuario ${id_emp} tiene publico: ${publico}`);
-
-      // OBTENER CURSOS SEGÚN EL PÚBLICO
-      let cursos;
-      if (publico === 3) {
-          cursos = await this.prisma.$queryRaw`
-              SELECT 
-                  c.id,
-                  c.NombreCurso,
-                  c.Valor,
-                  lp.Especificacion AS Publico,
-                  c.Periodo,
-                  c.Inicio,
-                  c.Fin,
-                  c.Horas,
-                  c.LunesIni,                          
-                  c.LunesFin,                         
-                  c.MartesIni,                       
-                  c.MartesFin,                        
-                  c.MiercolesIni,                      
-                  c.MiercolesFin,                      
-                  c.JuevesIni,                         
-                  c.JuevesFin,                         
-                  c.ViernesIni,                        
-                  c.ViernesFin,                        
-                  c.SabadoIni,                         
-                  c.SabadoFin,                         
-                  c.DomingoIni,                        
-                  c.DomingoFin,
-                  c.CupoMax,
-                  c.Lugar,
-                  c.Linea,
-                  c.Proexterno, 
-                  l.Especificacion AS Linea,
-                  c.Estado,
-                  est.Especificacion AS Estado,
-                  c.Modalidad,
-                  m.Especificacion AS Modalidad,
-                  u.nombre AS Unidad,
-                  e.nombre AS NombreProfesor,
-                  sp.nombre AS SegundoPro
-              FROM gescur.cursos c
-              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
-              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
-              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
-              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
-              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
-              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
-              ORDER BY c.id
-          `;
-      } else {
-          cursos = await this.prisma.$queryRaw`
-              SELECT 
-                  c.id,
-                  c.NombreCurso,
-                  c.Valor,
-                  lp.Especificacion AS Publico,
-                  c.Periodo,
-                  c.Inicio,
-                  c.Fin,
-                  c.Horas,
-                  c.LunesIni,                          
-                  c.LunesFin,                         
-                  c.MartesIni,                       
-                  c.MartesFin,                        
-                  c.MiercolesIni,                      
-                  c.MiercolesFin,                      
-                  c.JuevesIni,                         
-                  c.JuevesFin,                         
-                  c.ViernesIni,                        
-                  c.ViernesFin,                        
-                  c.SabadoIni,                         
-                  c.SabadoFin,                         
-                  c.DomingoIni,                        
-                  c.DomingoFin,    
-                  c.CupoMax,
-                  c.Lugar,
-                  c.Linea,
-                   c.Proexterno, 
-                  l.Especificacion AS Linea,
-                  c.Estado,
-                  est.Especificacion AS Estado,
-                  c.Modalidad,
-                  m.Especificacion AS Modalidad,
-                  u.nombre AS Unidad,
-                  e.nombre AS NombreProfesor,
-                  sp.nombre AS SegundoPro
-              FROM gescur.cursos c
-              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
-              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
-              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
-              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
-              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
-              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
-              WHERE c.publico = ${publico} OR c.publico = 3
-              ORDER BY c.id
-              
-          `;
-      }
-
-      console.log(`Cursos obtenidos para usuario ${id_emp}:`, cursos);
-
-      return cursos;
-  } catch (error) {
-      console.error('Error al obtener cursos:', error.message);
-      throw new Error('No se pudieron obtener los cursos.');
-  }
+interface CursoEditarModalProps {
+  courseId: number | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: () => void;
 }
 
-
-
-// CREAR CURSO
-async createCourses(data: CreateCursoDto) {
-  console.log("Data recibida:", data);
-
-  try {
-    // Crear el curso
-    const cursoCreado = await this.prisma.cursos.create({ data });
-
-    // Insertar en rol_usuario si hay profesor
-    if (data.Profesor) {
-      const profesorEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${data.Profesor} AS VARCHAR)
-      `;
-
-      if (profesorEmail.length > 0) {
-        const email = profesorEmail[0].e_mail;
-
-        // Verificar si ya existe el usuario
-        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
-          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
-        `;
-
-        if (yaExiste[0].count === 0) {
-          await this.prisma.$executeRaw`
-            INSERT INTO gescur.rol_usuario (usuario, id_rol)
-            VALUES (${email}, 2)
-          `;
-        }
-      }
-    }
-
-    // Insertar en rol_usuario si hay SegundoPro
-    if (data.SegundoPro) {
-      const segundoEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${data.SegundoPro} AS VARCHAR)
-      `;
-
-      if (segundoEmail.length > 0) {
-        const email = segundoEmail[0].e_mail;
-
-        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
-          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
-        `;
-
-        if (yaExiste[0].count === 0) {
-          await this.prisma.$executeRaw`
-            INSERT INTO gescur.rol_usuario (usuario, id_rol)
-            VALUES (${email}, 2)
-          `;
-        }
-      }
-    }
-
-    return cursoCreado;
-  } catch (error) {
-    console.error("Error al crear el curso en el backend", error);
-    throw new Error("Error al crear el curso");
-  }
+interface Opcion {
+  id: number;
+  Especificacion: string;
+  Tipo: number;
 }
 
-
-
-  // OBTENER OPCIONES PARA EL DESPLEGABLE
-  async getEspecificaciones() {
-    try {
-      return await this.prisma.listas.findMany(); 
-    } catch (error) {
-      console.error("Error al obtener las especificaciones:", error);
-      throw new Error("Error al obtener las especificaciones");
-    }
-  }
-
-  // OBTENER CURSO POR ID
-
-
-  async getCourseId(id: number) {
-    const curso = await this.prisma.$queryRaw<
-      Array<any>
-    >(Prisma.sql`
-      SELECT 
-        c.*,
-        e.nombre AS NombreProfesor,
-        sp.nombre AS NombreSegundoPro
-      FROM gescur.cursos c
-      LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
-      LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-      WHERE c.id = ${id}
-    `);
+export default function CursoEditarModal({
+  courseId,
+  isOpen,
+  onClose,
+  onUpdate,
+}: CursoEditarModalProps) {
+  const [formData, setFormData] = useState<Curso>({
+    id: 0,
+    NombreCurso: "",
+    Valor: 0,
+    Publico: 0,
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
+    Horas: 0,
+    CupoMax: 0,
+    Lugar: "",
+    Linea:0,
+    Estado: 0,
+    Modalidad:0,
+    Unidad: 0,
+    Profesor: 0,
+    SegundoPro:0,
+    Proexterno: "",
+    Descripcion: "",
+    IdTipoCurso:0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
+  const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
+  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
+  const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
+  const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
+  const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
+  const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
+  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([])
+  const [showSuccess, setShowSuccess] = useState(false);
   
-    if (!curso || curso.length === 0) {
-      throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
-    }
-  
-    return curso[0];
-  }
-  
-
-  // ACTUALIZAR CURSO POR ID
-
-// ACTUALIZAR CURSO POR ID
-async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
-  console.log('ID recibido:', id);
-  console.log('Datos recibidos:', data);
-
-  try {
-    // Actualizar el curso
-    const cursoActualizado = await this.prisma.cursos.update({
-      where: { id },
-      data,
-    });
-
-    // Si viene un nuevo Profesor
-    if (data.Profesor && typeof data.Profesor === 'object' && 'set' in data.Profesor) {
-      const idProfesor = data.Profesor.set;
-
-      const profesorEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${idProfesor} AS VARCHAR)
-      `;
-
-      if (profesorEmail.length > 0) {
-        const email = profesorEmail[0].e_mail;
-
-        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
-          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
-        `;
-
-        if (yaExiste[0].count === 0) {
-          await this.prisma.$executeRaw`
-            INSERT INTO gescur.rol_usuario (usuario, id_rol)
-            VALUES (${email}, 2)
-          `;
-        }
-      }
-    }
-
-    // Si viene un nuevo SegundoPro
-    if (data.SegundoPro && typeof data.SegundoPro === 'object' && 'set' in data.SegundoPro) {
-      const idSegundoPro = data.SegundoPro.set;
-
-      const segundoEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${idSegundoPro} AS VARCHAR)
-      `;
-
-      if (segundoEmail.length > 0) {
-        const email = segundoEmail[0].e_mail;
-
-        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
-          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
-        `;
-
-        if (yaExiste[0].count === 0) {
-          await this.prisma.$executeRaw`
-            INSERT INTO gescur.rol_usuario (usuario, id_rol)
-            VALUES (${email}, 2)
-          `;
-        }
-      }
-    }
-
-    return cursoActualizado;
-  } catch (error) {
-    console.error('Error al actualizar el curso:', error);
-    throw new Error('El curso no se pudo actualizar');
-  }
-}
-
  
 
-  // ELIMINAR CURSO POR ID
-  async deleteCourse(id: number) {
-    return this.prisma.cursos.delete({ where: { id } });
-  }
+  // CARGAR DATOS DE CURSO
+  useEffect(() => {
+    if (!courseId || !isOpen) return; 
 
-// OBTENER EL NOMBRE DEL PROFESOR
-async obtenerProfesores(){
-  const query = `SELECT id_emp, nombre, publico FROM gescur.emp_nomina WHERE publico = 1`;
-  const profesores = await this.prisma.$queryRawUnsafe(query);
-  return profesores;
-}
+    setLoading(true);
+    setError(null);
 
-// OBTENER NOMBRE DEL PROFESOR POR ID
-async obtenerNombreProfesor(id_emp: string): Promise<string | null> {
-  try {
-    const resultado = await this.prisma.$queryRaw<{ nombre: string }[]>`
-      SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${id_emp} AS VARCHAR)
-    `;
+    console.log("Cargando curso con ID:", courseId);
 
-    if (resultado.length > 0) {
-      return resultado[0].nombre;
-    } else {
-      return null;
+    fetch(`http://localhost:8090/api/cursos/${courseId}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error al cargar el curso");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Datos del curso recibidos:", data);
+        if (data) {
+          setFormData(data);
+        } else {
+          throw new Error("Datos del curso vacíos");
+        }
+      })
+      .catch((err) => {
+        setError(err.message || "No se pudo cargar el curso");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [courseId, isOpen]);
+
+
+    useEffect(() => {
+      async function fetchOpciones() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+          if (!response.ok) throw new Error("Error al obtener las opciones");
+  
+          const data: Opcion[] = await response.json();
+  
+          setOpcionesPublico(data.filter((item) => item.Tipo === 1));
+          setOpcionesLinea(data.filter((item) => item.Tipo === 2));
+          setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
+          setOpcionesEstado(data.filter((item) => item.Tipo === 4));
+          setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
+        } catch (error) {
+          console.error("Error cargando las opciones:", error);
+        }
+      }
+  
+      fetchOpciones();
+    }, []);
+
+    useEffect(()  => {
+      async function fetcPeriodos() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/periodos")
+          if (!response.ok) throw new Error("Error al obtener los periodos");
+  
+          const data = await response.json();
+          setOpcionesPeriodos(data);
+          } catch(error){
+            console.error("Error cargando lista de periodos:", error);
+          }
+        }
+        fetcPeriodos(); 
+    }, []);
+  
+  
+    useEffect(()  => {
+      async function fetcUnidades() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/unidad")
+          if (!response.ok) throw new Error("Error al obtener las unidades");
+  
+          const data = await response.json();
+          setUnidad(data);
+          } catch(error){
+            console.error("Error cargando lista de unidades:", error);
+          }
+        }
+        fetcUnidades(); 
+    }, []);
+
+    useEffect(() => {
+      async function fetchProfesores() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/profesores");
+          if (!response.ok) throw new Error("Error al obtener los profesores");
+    
+          const data = await response.json();
+          const profesoresPublicos = data.filter((prof: any) => prof.publico === 1);
+          setProfesores(profesoresPublicos);
+          console.log("Profesores públicos:", profesoresPublicos);
+        } catch (error) {
+          console.error("Error cargando los profesores:", error);
+        }
+      }
+    
+      fetchProfesores();
+    }, []);
+
+
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData((prev) =>
+      prev
+        ? {
+            ...prev,
+            [e.target.name]: e.target.type === "number" ? Number(e.target.value) : e.target.value,
+          }
+        : prev
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData) return;
+  
+    try {
+      const res = await fetch(`http://localhost:8090/api/cursos/${courseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!res.ok) throw new Error("Error al actualizar el curso");
+  
+      setShowSuccess(true);
+      setTimeout(()=> {
+        setShowSuccess(false);
+        onUpdate();
+        onClose();
+      }, 2000)
+      
+    } catch (err) {
+      setError("No se pudo actualizar el curso");
     }
-  } catch (error) {
-    console.error('Error al obtener el nombre del profesor:', error);
-    throw new Error('No se pudo obtener el nombre del profesor');
-  }
-}
+  };
+
+  if (!isOpen) return null; 
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p>{error}</p>;
+  if (!formData) return <p>No se encontró el curso</p>;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className=" relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+      <motion.div
+        className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto"
+        initial={{ opacity: 0}}
+        animate={{ opacity: 1}}
+        exit={{ opacity: 0}}
+        transition={{ duration: 0.3}}
+        >
+      <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+        <h2 className="text-3xl font-bold text-[#990000] text-center mb-6 ">Editar Curso</h2>
+        {/* FORMULARIO DE EDITAR CURSO */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+         
+          <label className="block font-semibold text-gray-700">
+            Nombre:
+            <input
+  type="text"
+  name="NombreCurso"
+  value={formData.NombreCurso || ""}
+  onChange={handleChange}
+  required
+   className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+/>
+          </label>
+
+          <label className="block font-semibold text-gray-700">
+            Valor:
+            <input
+  type="number"
+  name="Valor"
+  value={formData.Valor ?? 0}
+  onChange={handleChange}
+  required
+   className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+/>
+          </label>
+
+          <label className="block font-semibold text-gray-700">
+  Público:
+  <select
+    name="Publico"
+    value={formData.Publico}
+     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Publico: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesPublico.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
+
+<label className="block font-semibold text-gray-700">
+  Periodo:
+  <select
+    name="Periodo"
+    value={formData.Periodo}
+     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Periodo: String(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesPeriodos.map((opcion, index) => (
+      <option key={index} value={opcion.periodo}>
+        {opcion.periodo}
+      </option>
+    ))}
+  </select>
+</label>
+
+         
+<label className="block font-semibold text-gray-700">
+  Fecha de inicio:
+  <input
+    type="date"
+    name="Inicio"
+    value={formData.Inicio ? formData.Inicio.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
+
+<label className="block font-semibold text-gray-700">
+  Fecha fin:
+  <input
+    type="date"
+    name="Fin"
+    value={formData.Fin ? formData.Fin.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
 
 
+          <label className="block font-semibold text-gray-700">
+            Horas:
+            <input
+  type="number"
+  name="Horas"
+  value={formData.Horas ?? 0}
+  onChange={handleChange}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  required
+/>
+          </label >
+
+          <h3 className="text-lg font-semibold mt-4">Horarios</h3>
+<table className="w-full border-collapse border border-gray-300 text-center">
+  <thead>
+    <tr className="bg-gray-200">
+      <th className="border border-gray-300 px-2 py-1">Día</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
+    </tr>
+  </thead>
+  <tbody>
+    {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+      <tr key={dia}>
+        <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Ini`}
+            value={formData[`${dia}Ini` as keyof typeof formData] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Fin`}
+            value={formData[`${dia}Fin` as keyof typeof formData] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
 
-async obtenerUnidad () {
-  return this.prisma.$queryRaw<
-  Array<{ codigo: number; nombre: string}>
-  >(Prisma.sql`
-    SELECT codigo, nombre FROM gescur.unidad`);
-}
+          <label  className="block font-semibold text-gray-700">
+            Cupo Máximo:
+            <input
+  type="number"
+  name="CupoMax"
+  value={formData.CupoMax ?? 0}
+  onChange={handleChange}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  required
+/>
+          </label>
+
+          <label  className="block font-semibold text-gray-700">
+            Lugar:
+            <input
+  type="text"
+  name="Lugar"
+  value={formData.Lugar || ""}
+  onChange={handleChange}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  required
+/>
+          </label>
+
+          <label  className="block font-semibold text-gray-700">
+  Línea
+  <select
+    name="Linea"
+    value={formData.Linea}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Linea: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesLinea.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
+
+           <label  className="block font-semibold text-gray-700">
+  Estado:
+  <select
+    name="Estado"
+    value={formData.Estado}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Estado: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesEstado.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
+
+           <label className="block font-semibold text-gray-700">
+  Modalidad:
+  <select
+    name="Modalidad"
+    value={formData.Modalidad}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Modalidad: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesModalidad.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
+
+<label className="block font-semibold text-gray-700">
+  Unidad:
+  <select
+    name="Unidad"
+    value={formData.Unidad}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Unidad: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {unidad.map((unidad) => (
+                    <option key={unidad.codigo} value={unidad.codigo}>
+                      {unidad.nombre}
+                    </option>
+                  ))}
+  </select>
+</label>  
 
 
-async obtenerPeriodos(){
-  return this.prisma.$queryRaw<
-  {  periodo: string; fecha_ini: Date; fecha_fin: Date}[]
-  >`
-  SELECT  periodo, fecha_ini, fecha_fin
-  FROM gescur.periodos
-  WHERE YEAR(fecha_ini) = YEAR(GETDATE())
-  ORDER BY fecha_ini ASC
-  `;
-}
+<label className="block font-semibold text-gray-700">
+  Profesor:
+  <select
+    name="Profesor"
+    value={formData.Profesor}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Profesor: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value={formData.Profesor}>
+      {formData.NombreProfesor || "Seleccione una opción"}
+    </option>
+    {profesores
+      .filter((p) => p.id_emp !== formData.Profesor)
+      .map((profesor) => (
+        <option key={profesor.id_emp} value={profesor.id_emp}>
+          {profesor.nombre}
+        </option>
+      ))}
+  </select>
+</label>
+           
+       
+<label className="block font-semibold text-gray-700">
+  Segundo Profesor:
+  <select
+    name="SegundoPro"
+    value={formData.SegundoPro}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        SegundoPro: Number(e.target.value),
+      }))
+    }
+  >
+    <option value={formData.SegundoPro}>
+      {formData.SegundoPro
+        ? profesores.find((p) => Number(p.id_emp) === Number(formData.SegundoPro))?.nombre || "Seleccione una opción"
+        : "Seleccione una opción"}
+    </option>
+    
+    {profesores
+      .filter((p) => Number(p.id_emp) !== Number(formData.SegundoPro)) // evitar duplicado
+      .map((profesor) => (
+        <option key={profesor.id_emp} value={profesor.id_emp}>
+          {profesor.nombre}
+        </option>
+      ))}
+  </select>
+</label>
 
 
+          <label className="block font-semibold text-gray-700">
+            Profesor Externo:
+            <input
+  type="text"
+  name="Proexterno"
+  value={formData.Proexterno ?? ""}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  onChange={handleChange}
+  
+/>
+          </label>   
+
+          <label className="block font-semibold text-gray-700">
+  Tipo de Curso:
+  <select
+    name="IdTipoCurso"
+    value={formData.IdTipoCurso}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        IdTipoCurso: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesTipoCurso.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
+
+          <label className="block font-semibold text-gray-700">
+            Descripción:
+            <input
+  type="text"
+  name="Descripcion"
+  value={formData.Descripcion ?? 0}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  onChange={handleChange}
+  required
+/>
+          </label>  
+
+          <div className="flex modal-actions justify-center gap-4 ">
+            <button type="submit"
+             className="mt-6 h-14 w-64  bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg hover:scale-105 transition">
+              Actualizar
+              </button>
+            <button 
+            type="button" 
+            onClick={onClose}
+            className="mt-6 h-14 w-64 bg-[#990000] hover:bg-red-700 text-white py-2 rounded-lg hover:scale-105 transition">
+              Cancelar
+            </button>
+          </div>
+        </form>
+
+        
 
 
+        </motion.div>
+      </div>
+
+      
+      
+
+      {showSuccess && (
+  <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-[9999]">
+    <div className="animate-check-spin scale-125">
+      <CheckCircleIcon className="h-32 w-32 text-green-500" />
+    </div>
+    <p className="text-white text-2xl font-bold mt-2 animate-fade-in">Curso actualizado</p>
+  </div>
+)}
+
+
+    </div>
+  );
 }
