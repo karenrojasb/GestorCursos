@@ -191,10 +191,15 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full  h-[700px] max-w-3xl flex flex-col">
+      <div className="relative bg-white p-6   rounded-lg shadow-lg w-full  h-[700px] max-w-3xl flex flex-col">
 
        
-       
+      <button
+            onClick={onClose}
+            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
 
         {/* ANIMACIÓN DE CHECK O X */}
         {mostrarAnimacion && (
@@ -227,12 +232,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
             />     
 
-          <button
-            onClick={onClose}
-            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
+          
         </div>
 
         {/* TABLA DE CURSOS */}
