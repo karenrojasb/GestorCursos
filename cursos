@@ -1,8 +1,8 @@
-[Nest] 7292  - 11/04/2025, 3:29:38 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+[Nest] 6672  - 11/04/2025, 3:31:08 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
 Invalid `prisma.$queryRawUnsafe()` invocation:
 
 
-Raw query failed. Code: `207`. Message: `Invalid column name 'FechaInicio'.`
+Raw query failed. Code: `207`. Message: `Invalid column name 'Horario'.`
     at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
     at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
     at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
@@ -13,6 +13,6 @@ Raw query failed. Code: `207`. Message: `Invalid column name 'FechaInicio'.`
   clientVersion: '6.3.1',
   meta: {
     code: '207',
-    message: "Invalid column name 'FechaInicio'."
+    message: "Invalid column name 'Horario'."
   }
 }
