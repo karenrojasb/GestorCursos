@@ -14,6 +14,8 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import { PencilSquareIcon } from "@heroicons/react/16/solid";
+import { ChartBarIcon } from "@heroicons/react/16/solid";
+import Certificados from "../user/certificados/page";
 
 interface MainButtonsProps {
   onSelect: (section: string) => void;
@@ -27,6 +29,7 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
   const [showCatalogoAdmin, setShowCatalogoAdmin] = useState(false);
   const [showCursoModal, setShowCursoModal] = useState(false);
   const [showInscritosModal, setShowInscritosModal] = useState(false);
+  const [showCertificados, setShowCertificados] = useState(false);
 
   useEffect(() => {
     console.log("Valor de publico:", publico);
@@ -52,15 +55,15 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full">
-      <div className="w-full max-w-md flex flex-col space-y-4 items-center">
+    <div className="flex flex-col items-center justify-center  w-full">
+      <div className="w-full max-w-md mt-48 flex flex-col space-y-4 items-center">
         
         {/* BOTÓN CATÁLOGO */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowCatalogo(true)}
-          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] hover:bg-red-700
                      text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
         >
           <BookOpenIcon className="h-6 w-6 text-white" />
@@ -72,13 +75,14 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => onSelect("catalogomodal")}
-          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+          onClick={() => setShowCertificados(true)}
+          className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] hover:bg-red-700
                      text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
         >
           <DocumentCheckIcon className="h-6 w-6 text-white" />
           Certificados
         </motion.button>
+        {showCertificados && <Certificados onClose={() => setShowCertificados(false)} />}
 
         {/* BOTONES SOLO PARA ADMINISTRADORES */}
         {esAdmin && (
@@ -88,7 +92,7 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowGestorModal(true)}
-              className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] 
+              className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] hover:bg-red-700
                          text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
             >
               <PencilIcon className="h-6 w-6 text-white" />
@@ -141,6 +145,21 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
                     >
                       <BookOpenIcon className="h-6 w-6 text-white" />
                       Catálogo
+                    </motion.button>
+
+                    {/* BOTÓN DE REPORTES */}
+                    <motion.button
+                      whileHover={{ scale: 1.1, backgroundColor: "#b30000" }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        console.log("Abriendo Modal de Inscritos");
+                        setShowInscritosModal(true);
+                        setShowGestorModal(false);
+                      }}
+                      className="flex items-center gap-3 w-4/5 bg-[#990000] text-white py-3 rounded-lg transition-all hover:shadow-lg justify-center"
+                    >
+                      <ChartBarIcon className="h-6 w-6 text-white" />
+                      Reportes
                     </motion.button>
 
                     {/* BOTÓN VER INSCRITOS */}
