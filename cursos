@@ -1,33 +1,18 @@
-async getCursosPorProfesor(idProfesor: number) {
-  return this.prisma.$queryRawUnsafe<
-    Array<{
-      id: number;
-      NombreCurso: string;
-      Profesor: number;
-      SegundoPro: number;
-      Lugar: string;
-      FechaInicio: Date;
-      FechaFin: Date;
-      Horario: string;
-    }>
-  >(
-    `SELECT 
-      c.id,
-      c.NombreCurso,
-      c.Profesor,
-      c.SegundoPro,
-      c.Lugar,
-      c.FechaInicio,
-      c.FechaFin,
-      c.Horario
-    FROM gescur.Cursos c
-    WHERE c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor}`
-  );
-}
+[Nest] 7292  - 11/04/2025, 3:29:38 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
 
 
-
-@Get('cursos-profesor/:idProfesor')
-getCursosPorProfesor(@Param('idProfesor') id: string) {
-  return this.inscripcionesService.getCursosPorProfesor(Number(id));
+Raw query failed. Code: `207`. Message: `Invalid column name 'FechaInicio'.`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2010',
+  clientVersion: '6.3.1',
+  meta: {
+    code: '207',
+    message: "Invalid column name 'FechaInicio'."
+  }
 }
