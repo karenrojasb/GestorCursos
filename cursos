@@ -16,18 +16,24 @@ export class UsuarioService {
     }
   
     const usuarioEncontrado = usuario[0];
-  
-    // Verificar si el usuario es administrador
-    const esAdmin = await this.prisma.rol_usuario.count({
+
+    // Consultar el rol del usuario
+    const roles = await this.prisma.rol_usuario.findMany({
       where: { usuario: usuarioEncontrado.e_mail },
+      select: { rol: true },
     });
-  
+
+    // Verifica si tiene rol 1 (admin) o rol 2 (profesor)
+    const esAdmin = roles.some(r => r.rol === 1);
+    const esProfesor = roles.some(r => r.rol === 2);
+
     return {
-      id_emp: usuarioEncontrado.id_emp, // Asegurar que se devuelve el ID del usuario
+      id_emp: usuarioEncontrado.id_emp,
       nombre: usuarioEncontrado.nombre,
       publico: usuarioEncontrado.publico,
       e_mail: usuarioEncontrado.e_mail,
-      esAdmin: esAdmin > 0,
+      esAdmin,
+      esProfesor,
     };
   }
 }
