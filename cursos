@@ -6,24 +6,25 @@ export class UsuarioService {
   constructor(private prisma: PrismaService) {}
 
   async iniciarSesion(e_mail: string) {
-    const usuario = await this.prisma.$queryRaw<any[]>`
+    const usuario = await this.prisma.$queryRawUnsafe<any[]>(`
       SELECT id_emp, nombre, publico, e_mail 
       FROM gescur.emp_nomina 
-      WHERE TRIM(e_mail) = TRIM(${e_mail})`;
+      WHERE TRIM(e_mail) = TRIM($1)
+    `, e_mail);
   
-    if (usuario.length === 0) {
+    if (!usuario || usuario.length === 0) {
       throw new NotFoundException('Usuario no encontrado');
     }
   
     const usuarioEncontrado = usuario[0];
 
-    // Consultar el rol del usuario
-    const roles = await this.prisma.rol_usuario.findMany({
-      where: { usuario: usuarioEncontrado.e_mail },
-      select: { rol: true },
-    });
+    // Consultar los roles del usuario
+    const roles = await this.prisma.$queryRawUnsafe<any[]>(`
+      SELECT rol 
+      FROM gescur.rol_usuario 
+      WHERE usuario = TRIM($1)
+    `, e_mail);
 
-    // Verifica si tiene rol 1 (admin) o rol 2 (profesor)
     const esAdmin = roles.some(r => r.rol === 1);
     const esProfesor = roles.some(r => r.rol === 2);
 
