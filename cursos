@@ -1,66 +1,56 @@
-async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
-  console.log('ID recibido:', id);
-  console.log('Datos recibidos:', data);
+import { Injectable } from '@nestjs/common';
+import { CreateRolUsuarioDto } from './dto/create-rol_usuario.dto';
+import { UpdateRolUsuarioDto } from './dto/update-rol_usuario.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
-  try {
-    // Actualiza el curso
-    const cursoActualizado = await this.prisma.cursos.update({
-      where: { id },
-      data,
-    });
+@Injectable()
+export class RolUsuarioService {
 
-    // Si hay profesor, verificar si está en rol_usuario
-    if (data.Profesor) {
-      const profesorId = data.Profesor as number;
+  updateRolUsuario(arg0: number, UpdateRolUsuarioDto: UpdateRolUsuarioDto) {
+      throw new Error('Method not implemented.');
+    }
+    constructor(private readonly prisma: PrismaService) {}
+  
+  //  OBTENER TODAS LAS NOTAS
+    async findAll(){
+      return this.prisma.rol_usuario.findMany();
+    }
+  
+    //  MÉTODO PARA CREAR NOTA
+      async createRolUuario(CreateRolUsuarioDto: CreateRolUsuarioDto) {
+        const newRolUsuario = await this.prisma.rol_usuario.create({
+          data: {
+            id_rol: CreateRolUsuarioDto.id_rol,
+            usuario: CreateRolUsuarioDto.usuario,
+          },
+        });
+        return newRolUsuario;
+      }
 
-      const profesorEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)
-      `;
+       // MÉTODO PARA ACTUALIZAR
+    async UpdateRolUsuario (id: number, data: Prisma.rol_usuarioUpdateInput){
+      console.log ('id received:', id);
+      console.log ('data received:', data);
 
-      if (profesorEmail.length > 0) {
-        const email = profesorEmail[0].e_mail;
-
-        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
-          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
-        `;
-
-        if (yaExiste[0].count === 0) {
-          await this.prisma.$executeRaw`
-            INSERT INTO gescur.rol_usuario (usuario, id_rol)
-            VALUES (${email}, 2)
-          `;
-        }
+      try {
+        const UpdateRolUsuario = await this.prisma.rol_usuario.update({
+          where: {id},
+          data,
+        });
+        console.log ('update rol:', UpdateRolUsuario);
+        return UpdateRolUsuario;
+      }
+      catch (error){
+        console.error ('error when updating Rol:', error);
+        throw new error('the Rol was not updated');
       }
     }
 
-    // Si hay SegundoPro, verificar si está en rol_usuario
-    if (data.SegundoPro) {
-      const segundoId = data.SegundoPro as number;
-
-      const segundoEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
-        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoId} AS VARCHAR)
-      `;
-
-      if (segundoEmail.length > 0) {
-        const email = segundoEmail[0].e_mail;
-
-        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
-          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
-        `;
-
-        if (yaExiste[0].count === 0) {
-          await this.prisma.$executeRaw`
-            INSERT INTO gescur.rol_usuario (usuario, id_rol)
-            VALUES (${email}, 2)
-          `;
-        }
-      }
+    // MÉTODO PARA ELIMINAR
+    async deleteRolUsuario(id:number){
+      return this.prisma.rol_usuario.delete({where: {id}});
     }
 
-    return cursoActualizado;
 
-  } catch (error) {
-    console.error('Error al actualizar el curso:', error);
-    throw new Error('El curso no se pudo actualizar');
-  }
 }
