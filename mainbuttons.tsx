@@ -21,6 +21,7 @@ interface MainButtonsProps {
   onSelect: (section: string) => void;
   publico: number;
   esAdmin: boolean;
+  esProfesor: boolean;
 }
 
 export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsProps) {
@@ -34,6 +35,7 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
   useEffect(() => {
     console.log("Valor de publico:", publico);
     console.log("Valor de esAdmin:", esAdmin);
+    console.log("Valor de esProfesor", esProfesor)
   }, [publico, esAdmin]);
 
   const handleSaveCurso = async (data: any) => {
@@ -84,6 +86,20 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
         </motion.button>
         {showCertificados && <Certificados onClose={() => setShowCertificados(false)} />}
 
+        {esProfesor && ( 
+              <motion.button 
+              whileHover={{scale: 1.05}}
+              whileTap={{scale: 0.95}}
+              onClick={() => {
+
+              }}
+              className="flex items-center justify-center gap-3 w-4/5 bg-[#990000] hover:bg-red-700 
+              text-white py-3 rounded-lg shadow-md transition-all hover:shadow-lg"
+              ></motion.button>
+            )}
+
+
+
         {/* BOTONES SOLO PARA ADMINISTRADORES */}
         {esAdmin && (
           <>
@@ -98,6 +114,9 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
               <PencilIcon className="h-6 w-6 text-white" />
               Gestor de Cursos
             </motion.button>
+
+
+
 
             {/* MODAL GESTOR DE CURSOS */}
             {showGestorModal && (
@@ -180,6 +199,7 @@ export default function MainButtons({ onSelect, publico, esAdmin }: MainButtonsP
                 </div>
               </div>
             )}
+
 
             {/* MODALES ADMIN */}
             {showCatalogoAdmin && <CatalogoAdminModal onClose={() => setShowCatalogoAdmin(false)} />}
