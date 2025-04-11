@@ -45,6 +45,8 @@ export class InscripcionesService {
         nombre: string | null;
         est: boolean;
         fecreg: Date;
+        Profesor: number;
+        SegundoPro: number; 
         
       }>
     >(
@@ -55,7 +57,9 @@ export class InscripcionesService {
         i.docInscr, 
         e.nombre, 
         i.est, 
-        i.fecreg
+        i.fecreg,
+        c.Profesor,
+        c.SegundoPro
 
       FROM gescur.Inscripciones i
       LEFT JOIN gescur.Cursos c ON i.idCur = c.id
