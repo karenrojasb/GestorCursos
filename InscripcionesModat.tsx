@@ -3,7 +3,7 @@ import { XMarkIcon, MagnifyingGlassIcon, ArrowDownTrayIcon, PencilIcon, PlusCirc
 import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import CalificarModal from "./calificarmodal";
+import CalificarModalProps from "./calificarmodal";
 
 interface Inscripcion {
   NombreCurso: string | undefined;
@@ -147,9 +147,38 @@ const abrirModalCalificar = async (nombre: string, doc: string) => {
   }
 };
 
-const guardarNota = (nota: string) => {
+const guardarNota = async (notaTexto: string) => {
+  if (!inscritoSeleccionado) return;
 
-  console.log(`Guardar nota ${nota} para ${inscritoSeleccionado?.doc}`);
+  const cursoId = Object.keys(groupedInscripciones).find(cursoId =>
+    groupedInscripciones[Number(cursoId)].some(ins =>
+      ins.docInscr === inscritoSeleccionado.doc
+    )
+  );
+
+  const idCurso = Number(cursoId);
+  const idInscrito = Number(inscritoSeleccionado.doc); // o usar como string si tu backend lo trata así
+  const Nota = Number(notaTexto); // asegúrate de que sea número si lo esperas así
+  const idRegistro = 1; // aquí deberías poner el ID del usuario que registra (puede ser dinámico)
+
+  try {
+    const response = await fetch("http://localhost:8090/api/Notas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        idCurso,
+        idInscrito,
+        Nota,
+        idRegistro,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Error al guardar la nota");
+
+    console.log("Nota guardada exitosamente");
+  } catch (error) {
+    console.error("Error al guardar nota:", error);
+  }
 };
 
 
@@ -216,7 +245,7 @@ const guardarNota = (nota: string) => {
 
   return (
     <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative flex flex-col items-center gap-4 w-full max-w-4xl bg-white py-8 px-10 rounded-lg shadow-md  min-h-[800px]">
+      <div className="relative flex flex-col  gap-4 w-full max-w-4xl bg-white py-8 px-10 rounded-lg shadow-md  min-h-[800px]">
         
         {/* BOTÓN CERRAR */}
         <button
@@ -381,12 +410,11 @@ const guardarNota = (nota: string) => {
           )} 
         </div>
         {modalCalificarAbierto && inscritoSeleccionado && (
-  <CalificarModal
-    nombre={inscritoSeleccionado.nombre}
-    documento={inscritoSeleccionado.doc}
-    onClose={() => setModalCalificarAbierto(false)}
-    onGuardar={guardarNota}
-  />
+  <CalificarModalProps
+            nombre={inscritoSeleccionado.nombre}
+            documento={inscritoSeleccionado.doc}
+            onClose={() => setModalCalificarAbierto(false)}
+            onGuardar={guardarNota} idCurso={0}  />
 )}
       </div>
       
