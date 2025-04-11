@@ -6,35 +6,34 @@ export class UsuarioService {
   constructor(private prisma: PrismaService) {}
 
   async iniciarSesion(e_mail: string) {
-    const usuario = await this.prisma.$queryRawUnsafe<any[]>(`
+    const usuario = await this.prisma.$queryRaw<any[]>`
       SELECT id_emp, nombre, publico, e_mail 
       FROM gescur.emp_nomina 
-      WHERE TRIM(e_mail) = TRIM($1)
-    `, e_mail);
+      WHERE TRIM(e_mail) = TRIM(${e_mail})`;
   
-    if (!usuario || usuario.length === 0) {
+    if (usuario.length === 0) {
       throw new NotFoundException('Usuario no encontrado');
     }
   
     const usuarioEncontrado = usuario[0];
 
-    // Consultar los roles del usuario
-    const roles = await this.prisma.$queryRawUnsafe<any[]>(`
-      SELECT rol 
-      FROM gescur.rol_usuario 
-      WHERE usuario = TRIM($1)
-    `, e_mail);
+    // Verificar si el usuario es administrador (rol = 0 por ejemplo)
+    const esAdmin = await this.prisma.rol_usuario.count({
+      where: { usuario: usuarioEncontrado.e_mail, rol: 0 },
+    });
 
-    const esAdmin = roles.some(r => r.rol === 1);
-    const esProfesor = roles.some(r => r.rol === 2);
+    // Verificar si el usuario es profesor (rol = 2)
+    const esProfesor = await this.prisma.rol_usuario.count({
+      where: { usuario: usuarioEncontrado.e_mail, rol: 2 },
+    });
 
     return {
       id_emp: usuarioEncontrado.id_emp,
       nombre: usuarioEncontrado.nombre,
       publico: usuarioEncontrado.publico,
       e_mail: usuarioEncontrado.e_mail,
-      esAdmin,
-      esProfesor,
+      esAdmin: esAdmin > 0,
+      esProfesor: esProfesor > 0,
     };
   }
 }
