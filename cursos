@@ -1,39 +1,38 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 
-@Injectable()
-export class UsuarioService {
-  constructor(private prisma: PrismaService) {}
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { InscripcionesService } from './inscripciones.service';
+import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
 
-  async iniciarSesion(e_mail: string) {
-    const usuario = await this.prisma.$queryRaw<any[]>`
-      SELECT id_emp, nombre, publico, e_mail 
-      FROM gescur.emp_nomina 
-      WHERE TRIM(e_mail) = TRIM(${e_mail})`;
-  
-    if (usuario.length === 0) {
-      throw new NotFoundException('Usuario no encontrado');
-    }
-  
-    const usuarioEncontrado = usuario[0];
+@Controller('inscripciones')
+export class InscripcionesController {
+  constructor(private readonly inscripcionesService: InscripcionesService) {}
 
-    // Verificar si el usuario es administrador (rol = 0 por ejemplo)
-    const esAdmin = await this.prisma.rol_usuario.count({
-      where: { usuario: usuarioEncontrado.e_mail, rol: 0 },
-    });
+  @Post()
+  crear(@Body() dto: CreateInscripcionDto) {
+    return this.inscripcionesService.crearInscripcion(dto);
+  }
 
-    // Verificar si el usuario es profesor (rol = 2)
-    const esProfesor = await this.prisma.rol_usuario.count({
-      where: { usuario: usuarioEncontrado.e_mail, rol: 2 },
-    });
+  @Get()
+  obtenerTodas() {
+    return this.inscripcionesService.getInscripciones();
+  }
 
-    return {
-      id_emp: usuarioEncontrado.id_emp,
-      nombre: usuarioEncontrado.nombre,
-      publico: usuarioEncontrado.publico,
-      e_mail: usuarioEncontrado.e_mail,
-      esAdmin: esAdmin > 0,
-      esProfesor: esProfesor > 0,
-    };
+  @Get(':id')
+  obtenerPorId(@Param('id') id: string) {
+    return this.inscripcionesService.obtenerPorId(Number(id));
+  }
+
+  @Patch(':id')
+  actualizarEstado(@Param('id') id: string, @Body() dto: UpdateInscripcionDto) {
+    return this.inscripcionesService.actualizarEstado(Number(id), dto);
+  }
+
+  @Delete(':id')
+  eliminar(@Param('id') id: string) {
+    return this.inscripcionesService.eliminarInscripcion(Number(id));
   }
 }
+
+
+
