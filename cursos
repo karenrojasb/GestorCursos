@@ -1,56 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { CreateRolUsuarioDto } from './dto/create-rol_usuario.dto';
-import { UpdateRolUsuarioDto } from './dto/update-rol_usuario.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
-export class RolUsuarioService {
+export class UsuarioService {
+  constructor(private prisma: PrismaService) {}
 
-  updateRolUsuario(arg0: number, UpdateRolUsuarioDto: UpdateRolUsuarioDto) {
-      throw new Error('Method not implemented.');
-    }
-    constructor(private readonly prisma: PrismaService) {}
+  async iniciarSesion(e_mail: string) {
+    const usuario = await this.prisma.$queryRaw<any[]>`
+      SELECT id_emp, nombre, publico, e_mail 
+      FROM gescur.emp_nomina 
+      WHERE TRIM(e_mail) = TRIM(${e_mail})`;
   
-  //  OBTENER TODAS LAS NOTAS
-    async findAll(){
-      return this.prisma.rol_usuario.findMany();
+    if (usuario.length === 0) {
+      throw new NotFoundException('Usuario no encontrado');
     }
   
-    //  MÉTODO PARA CREAR NOTA
-      async createRolUuario(CreateRolUsuarioDto: CreateRolUsuarioDto) {
-        const newRolUsuario = await this.prisma.rol_usuario.create({
-          data: {
-            id_rol: CreateRolUsuarioDto.id_rol,
-            usuario: CreateRolUsuarioDto.usuario,
-          },
-        });
-        return newRolUsuario;
-      }
-
-       // MÉTODO PARA ACTUALIZAR
-    async UpdateRolUsuario (id: number, data: Prisma.rol_usuarioUpdateInput){
-      console.log ('id received:', id);
-      console.log ('data received:', data);
-
-      try {
-        const UpdateRolUsuario = await this.prisma.rol_usuario.update({
-          where: {id},
-          data,
-        });
-        console.log ('update rol:', UpdateRolUsuario);
-        return UpdateRolUsuario;
-      }
-      catch (error){
-        console.error ('error when updating Rol:', error);
-        throw new error('the Rol was not updated');
-      }
-    }
-
-    // MÉTODO PARA ELIMINAR
-    async deleteRolUsuario(id:number){
-      return this.prisma.rol_usuario.delete({where: {id}});
-    }
-
-
+    const usuarioEncontrado = usuario[0];
+  
+    // Verificar si el usuario es administrador
+    const esAdmin = await this.prisma.rol_usuario.count({
+      where: { usuario: usuarioEncontrado.e_mail },
+    });
+  
+    return {
+      id_emp: usuarioEncontrado.id_emp, // Asegurar que se devuelve el ID del usuario
+      nombre: usuarioEncontrado.nombre,
+      publico: usuarioEncontrado.publico,
+      e_mail: usuarioEncontrado.e_mail,
+      esAdmin: esAdmin > 0,
+    };
+  }
 }
