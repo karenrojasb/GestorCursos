@@ -1,305 +1,337 @@
-"use client";
+import { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import { motion } from "framer-motion";
 
-import { useEffect, useState } from "react";
-import { CheckCircleIcon, XCircleIcon, XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-
-
-interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  LunesIni: string;
-  LunesFin: string;
-  MartesIni: string;
-  MartesFin: string;
-  MiercolesIni: string;
-  MiercolesFin: string;
-  JuevesIni: string;
-  JuevesFin: string;
-  ViernesIni: string;
-  ViernesFin: string;
-  SabadoIni: string;
-  SabadoFin: string;
-  DomingoIni: string;
-  DomingoFin: string;
-  CupoMax: number;
-  Linea: number;
-  Lugar: string;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: number;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
-  NombreProfesor?: string;
+interface CursoModalProps {
+  onClose: () => void;
+  onSave: (data: any) => void;
 }
 
-interface Inscripcion {
+interface Opcion {
   id: number;
-  idCur: number;
-  docInscr: number;
-  est: boolean;
-  fecreg: string;
+  Especificacion: string;
+  Tipo: number;
 }
 
+export default function CursoModal({ onClose, onSave }: CursoModalProps) {
+  const [curso, setCurso] = useState({
+    NombreCurso: "",
+    Valor: "",
+    Publico: "",
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
+    Horas: "",
+    CupoMax: "",
+    Lugar: "",
+    Linea: "",
+    Estado: "",
+    Modalidad: "",
+    Unidad: "",
+    Profesor: "",
+    SegundoPro: "",  
+    Proexterno: "",  
+    Descripcion: "", 
+    IdTipoCurso: "",
+  });
+  const etiquetas = {
+    NombreCurso: "Nombre Curso",
+    CupoMax: "Cupo Máximo",
+    SegundoPro: "Segundo Profesor",
+    Proexterno: "Profesor Externo",
+    IdTipoCurso: "Tipo de curso",
+  };
+
+  const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
+  const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
+  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
+  const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
+  const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
+  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([]);
+  const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
+  const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
 
 
-export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [inscribiendo, setInscribiendo] = useState(false);
-  const [idEmp, setIdEmp] = useState<number | null>(null);
-  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
-  const [mostrarAnimacion, setMostrarAnimacion] = useState(false);
-  const [mensajeAnimacion, setMensajeAnimacion] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  
-  
-  const [esInscripcion, setEsInscripcion] = useState(true);
+  useEffect(()  => {
+    async function fetcPeriodos() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/periodos")
+        if (!response.ok) throw new Error("Error al obtener los periodos");
 
-  useEffect(() => {
-    const storedIdEmp = localStorage.getItem("id_emp");
-    if (storedIdEmp) {
-      setIdEmp(Number(storedIdEmp));
-      fetchCursos(Number(storedIdEmp)); 
-    }
+        const data = await response.json();
+        setOpcionesPeriodos(data);
+        } catch(error){
+          console.error("Error cargando lista de periodos:", error);
+        }
+      }
+      fetcPeriodos(); 
   }, []);
 
-  const fetchCursos = async (idEmp: number) => {
-    try {
-      const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      
-      const data = await response.json();
-      
-      // Asegurarnos de que la estructura de la respuesta es correcta
-      const cursosActivos = Array.isArray(data) ? data : data.cursos || [];
-  
-      // Filtrar cursos activos (si tienen fecha de finalización)
-      const hoy = new Date();
-      const cursosFiltrados = cursosActivos.filter(
-        (curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy
-      );
-  
-      setCursos(cursosFiltrados);
-      setCursosFiltrados(cursosFiltrados);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Error al obtener los cursos:", error);
-      setIsLoading(false);
-    }
-  };
 
-  const formatearHorario = (curso: Curso) => {
-    const dias = [
-      { dia: "Lunes", ini: curso.LunesIni, fin: curso.LunesFin },
-      { dia: "Martes", ini: curso.MartesIni, fin: curso.MartesFin },
-      { dia: "Miércoles", ini: curso.MiercolesIni, fin: curso.MiercolesFin },
-      { dia: "Jueves", ini: curso.JuevesIni, fin: curso.JuevesFin },
-      { dia: "Viernes", ini: curso.ViernesIni, fin: curso.ViernesFin },
-      { dia: "Sábado", ini: curso.SabadoIni, fin: curso.SabadoFin },
-      { dia: "Domingo", ini: curso.DomingoIni, fin: curso.DomingoFin },
-    ];
-  
-    return dias
-      .filter(d => d.ini && d.fin)
-     ; 
-  };
+  useEffect(()  => {
+    async function fetcUnidades() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/unidad")
+        if (!response.ok) throw new Error("Error al obtener las unidades");
+
+        const data = await response.json();
+        setUnidad(data);
+        } catch(error){
+          console.error("Error cargando lista de unidades:", error);
+        }
+      }
+      fetcUnidades(); 
+  }, []);
+
+  useEffect(()  => {
+    async function fetcProfesores() {
+      try {
+        const response = await fetch("http://localhost:8090/api/cursos/profesores")
+        if (!response.ok) throw new Error("Error al obtener los profesores");
+
+        const data = await response.json();
+        setProfesores(data);
+        } catch(error){
+          console.error("Error cargando los profesores:", error);
+        }
+      }
+      fetcProfesores(); 
+  }, []);
 
   useEffect(() => {
-    if (!idEmp) return;
-    const fetchInscripciones = async () => {
+    async function fetchOpciones() {
       try {
-        const response = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
-        if (!response.ok) throw new Error("Error al obtener inscripciones");
-        const data = await response.json();
-        setInscripciones(data.filter((ins: Inscripcion) => ins.est === true));
+        const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+        if (!response.ok) throw new Error("Error al obtener las opciones");
+
+        const data: Opcion[] = await response.json();
+
+        setOpcionesPublico(data.filter((item) => item.Tipo === 1));
+        setOpcionesLinea(data.filter((item) => item.Tipo === 2));
+        setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
+        setOpcionesEstado(data.filter((item) => item.Tipo === 4));
+        setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
       } catch (error) {
-        console.error("Error al obtener inscripciones:", error);
+        console.error("Error cargando las opciones:", error);
       }
-    };
-    fetchInscripciones();
-  }, [idEmp]);
-
-
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
-
-
-
-  const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
-    setInscribiendo(true);
-    if (!idEmp) return;
-
-    try {
-      if (estaInscrito && inscripcionId) {
-        await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ est: false }),
-        });
-        setEsInscripcion(false);
-        setMensajeAnimacion("Se ha desinscrito satisfactoriamente");
-      } else {
-        await fetch("http://localhost:8090/api/inscripciones", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idCur, docInscr: idEmp, est: true, fecreg: new Date().toISOString().split("T")[0] }),
-        });
-        setEsInscripcion(true);
-        setMensajeAnimacion("Se ha inscrito satisfactoriamente");
-      }
-
-      const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
-      const updatedData = await updatedResponse.json();
-      setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
-
-      // Mostrar animación
-      setMostrarAnimacion(true);
-      setTimeout(() => setMostrarAnimacion(false), 2500); // Ocultar después de 2.5 segundos
-
-    } catch (error) {
-      console.error("No se pudo completar la acción.");
     }
 
-    setInscribiendo(false);
-  };
-
-  const handleMouseEnter = () => {
-    setIsSearchActive(true);
-  };
-
-  const handleMouseLeave = () => {
-    if (busqueda === "") {
-      setIsSearchActive(true);
+    fetchOpciones();
+  }, []);
+    
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const {name, value} = e.target;
+    setCurso((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
     }
+
+
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const cursoData = Object.keys(curso).reduce((acc, key) => {
+      const value = curso[key as keyof typeof curso];
+
+      if (value !== "") {
+        acc[key] = ["Valor", "Horas", "CupoMax", "Publico", "Linea", "Estado", "Modalidad", "Unidad", "Profesor", "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key)
+          ? Number(value) || null 
+          : value; 
+      } else if (["SegundoPro", "Proexterno", "Descripcion"].includes(key)) {
+        acc[key] = null;
+      }
+
+      return acc;
+    }, {} as Record<string, any>);
+
+    onSave(cursoData);
   };
-
-
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full  h-[700px] max-w-3xl flex flex-col">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+        <motion.div
+        className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto"
+        initial={{ opacity: 0}}
+        animate={{ opacity: 1}}
+        exit={{ opacity: 0}}
+        transition={{ duration: 0.3}}
+        >
 
-       
-       
+        {/* BOTÓN PARA CERRAR LA VENTANA */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
 
-        {/* ANIMACIÓN DE CHECK O X */}
-        {mostrarAnimacion && (
-          <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="animate-check-spin scale-125">
-              {esInscripcion ? (
-                <CheckCircleIcon className="h-32 w-32 text-green-500" />
-              ) : (
-                <CheckCircleIcon className="h-32 w-32 text-green-500" />
-              )}
-            </div>
-            <p className="text-white text-2xl font-bold mt-2 animate-fade-in">{mensajeAnimacion}</p>
-          </div>
-        )}
+        <h2 className="text-3xl font-bold text-[#990000] text-center mb-6 ">Crear Curso</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {Object.keys(curso)
+          .filter((key) => !["LunesIni", "LunesFin", "MartesIni", "MartesFin", "MiercolesIni", "MiercolesFin", "JuevesIni", "JuevesFin", "ViernesIni", "ViernesFin", "SabadoIni", "SabadoFin", "DomingoIni", "DomingoFin"]. includes(key))
+          .map((key) => (
+            <div key={key} className="mb-3">
+              <label className="block font-semibold text-gray-700">
+                {etiquetas[key as keyof typeof etiquetas] || key}</label>
+              { key === "Inicio" || key === "Fin" ? (
+                <input 
+                type="date"
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+                />
+              ) : key === "Periodo" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesPeriodos.map((opcion, index) => (
+                    <option key={index} value={opcion.periodo}>
+                      {opcion.periodo}
+                    </option>
+                  ))}
+                </select>
+           
+          ) : key === "Profesor" || key === "SegundoPro" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg   focus:ring-2 focus:ring-[#990000]">
+                  <option value="" >Selecciona una opción</option>
+                  {profesores.map((profesor) => (
+                    <option key={profesor.id_emp} value={profesor.id_emp}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
+                </select>
 
-         {/* BARRA DE BÚSQUEDA Y BOTÓN DE CIERRE */}
-     
-          <div className="relative flex items-center"
-           onMouseEnter={handleMouseEnter}
-           onMouseLeave={handleMouseLeave}>
-            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
-              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
-            </button>
-            <input
-              type="text"
-              placeholder="Busque el nombre del curso"
-              value={busqueda}
-              onChange={handleBuscar}
-              className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
-                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />     
+              ) : key === "Unidad" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {unidad.map((unidad) => (
+                    <option key={unidad.codigo} value={unidad.codigo}>
+                      {unidad.nombre}
+                    </option>
+                  ))}
+                </select>
 
-          <button
-            onClick={onClose}
-            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-        </div>
 
-        {/* TABLA DE CURSOS */}
-        <div className="flex-1 overflow-y-auto mt-2">
-          {isLoading ? (
-            <div className="flex justify-center py-4">
-              <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
-            </div>
-          ) : cursosFiltrados.length > 0 ? (
-            <table className="w-full border-collapse border border-gray-300">
-              <thead className="bg-[#990000] text-white">
-                <tr >
-                  <th className="border p-2">Nombre</th>
-                  <th className="border p-2">Profesor</th>
-                  <th className="border p-2">Horario</th>
-                  <th className="border p-2">Lugar</th>
-                  <th className="border p-2">Inicio Curso</th>
-                  <th className="border p-2">Fin Curso</th>             
-                  <th className="border p-2">Inscribir</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cursosFiltrados.map((curso, index) => {
-                  const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.est);
-                  return (
-                    <tr key={curso.id} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} text-center transition`}>
-                      <td className="border p-2">{curso.NombreCurso}</td>
-                      <td className="border p-2">
-                        <li>{curso.NombreProfesor || curso.NombreProfesor}</li>
-                        <li>{curso.SegundoPro}</li>
-                        <li>{curso.Proexterno}</li>                       
-                      </td>
-                      <td className="border px-5 py-2">{formatearHorario(curso).map((h, index) => (
-                        <div key={index}>
-                           <strong>{h.dia}</strong> {h.ini} - {h.fin}
-                               </div>
-                                 ))}</td>
-                      <td className="border p-2">{curso.Lugar}</td>
-                      <td className="border p-2">{curso.Inicio || "N/A"}</td>
-                      <td className="border p-2">{curso.Fin || "N/A"}</td>
+              ) : key === "Publico" ? (
+                <select name="Publico" 
+                value={curso.Publico} 
+                onChange={handleChange} 
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesPublico.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Linea" ? (
+                <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesLinea.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Modalidad" ? (
+                <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesModalidad.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Estado" ? (
+                <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesEstado.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+
+        
+              ) : key === "IdTipoCurso" ? (
+                <select name="IdTipoCurso" value={curso.IdTipoCurso} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesTipoCurso.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
                   
-
-                     
-                      
-                      <td className="border p-2 text-center">
-                        <button
-                          onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
-                          className={`${
-                            inscripcion
-                            ?  "bg-[#990000] hover:bg-red-700 text-white"
-                            : "bg-green-600 hover:bg-green-700 text-white"
-                          } px-4 py-2 rounded transition-colors duration-300  hover:scale-110 active:scale-95`}
-                        >
-                          {inscripcion ? "Cancelar" : "Inscribirse"}
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-center py-4">No hay cursos disponibles.</p>
-                 
+                  </select>                           
+              ) : (
+                <input 
+                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad",  "IdTipoCurso", "SegundoPro", "Proexterno"].includes(key) ? "number" : "text"} 
+                  name={key}
+                  value={curso[key as keyof typeof curso]}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+                />
+              )} 
+            </div>
+          ))}
+          <h3 className="text-lg font-semibold mt-4">Horarios</h3>
+<table className="w-full border-collapse border border-gray-300 text-center">
+  <thead>
+    <tr className="bg-gray-200">
+      <th className="border border-gray-300 px-2 py-1">Día</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
+    </tr>
+  </thead>
+  <tbody>
+    {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+      <tr key={dia}>
+        <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Ini`}
+            value={curso[`${dia}Ini` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Fin`}
+            value={curso[`${dia}Fin` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
           
-          )}
-        </div>
-      </div>
-      </div>
+          
+          {/* BOTÓN GUARDAR */}
+          <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
+            Guardar
+          </button>
+        </form>
+        </motion.div></div>
+    </div>
   );
 }
