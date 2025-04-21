@@ -1,17 +1,13 @@
-async getInscripcionesPorUsuario(docInscr: string) {
-  return this.prisma.inscripciones.findMany({
-    where: {
-      docInscr,
-      est: true
-    },
-    select: {
-      idCur: true
-    }
-  });
-}
 
 
-@Get('usuario/:docInscr')
-getInscripcionesPorUsuario(@Param('docInscr') docInscr: string) {
-  return this.inscripcionesService.getInscripcionesPorUsuario(docInscr);
-}
+  async obtenerPorId(id: number) {
+    const inscripcion = await this.prisma.inscripciones.findUnique({ where: { id } });
+    if (!inscripcion) throw new NotFoundException('Inscripción no encontrada');
+    return inscripcion;
+  }
+
+
+  @Get(':id')
+  obtenerPorId(@Param('id') id: string) {
+    return this.inscripcionesService.obtenerPorId(Number(id));
+  }
