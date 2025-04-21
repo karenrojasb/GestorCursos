@@ -43,3 +43,48 @@ async crearInscripcion(data: CreateInscripcionDto) {
     },
   });
 }
+
+
+
+async getCursosPorProfesor(idProfesor: number) {
+  return this.prisma.$queryRawUnsafe<
+    Array<{
+      id: number;
+      idCur: number;
+      NombreCurso: string;
+      Profesor: number;
+      SegundoPro: number;
+      Lugar: string;
+      Inicio: Date;
+      Fin: Date;
+      docInscr: string;
+      nombre: string | null;
+      fecreg: Date;
+      rol: string; // 'Titular' o 'Segundo'
+      CupoMax: number;
+    }>
+  >(
+    `SELECT 
+      i.id,
+      i.idCur,
+      c.NombreCurso,
+      c.Profesor,
+      c.SegundoPro,
+      c.Lugar,
+      c.Inicio,
+      c.Fin,
+      i.docInscr,
+      e.nombre,
+      i.fecreg,
+      c.CupoMax, -- Aquí se reemplaza 'cupoPorPublico' por 'CupoMax'
+      CASE 
+        WHEN c.Profesor = ${idProfesor} THEN 'Titular'
+        WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
+        ELSE 'Otro'
+      END AS rol
+    FROM gescur.Cursos c
+    LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
+    LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
+    WHERE c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor}`
+  );
+}
