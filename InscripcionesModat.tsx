@@ -80,7 +80,7 @@ export class InscripcionesService {
         fecreg: Date;
         Profesor: number;
         SegundoPro: number; 
-        CupoMax: number;
+       
         
       }>
     >(
@@ -94,7 +94,7 @@ export class InscripcionesService {
         i.fecreg,
         c.Profesor,
         c.SegundoPro,
-        c.CupoMax, 
+       
 
       FROM gescur.Inscripciones i
       LEFT JOIN gescur.Cursos c ON i.idCur = c.id
