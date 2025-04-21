@@ -15,17 +15,17 @@ async crearInscripcion(data: CreateInscripcionDto) {
     });
   }
 
-  // Verificar si el cupo ha sido alcanzado
+  // Obtener el curso con el campo CupoMax
   const curso = await this.prisma.cursos.findUnique({
     where: { id: data.idCur },
-    select: { CupoMax: true }, // Obtener el campo 'CupoMax'
+    select: { CupoMax: true }, // Asegúrate de que este campo exista en tu modelo Prisma
   });
 
   if (!curso) {
     throw new NotFoundException('Curso no encontrado');
   }
 
-  // Contamos cuántas inscripciones existen para este curso
+  // Contar cuántas inscripciones existen para este curso
   const inscripcionesContadas = await this.prisma.inscripciones.count({
     where: { idCur: data.idCur },
   });
