@@ -25,11 +25,25 @@ async crearInscripcion(data: CreateInscripcionDto) {
     throw new NotFoundException('Curso no encontrado');
   }
 
+  // Si el campo CupoMax es null, significa que no hay un límite de cupos
+  if (curso.CupoMax === null) {
+    // Si no hay cupo máximo, permitimos la inscripción sin restricciones
+    return this.prisma.inscripciones.create({
+      data: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+        est: true, // Estado siempre inicia en `true`
+        fecreg: new Date(),
+      },
+    });
+  }
+
   // Contar cuántas inscripciones existen para este curso
   const inscripcionesContadas = await this.prisma.inscripciones.count({
     where: { idCur: data.idCur },
   });
 
+  // Verificar si el número de inscripciones ha alcanzado el cupo máximo
   if (inscripcionesContadas >= curso.CupoMax) {
     throw new Error('El cupo máximo del curso ha sido alcanzado');
   }
