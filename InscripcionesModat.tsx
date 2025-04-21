@@ -8,61 +8,53 @@ export class InscripcionesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async crearInscripcion(data: CreateInscripcionDto) {
-    // Primero, buscamos si ya existe una inscripción con el mismo curso y documento de inscripción
     const inscripcionExistente = await this.prisma.inscripciones.findFirst({
       where: {
         idCur: data.idCur,
         docInscr: data.docInscr,
       },
     });
-  
+
     if (inscripcionExistente) {
-      // Si la inscripción ya existe, actualizar estado a `true`
       return this.prisma.inscripciones.update({
         where: { id: inscripcionExistente.id },
         data: { est: true },
       });
     }
-  
-    // Obtener el curso con el campo CupoMax
+
     const curso = await this.prisma.cursos.findUnique({
       where: { id: data.idCur },
-      select: { CupoMax: true }, // Asegúrate de que este campo exista en tu modelo Prisma
+      select: { CupoMax: true },
     });
-  
+
     if (!curso) {
       throw new NotFoundException('Curso no encontrado');
     }
-  
-    // Si el campo CupoMax es null, significa que no hay un límite de cupos
+
     if (curso.CupoMax === null) {
-      // Si no hay cupo máximo, permitimos la inscripción sin restricciones
       return this.prisma.inscripciones.create({
         data: {
           idCur: data.idCur,
           docInscr: data.docInscr,
-          est: true, // Estado siempre inicia en `true`
+          est: true,
           fecreg: new Date(),
         },
       });
     }
-  
-    // Contar cuántas inscripciones existen para este curso
+
     const inscripcionesContadas = await this.prisma.inscripciones.count({
       where: { idCur: data.idCur },
     });
-  
-    // Verificar si el número de inscripciones ha alcanzado el cupo máximo
+
     if (inscripcionesContadas >= curso.CupoMax) {
       throw new Error('El cupo máximo del curso ha sido alcanzado');
     }
-  
-    // Si no existe una inscripción y el cupo no ha sido alcanzado, creamos la inscripción
+
     return this.prisma.inscripciones.create({
       data: {
         idCur: data.idCur,
         docInscr: data.docInscr,
-        est: true, // Estado siempre inicia en `true`
+        est: true,
         fecreg: new Date(),
       },
     });
@@ -79,9 +71,8 @@ export class InscripcionesService {
         est: boolean;
         fecreg: Date;
         Profesor: number;
-        SegundoPro: number; 
-       
-        
+        SegundoPro: number;
+        CupoMax: number | null;
       }>
     >(
       `SELECT 
@@ -94,15 +85,12 @@ export class InscripcionesService {
         i.fecreg,
         c.Profesor,
         c.SegundoPro,
-       
-
+        c.CupoMax
       FROM gescur.Inscripciones i
       LEFT JOIN gescur.Cursos c ON i.idCur = c.id
       LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp`
     );
   }
-
-
 
   async getCursosPorProfesor(idProfesor: number) {
     return this.prisma.$queryRawUnsafe<
@@ -118,8 +106,8 @@ export class InscripcionesService {
         docInscr: string;
         nombre: string | null;
         fecreg: Date;
-        rol: string; // 'Titular' o 'Segundo'
-        CupoMax: number;
+        rol: string;
+        CupoMax: number | null;
       }>
     >(
       `SELECT 
@@ -134,7 +122,7 @@ export class InscripcionesService {
         i.docInscr,
         e.nombre,
         i.fecreg,
-        c.CupoMax, 
+        c.CupoMax,
         CASE 
           WHEN c.Profesor = ${idProfesor} THEN 'Titular'
           WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
@@ -146,8 +134,6 @@ export class InscripcionesService {
       WHERE c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor}`
     );
   }
-  
-  
 
   async obtenerPorId(id: number) {
     const inscripcion = await this.prisma.inscripciones.findUnique({ where: { id } });
@@ -158,7 +144,7 @@ export class InscripcionesService {
   async actualizarEstado(id: number, dto: UpdateInscripcionDto) {
     return this.prisma.inscripciones.update({
       where: { id },
-      data: { est: Boolean(dto.est) }, 
+      data: { est: Boolean(dto.est) },
     });
   }
 
@@ -166,4 +152,3 @@ export class InscripcionesService {
     return this.prisma.inscripciones.delete({ where: { id } });
   }
 }
-
