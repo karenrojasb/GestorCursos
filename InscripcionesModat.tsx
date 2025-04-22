@@ -18,7 +18,6 @@ interface Inscripcion {
     NombreCurso: string;
     id_emp: number;
   };
-
   docInscr: string;
   nombre: string;
   est: number;
@@ -38,9 +37,6 @@ interface Nota {
   NombreCurso: string;
 }
 
-
-
-
 export default function InscripcionesModal({ onClose }: InscripcionesModalProps) {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
@@ -55,27 +51,28 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
 
 
 
-   useEffect(() => {
-    const id = localStorage.getItem("id_emp");
-     if (id) setIdProfesor(Number(id));
-   }, []);
+  useEffect(() => {
+   const id = localStorage.getItem("id_emp");
+    if (id) setIdProfesor(Number(id));
+  }, []);
 
-
-
-   useEffect(() => {
-    const fetchCursosDelProfesor = async () => {
-      try {
-        const idProfesor = localStorage.getItem('id_emp');
-        if (!idProfesor) {
-          console.error('ID del profesor no encontrado en localStorage');
-          return;
-        }
-  
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      try 
+       {
+          const idProfesor = localStorage.getItem('id_emp');
+          if (!idProfesor) {
+            console.error('ID del profesor no encontrado en localStorage');
+            return;
+          }
         const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
-        if (!response.ok) throw new Error('Error al obtener los cursos del profesor');
-  
-        const data = await response.json();
-        setInscripciones(data); // o setCursos(data) según cómo lo llames
+        if (!response.ok) throw new Error("Error al obtener inscripciones");
+
+        const data: Inscripcion[] = await response.json();
+        console.log("Datos recibidos en el frontend:", JSON.stringify(data, null, 2 ));
+
+
+        setInscripciones(data); 
         setInscripcionesFiltradas(data);
         setIsLoading(false);
       } catch (error) {
@@ -84,10 +81,10 @@ export default function InscripcionesModal({ onClose }: InscripcionesModalProps)
       }
     };
   
-    fetchCursosDelProfesor();
+    fetchInscripciones();
   }, []);
 
-  
+
   // FILTRAR INSCRIPCIONES EN TIEMPO REAL
   
 const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,7 +125,7 @@ useEffect(()  => {
       if (!response.ok) throw new Error("Error al obtener los periodos");
 
       const data = await response.json();
-      console.log("Notas recibidas:", data);  // <-- Agrega esto
+      console.log("Notas recibidas:", data); 
       setNota(data);
     } catch(error){
       console.error("Error cargando lista de periodos:", error);
@@ -172,9 +169,9 @@ const guardarNota = async (notaTexto: string) => {
   );
 
   const idCurso = Number(cursoId);
-  const idInscrito = Number(inscritoSeleccionado.doc); // o usar como string si tu backend lo trata así
-  const Nota = Number(notaTexto); // asegúrate de que sea número si lo esperas así
-  const idRegistro = 1; // aquí deberías poner el ID del usuario que registra (puede ser dinámico)
+  const idInscrito = Number(inscritoSeleccionado.doc); 
+  const Nota = Number(notaTexto); 
+  const idRegistro = 1; 
 
   try {
     const response = await fetch("http://localhost:8090/api/Notas", {
@@ -239,7 +236,8 @@ const guardarNota = async (notaTexto: string) => {
   // Formatear los datos
   const data = datosCurso.map((inscripcion) => ({
     "ID Curso": inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.curso?.id,
-    // {curso.NombreCurso || curso.Cursos?.NombreCurso || curso.curso?.NombreCurso || "Desconocido"}
+
+    
     "Nombre del Curso": inscripcion.Cursos?.NombreCurso || inscripcion.curso?.NombreCurso || "Desconocido",
     "Documento": inscripcion.docInscr,
     "Nombre": inscripcion.nombre,
@@ -436,44 +434,3 @@ const guardarNota = async (notaTexto: string) => {
     </div>
   );
 }
-
-
-// AGRUPAR INSCRIPCIONES POR IDCUR
-const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
-  const cursoId = inscripcion.idCur || inscripcion.cursos?.id || inscripcion.curso?.id || 0;
-  if (!acc[cursoId]) {
-    acc[cursoId] = [];
-  }
-  acc[cursoId].push(inscripcion);
-  return acc;
-}, {} as { [key: number]: Inscripcion[] });
-
-{curso.NombreCurso || curso.cursos?.NombreCurso || curso.curso?.NombreCurso || "Desconocido"}
-
-
-
-useEffect(() => {
-  const fetchCursosDelProfesor = async () => {
-    try {
-      const idProfesor = localStorage.getItem('id_emp');
-      if (!idProfesor) {
-        console.error('ID del profesor no encontrado en localStorage');
-        return;
-      }
-
-      const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
-      if (!response.ok) throw new Error('Error al obtener los cursos del profesor');
-
-      const data = await response.json();
-      console.log('Datos obtenidos:', data); // Agrega esta línea para depurar
-      setInscripciones(data);
-      setInscripcionesFiltradas(data);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error al obtener cursos del profesor:', error);
-      setIsLoading(false);
-    }
-  };
-
-  fetchCursosDelProfesor();
-}, []);
