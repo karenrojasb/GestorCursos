@@ -237,8 +237,8 @@ const guardarNota = async (notaTexto: string) => {
   const data = datosCurso.map((inscripcion) => ({
     "ID Curso": inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.curso?.id,
 
-    
-    "Nombre del Curso": inscripcion.Cursos?.NombreCurso || inscripcion.curso?.NombreCurso || "Desconocido",
+
+    "Nombre del Curso": inscripcion.NombreCurso  || "Desconocido",
     "Documento": inscripcion.docInscr,
     "Nombre": inscripcion.nombre,
     "Estado": inscripcion.est === 1 ? "Inscrito" : "Cancelado",
