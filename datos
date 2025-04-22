@@ -1,2 +1,24 @@
-const idProfesor = localStorage.getItem("id_emp");
-const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
+useEffect(() => {
+  const fetchCursosDelProfesor = async () => {
+    try {
+      const idProfesor = localStorage.getItem('id_emp');
+      if (!idProfesor) {
+        console.error('ID del profesor no encontrado en localStorage');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
+      if (!response.ok) throw new Error('Error al obtener los cursos del profesor');
+
+      const data = await response.json();
+      setInscripciones(data); // o setCursos(data) según cómo lo llames
+      setInscripcionesFiltradas(data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error al obtener cursos del profesor:', error);
+      setIsLoading(false);
+    }
+  };
+
+  fetchCursosDelProfesor();
+}, []);
