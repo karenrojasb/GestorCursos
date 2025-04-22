@@ -17,3 +17,21 @@
         setIsLoading(false);
       }
     };
+
+
+
+{
+    "id": 28,
+    "idCur": 61,
+    "NombreCurso": "Historia del Algebra",
+    "Profesor": 19379915,
+    "SegundoPro": 25,
+    "Lugar": "Microsoft Teams",
+    "Inicio": "2020-08-10",
+    "Fin": "2020-11-16",
+    "docInscr": 1032459304,
+    "nombre": "PARRA URREGO OMAR ANDRES",
+    "fecreg": "2020-08-10T00:00:00.000Z",
+    "CupoMax": 20,
+    "rol": "Titular"
+  }
