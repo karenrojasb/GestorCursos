@@ -436,3 +436,44 @@ const guardarNota = async (notaTexto: string) => {
     </div>
   );
 }
+
+
+// AGRUPAR INSCRIPCIONES POR IDCUR
+const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
+  const cursoId = inscripcion.idCur || inscripcion.cursos?.id || inscripcion.curso?.id || 0;
+  if (!acc[cursoId]) {
+    acc[cursoId] = [];
+  }
+  acc[cursoId].push(inscripcion);
+  return acc;
+}, {} as { [key: number]: Inscripcion[] });
+
+{curso.NombreCurso || curso.cursos?.NombreCurso || curso.curso?.NombreCurso || "Desconocido"}
+
+
+
+useEffect(() => {
+  const fetchCursosDelProfesor = async () => {
+    try {
+      const idProfesor = localStorage.getItem('id_emp');
+      if (!idProfesor) {
+        console.error('ID del profesor no encontrado en localStorage');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
+      if (!response.ok) throw new Error('Error al obtener los cursos del profesor');
+
+      const data = await response.json();
+      console.log('Datos obtenidos:', data); // Agrega esta línea para depurar
+      setInscripciones(data);
+      setInscripcionesFiltradas(data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error al obtener cursos del profesor:', error);
+      setIsLoading(false);
+    }
+  };
+
+  fetchCursosDelProfesor();
+}, []);
