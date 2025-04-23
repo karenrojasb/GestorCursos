@@ -41,6 +41,13 @@ interface Curso {
   DomingoIni: string;
   DomingoFin: string;
 }
+interface Inscripcion {
+   id: number;
+   docInscr: number; 
+   nombre: string;
+   fecreg: string;
+   idCurso: number;
+}
 
 export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   
@@ -53,6 +60,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [cursoEditar, setCursoEditar ] = useState <Curso | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showInscripciones, setShowInscripciones] = useState<Inscripcion[]>([]); 
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
@@ -77,6 +85,18 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
     fetchCursos();
   };
 
+
+  const fetchInscripciones = async (idCurso: number) => {
+    try {
+      const response = await fetch(`http://localhost:8090/api/inscripciones`);
+      const data = await response.json();
+      // Filtra las inscripciones del curso actual
+      const filtradas = data.filter((i: Inscripcion) => i.idCurso === idCurso);
+      setShowInscripciones(filtradas);
+    } catch (error) {
+      console.error("Error al obtener inscripciones:", error);
+    }
+  };
 
 
 
@@ -114,8 +134,14 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   };
 
   // EXPANDIR DETALLES DEL CURSO
-  const handleVerMas = (id: number) => {
-    setExpandedCursoId(expandedCursoId === id ? null : id);
+  const handleVerMas = async (id: number) => {
+    if (expandedCursoId === id) {
+      setExpandedCursoId(null);
+      setShowInscripciones([]); 
+    } else {
+      await fetchInscripciones(id);
+      setExpandedCursoId(id);
+    }
   };
 
 
@@ -281,14 +307,41 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
       </tr>
       
     </tbody>
+    
   </table>
+  
  
-</div>            
+</div>       
+     
                      
               
                  )}
                </div>
+               {showInscripciones.length > 0 && (
+  <div className="relative mt-6 bg-white p-4 rounded shadow overflow-x-auto min-w-[780px]">
+    <h3 className="text-lg font-semibold mb-4 text-[#990000]">Inscritos en el curso</h3>
+    <table className="min-w-full border text-sm rounded">
+      <thead className="bg-[#990000] text-white">
+        <tr>
+          <th className="px-4 py-2 border">Documento</th>
+          <th className="px-4 py-2 border">Nombre</th>
+          <th className="px-4 py-2 border">Fecha de Registro</th>
+        </tr>
+      </thead>
+      <tbody>
+        {showInscripciones.map((ins, index) => (
+          <tr key={index} className="bg-white even:bg-gray-100">
+            <td className="px-4 py-2 border">{ins.docInscr}</td>
+            <td className="px-4 py-2 border">{ins.nombre}</td>
+            <td className="px-4 py-2 border">{new Date(ins.fecreg).toLocaleDateString()}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
               </div>
+              
               ))
            ) : !isLoading && (
             <p className="text-center py-4">No hay cursos disponibles.</p>
@@ -303,7 +356,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
     <p className="text-white text-2xl font-bold mt-2 animate-fade-in">Curso eliminado correctamente</p>
   </div>
 )}
-      
+    
 
     
      </div>
