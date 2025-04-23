@@ -131,7 +131,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl h-[90vh] overflow-y-auto">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl h-[90vh] overflow-y-auto">
         
        {/* BOTÓN CERRAR */}
               <button
@@ -161,10 +161,12 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
           </div>
 
 
-         <div className="w-full flex justify-between text-[#990000] font-semibold px-4 py-2 rounded-t-lg">
-           <span className="w-1/3 text-left">Nombre del curso</span>
-           <span className="w-1/3 text-center">Inicio Curso</span>
-           <span className="w-1/3"></span>
+         <div className="w-full  justify-between grid grid-cols-5 text-[#990000] font-semibold px-4 py-2 rounded-t-lg">
+           <span className=" text-left">Nombre del curso</span>
+           <span></span>
+           <span></span>
+           <span className=" text-center">Inicio Curso</span>
+          
          </div>
 
         {/* SPINNER DE CARGA */}
@@ -180,8 +182,10 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
            {cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso) => (
               <div key={curso.id} className="border-b py-2">
-                <div className="grid grid-cols-3 items-center">
-                  <span className="text-left">{curso.NombreCurso}</span>
+                <div className="grid grid-cols-5 items-center">
+                  <span className="text-left ">{curso.NombreCurso}</span>
+                  <span></span>
+                  <span></span>
                   <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
 
                   {/* BOTONES */}
@@ -201,7 +205,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
                    {expandedCursoId === curso.id && (
                   
                   
-                  <div className="relative bg-gray-100 p-6  flex mt-5 justify-center overflow-x-auto min-w-[680px]">
+                  <div className="relative bg-gray-100 p-6  flex mt-4 justify-center overflow-x-auto min-w-[780px]">
   <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden ">
     <thead className="bg-[#990000] text-white font-semibold">
       <tr>
