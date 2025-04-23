@@ -46,7 +46,7 @@ interface Inscripcion {
    docInscr: number; 
    nombre: string;
    fecreg: string;
-   idCurso: number;
+   idCur: number;
 }
 
 export default function ReportesModal ({ onClose }: { onClose: () => void }) {
@@ -56,9 +56,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [mensajeExito, setMensajeExito] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [cursoEditar, setCursoEditar ] = useState <Curso | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showInscripciones, setShowInscripciones] = useState<Inscripcion[]>([]); 
 
@@ -91,7 +89,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
       const response = await fetch(`http://localhost:8090/api/inscripciones`);
       const data = await response.json();
       // Filtra las inscripciones del curso actual
-      const filtradas = data.filter((i: Inscripcion) => i.idCurso === idCurso);
+      const filtradas = data.filter((i: Inscripcion) => i.idCur === idCurso);
       setShowInscripciones(filtradas);
     } catch (error) {
       console.error("Error al obtener inscripciones:", error);
@@ -296,7 +294,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
         <th className="border px-4 py-2 bg-[#990000] text-white">Tipo de Curso</th>
         <th className="border px-4 py-2 bg-[#990000] text-white" >Descripción</th>
       </tr>
-      <tr className="bg-gray-50 ">
+      <tr className="bg-gray-50">
       
        <td className="border px-4 py-2">{curso.SegundoPro}</td>
        <td className="border px-4 py-2">{curso.Proexterno}</td>
@@ -317,7 +315,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
               
                  )}
                </div>
-               {showInscripciones.length > 0 && (
+               {expandedCursoId === curso.id && showInscripciones.length > 0 && (
   <div className="relative mt-6 bg-white p-4 rounded shadow overflow-x-auto min-w-[780px]">
     <h3 className="text-lg font-semibold mb-4 text-[#990000]">Inscritos en el curso</h3>
     <table className="min-w-full border text-sm rounded">
