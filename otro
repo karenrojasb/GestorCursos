@@ -1,105 +1,101 @@
 {expandedCursoId === curso.id && (
-  <div className="relative bg-gray-100 p-6 mt-4 flex justify-center overflow-x-auto min-w-[780px]">
-    <table className="border-collapse text-sm w-full max-w-6xl shadow-md rounded-lg overflow-hidden">
+  <div className="relative bg-gray-100 p-4 mt-4 flex justify-center overflow-x-auto">
+    <table className="min-w-[700px] w-auto text-[0.8rem] shadow-md rounded-lg border border-gray-300 bg-white">
       <thead>
-        <tr>
-          <th colSpan={6} className="text-center text-[#990000] text-lg font-semibold py-2">
+        <tr className="bg-[#990000] text-white">
+          <th colSpan={5} className="text-center py-2 text-base font-semibold border-b border-gray-300">
             Datos del Curso
           </th>
         </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">ID</th>
+          <th className="px-3 py-1 border">Nombre</th>
+          <th className="px-3 py-1 border">Valor</th>
+          <th className="px-3 py-1 border">Público</th>
+          <th className="px-3 py-1 border">Periodo</th>
+        </tr>
       </thead>
       <tbody>
-        <tr className="bg-[#990000] text-white font-semibold">
-          <th className="border px-4 py-2">ID</th>
-          <th className="border px-4 py-2">Nombre</th>
-          <th className="border px-4 py-2">Valor</th>
-          <th className="border px-4 py-2">Público</th>
-          <th className="border px-4 py-2">Periodo</th>
-          <th className="border px-4 py-2">Cupo Máx</th>
-        </tr>
-        <tr className="bg-white text-gray-800">
-          <td className="border px-4 py-2">{curso.id}</td>
-          <td className="border px-4 py-2">{curso.NombreCurso}</td>
-          <td className="border px-4 py-2">{curso.Valor}</td>
-          <td className="border px-4 py-2">{curso.Publico}</td>
-          <td className="border px-4 py-2">{curso.Periodo}</td>
-          <td className="border px-4 py-2">{curso.CupoMax}</td>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.id}</td>
+          <td className="px-3 py-1 border">{curso.NombreCurso}</td>
+          <td className="px-3 py-1 border">{curso.Valor}</td>
+          <td className="px-3 py-1 border">{curso.Publico}</td>
+          <td className="px-3 py-1 border">{curso.Periodo}</td>
         </tr>
 
-        <tr className="bg-[#990000] text-white font-semibold">
-          <th className="border px-4 py-2">Inicio</th>
-          <th className="border px-4 py-2">Fin</th>
-          <th className="border px-4 py-2">Horas</th>
-          <th className="border px-4 py-2">Horario</th>
-          <th className="border px-4 py-2">Lugar</th>
-          <th className="border px-4 py-2">Línea</th>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Inicio</th>
+          <th className="px-3 py-1 border">Fin</th>
+          <th className="px-3 py-1 border">Horas</th>
+          <th className="px-3 py-1 border">Horario</th>
+          <th className="px-3 py-1 border">Cupo Máx</th>
         </tr>
-        <tr className="bg-white text-gray-800">
-          <td className="border px-4 py-2">{curso.Inicio}</td>
-          <td className="border px-4 py-2">{curso.Fin}</td>
-          <td className="border px-4 py-2">{curso.Horas}</td>
-          <td className="border px-4 py-2">
-            {formatearHorario(curso).map((h, index) => (
-              <div key={index}>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.Inicio}</td>
+          <td className="px-3 py-1 border">{curso.Fin}</td>
+          <td className="px-3 py-1 border">{curso.Horas}</td>
+          <td className="px-3 py-1 border text-left">
+            {formatearHorario(curso).map((h, i) => (
+              <div key={i}>
                 <strong>{h.dia}</strong> {h.ini} - {h.fin}
               </div>
             ))}
           </td>
-          <td className="border px-4 py-2">{curso.Lugar}</td>
-          <td className="border px-4 py-2">{curso.Linea}</td>
+          <td className="px-3 py-1 border">{curso.CupoMax}</td>
         </tr>
 
-        <tr className="bg-[#990000] text-white font-semibold">
-          <th className="border px-4 py-2">Estado</th>
-          <th className="border px-4 py-2">Modalidad</th>
-          <th className="border px-4 py-2">Profesor</th>
-          <th className="border px-4 py-2">Segundo Pro.</th>
-          <th className="border px-4 py-2">Externo</th>
-          <th className="border px-4 py-2">Unidad</th>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Lugar</th>
+          <th className="px-3 py-1 border">Línea</th>
+          <th className="px-3 py-1 border">Estado</th>
+          <th className="px-3 py-1 border">Modalidad</th>
+          <th className="px-3 py-1 border">Profesor</th>
         </tr>
-        <tr className="bg-white text-gray-800">
-          <td className="border px-4 py-2">{curso.Estado}</td>
-          <td className="border px-4 py-2">{curso.Modalidad}</td>
-          <td className="border px-4 py-2">{curso.NombreProfesor}</td>
-          <td className="border px-4 py-2">{curso.SegundoPro}</td>
-          <td className="border px-4 py-2">{curso.Proexterno}</td>
-          <td className="border px-4 py-2">{curso.Unidad}</td>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.Lugar}</td>
+          <td className="px-3 py-1 border">{curso.Linea}</td>
+          <td className="px-3 py-1 border">{curso.Estado}</td>
+          <td className="px-3 py-1 border">{curso.Modalidad}</td>
+          <td className="px-3 py-1 border">{curso.NombreProfesor}</td>
         </tr>
 
-        <tr className="bg-[#990000] text-white font-semibold">
-          <th className="border px-4 py-2">Tipo</th>
-          <th colSpan={5} className="border px-4 py-2">Descripción</th>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Segundo Prof.</th>
+          <th className="px-3 py-1 border">Externo</th>
+          <th className="px-3 py-1 border">Unidad</th>
+          <th className="px-3 py-1 border">Tipo</th>
+          <th className="px-3 py-1 border">Descripción</th>
         </tr>
-        <tr className="bg-white text-gray-800">
-          <td className="border px-4 py-2">{curso.IdTipoCurso}</td>
-          <td colSpan={5} className="border px-4 py-2">{curso.Descripcion}</td>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.SegundoPro}</td>
+          <td className="px-3 py-1 border">{curso.Proexterno}</td>
+          <td className="px-3 py-1 border">{curso.Unidad}</td>
+          <td className="px-3 py-1 border">{curso.IdTipoCurso}</td>
+          <td className="px-3 py-1 border">{curso.Descripcion}</td>
         </tr>
 
         {showInscripciones.length > 0 && (
           <>
-            <tr>
-              <th colSpan={6} className="text-center text-[#990000] text-lg font-semibold py-3">
+            <tr className="bg-[#990000] text-white font-semibold">
+              <th colSpan={5} className="px-3 py-2 text-left">
                 Inscritos en el curso
               </th>
             </tr>
-            <tr className="bg-[#990000] text-white font-semibold">
-              <th className="border px-4 py-2">Documento</th>
-              <th className="border px-4 py-2">Nombre</th>
-              <th className="border px-4 py-2">Fecha de Registro</th>
-              <th className="border px-4 py-2">Nota</th>
-              <th className="border px-4 py-2">Calificador</th>
-              <th className="border px-4 py-2">Fecha Calificación</th>
+            <tr className="bg-gray-100 text-[#990000] font-medium">
+              <th className="px-3 py-1 border">Documento</th>
+              <th className="px-3 py-1 border">Nombre</th>
+              <th className="px-3 py-1 border">Fecha Registro</th>
+              <th className="px-3 py-1 border">Nota</th>
+              <th className="px-3 py-1 border">Calificador</th>
             </tr>
-            {showInscripciones.map((ins, index) => (
-              <tr key={index} className="bg-white even:bg-gray-100 text-gray-800">
-                <td className="border px-4 py-2">{ins.docInscr}</td>
-                <td className="border px-4 py-2">{ins.nombre}</td>
-                <td className="border px-4 py-2">
-                  {new Date(ins.fecreg).toLocaleDateString()}
-                </td>
-                <td className="border px-4 py-2">{ins.nota || '-'}</td>
-                <td className="border px-4 py-2">{ins.quien || '-'}</td>
-                <td className="border px-4 py-2">{ins.fecCalif ? new Date(ins.fecCalif).toLocaleDateString() : '-'}</td>
+            {showInscripciones.map((ins, i) => (
+              <tr key={i} className="text-gray-700 text-center even:bg-gray-50">
+                <td className="px-3 py-1 border">{ins.docInscr}</td>
+                <td className="px-3 py-1 border">{ins.nombre}</td>
+                <td className="px-3 py-1 border">{new Date(ins.fecreg).toLocaleDateString()}</td>
+                <td className="px-3 py-1 border">-</td>
+                <td className="px-3 py-1 border">-</td>
               </tr>
             ))}
           </>
