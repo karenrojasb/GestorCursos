@@ -1,9 +1,9 @@
-{expandedCursoId === curso.id && (
-  <div className="relative bg-gray-100 p-4 mt-4 flex justify-center overflow-x-auto">
+  {expandedCursoId === curso.id && (
+  <div className="relative bg-gray-100 p-4 mt-4 flex justify-center overflow-x-auto  min-w-[790]">
     <table className="min-w-[700px] w-auto text-[0.8rem] shadow-md rounded-lg border border-gray-300 bg-white">
       <thead>
         <tr className="bg-[#990000] text-white">
-          <th colSpan={5} className="text-center py-2 text-base font-semibold border-b border-gray-300">
+          <th colSpan={6} className="text-center py-2 text-base font-semibold border-b border-gray-300">
             Datos del Curso
           </th>
         </tr>
@@ -78,8 +78,8 @@
         {showInscripciones.length > 0 && (
           <>
             <tr className="bg-[#990000] text-white font-semibold">
-              <th colSpan={5} className="px-3 py-2 text-left">
-                Inscritos en el curso
+              <th colSpan={6} className="px-3 py-2 text-left">
+                Inscritos en el Curso
               </th>
             </tr>
             <tr className="bg-gray-100 text-[#990000] font-medium">
@@ -88,6 +88,7 @@
               <th className="px-3 py-1 border">Fecha Registro</th>
               <th className="px-3 py-1 border">Nota</th>
               <th className="px-3 py-1 border">Calificador</th>
+              <th className="px-3 py-1 border">Fecha Calificación</th>
             </tr>
             {showInscripciones.map((ins, i) => (
               <tr key={i} className="text-gray-700 text-center even:bg-gray-50">
@@ -96,11 +97,8 @@
                 <td className="px-3 py-1 border">{new Date(ins.fecreg).toLocaleDateString()}</td>
                 <td className="px-3 py-1 border">-</td>
                 <td className="px-3 py-1 border">-</td>
+                <td className="px-3 py-1 border">-</td>
               </tr>
             ))}
           </>
         )}
-      </tbody>
-    </table>
-  </div>
-)}
