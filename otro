@@ -59,6 +59,7 @@ interface Nota {
   idInscrito: number; 
   Nota: number;
   Especificacion: string; 
+  FechaRegistro: string;
   NombreCurso: string;
 }
 
@@ -435,7 +436,7 @@ useEffect(()  => {
     </table>
   </div>
 )}
-              </div>
+         </div>
   
               </div>
               
@@ -449,6 +450,6 @@ useEffect(()  => {
        </div>  
  
   </div>
-   
+    
    );
  }
