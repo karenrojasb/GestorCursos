@@ -1,7 +1,8 @@
 "use client";
-import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 
 
@@ -143,6 +144,55 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   };
 
 
+  const exportarCursoAExcel = (curso: Curso, inscripciones: Inscripcion[]) => {
+    // Datos del curso
+    const datosCurso = [
+      {
+        ID: curso.id,
+        Nombre: curso.NombreCurso,
+        Valor: curso.Valor,
+        Público: curso.Publico,
+        Periodo: curso.Periodo,
+        Inicio: curso.Inicio,
+        Fin: curso.Fin,
+        Horas: curso.Horas,
+        Lugar: curso.Lugar,
+        Línea: curso.Linea,
+        Estado: curso.Estado,
+        Modalidad: curso.Modalidad,
+        Profesor: curso.NombreProfesor,
+        SegundoProfesor: curso.SegundoPro,
+        ProfesorExterno: curso.Proexterno,
+        Unidad: curso.Unidad,
+        Descripción: curso.Descripcion,
+      },
+    ];
+  
+    // Datos de inscritos
+    const datosInscritos = inscripciones.map(i => ({
+      Documento: i.docInscr,
+      Nombre: i.nombre,
+      FechaRegistro: new Date(i.fecreg).toLocaleDateString(),
+      Nota: '', 
+      Calificador: '',
+      FechaCalificación: '',
+    }));
+  
+    // Crear hojas de Excel
+    const hojaCurso = XLSX.utils.json_to_sheet(datosCurso);
+    const hojaInscritos = XLSX.utils.json_to_sheet(datosInscritos);
+  
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hojaCurso, "Curso");
+    XLSX.utils.book_append_sheet(libro, hojaInscritos, "Inscritos");
+  
+    const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+  
+    saveAs(blob, `Curso_${curso.NombreCurso}.xlsx`);
+  };
+
+
 
 
 
@@ -216,128 +266,147 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
                  
                   {/* BOTÓN PARA VER MÁS */}
                   <div className="flex space-x-2">
+                    
+                    {/* BOTÓN VER MÁS */}
                     <button 
                     onClick={() => handleVerMas(curso.id)} 
-                    className="bg-[#990000] hover:bg-red-700 text-white px-4 py-2 rounded transition-transform hover:scale-110 active:scale-95">
+                    className="bg-[#990000] hover:bg-red-700 text-white px-2 py-1 text-base rounded transition-transform hover:scale-110 active:scale-95">
                       {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
                     </button>
-                   
+                    
+                    {/* BOTÓN EXPORTAR */}
+                    <button
+                    onClick={() => exportarCursoAExcel(curso, showInscripciones)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-transform hover:scale-110 active:scale-95 items-center text-base"
+                     >
+                    <ArrowDownTrayIcon className="h-4 w-4 text-center"/>
+                    Exportar
+                   </button>
                    </div>
 
 
                    {/* CONTENIDO DE CURSO */}
                    {expandedCursoId === curso.id && (
-                  
-                  
-                  <div className="relative bg-gray-100 p-6  flex mt-4 justify-center overflow-x-auto min-w-[780px]">
-  <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden ">
-    <thead className="bg-[#990000] text-white font-semibold">
-      <tr>
-        <th className="border px-4 py-2">ID</th>
-        <th className="border px-4 py-2">Nombre del curso</th>
-        <th className="border px-4 py-2">Valor</th>
-        <th className="border px-4 py-2">Público</th>
-        <th className="border px-4 py-2">Periodo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr className="bg-gray-50 ">
-        <td className="border px-4 py-2">{curso.id}</td>
-        <td className="border px-4 py-2">{curso.NombreCurso}</td>
-        <td className="border px-4 py-2">{curso.Valor}</td>
-        <td className="border px-4 py-2">{curso.Publico}</td>
-        <td className="border px-4 py-2">{curso.Periodo}</td>
-      </tr>
-
-      <tr >
-        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Inicio</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Fin</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Horas</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Horario</th> 
-        <th className="border px-4 py-2 bg-[#990000] text-white">Cupo Máximo</th>
-
-      </tr>
-      <tr className="bg-gray-50  ">
-        <td className="border px-4 py-2 ">{curso.Inicio}</td>
-        <td className="border px-4 py-2">{curso.Fin}</td>
-        <td className="border px-4 py-2">{curso.Horas}</td>
-        <td className="border px-4 py-2">{formatearHorario(curso).map((h, index) => (
-          <div key={index}>
-            <strong>{h.dia}</strong> {h.ini} - {h.fin}
-          </div>
-        ))}</td>
-        <td className="border px-4 py-2">{curso.CupoMax}</td>
-        
-      </tr>
-
-      <tr>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Lugar</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Línea</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Estado</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Modalidad</th>
-      
-        <th className="border px-4 py-2 bg-[#990000] text-white">Profesor</th>
-      </tr>
-      <tr className="bg-gray-50 ">
-        <td className="border px-4 py-2">{curso.Lugar}</td>
-        <td className="border px-4 py-2">{curso.Linea}</td>
-        <td className="border px-4 py-2">{curso.Estado}</td>
-        <td className="border px-4 py-2">{curso.Modalidad}</td>
-        <td className="border px-4 py-2">{curso.NombreProfesor}</td>
-      </tr>
-
-      <tr>
-         
-        <th className="border px-4 py-2 bg-[#990000] text-white">Segundo Profesor</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Profesor Externo</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Unidad</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Tipo de Curso</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white" >Descripción</th>
-      </tr>
-      <tr className="bg-gray-50">
-      
-       <td className="border px-4 py-2">{curso.SegundoPro}</td>
-       <td className="border px-4 py-2">{curso.Proexterno}</td>
-       <td className="border px-4 py-2">{curso.Unidad}</td>
-        <td className="border px-4 py-2">{curso.IdTipoCurso}</td>
-        <td className="border px-4 py-2"   >{curso.Descripcion}</td>
-        
-      </tr>
-      
-    </tbody>
-    
-  </table>
-  
- 
-</div>       
-     
-                     
-              
-                 )}
-               </div>
-               {expandedCursoId === curso.id && showInscripciones.length > 0 && (
-  <div className="relative mt-6 bg-white p-4 rounded shadow overflow-x-auto min-w-[780px]">
-    <h3 className="text-lg font-semibold mb-4 text-[#990000]">Inscritos en el curso</h3>
-    <table className="min-w-full border text-sm rounded">
-      <thead className="bg-[#990000] text-white">
-        <tr>
-          <th className="px-4 py-2 border">Documento</th>
-          <th className="px-4 py-2 border">Nombre</th>
-          <th className="px-4 py-2 border">Fecha de Registro</th>
+  <div className="relative bg-gray-100 p-4 mt-4 flex justify-center overflow-x-auto min-w-[790px]">
+    <table className="min-w-full table-fixed text-[0.8rem] shadow-md rounded-lg border border-gray-300 bg-white">
+      <colgroup>
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+      </colgroup>
+      <thead>
+        <tr className="bg-[#990000] text-white">
+          <th colSpan={6} className="text-center py-2 text-base font-semibold border-b border-gray-300">
+            Datos del Curso
+          </th>
+        </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">ID</th>
+          <th className="px-3 py-1 border">Nombre</th>
+          <th className="px-3 py-1 border">Valor</th>
+          <th className="px-3 py-1 border">Público</th>
+          <th className="px-3 py-1 border">Periodo</th>
+          <th className="px-3 py-1 border">Cupo Máx</th>
         </tr>
       </thead>
       <tbody>
-        {showInscripciones.map((ins, index) => (
-          <tr key={index} className="bg-white even:bg-gray-100">
-            <td className="px-4 py-2 border">{ins.docInscr}</td>
-            <td className="px-4 py-2 border">{ins.nombre}</td>
-            <td className="px-4 py-2 border">{new Date(ins.fecreg).toLocaleDateString()}</td>
-          </tr>
-        ))}
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.id}</td>
+          <td className="px-3 py-1 border">{curso.NombreCurso}</td>
+          <td className="px-3 py-1 border">{curso.Valor}</td>
+          <td className="px-3 py-1 border">{curso.Publico}</td>
+          <td className="px-3 py-1 border">{curso.Periodo}</td>
+          <td className="px-3 py-1 border">{curso.CupoMax}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Inicio</th>
+          <th className="px-3 py-1 border">Fin</th>
+          <th className="px-3 py-1 border">Horas</th>
+          <th className="px-3 py-1 border">Horario</th>
+          <th className="px-3 py-1 border">Lugar</th>
+          <th className="px-3 py-1 border">Línea</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.Inicio}</td>
+          <td className="px-3 py-1 border">{curso.Fin}</td>
+          <td className="px-3 py-1 border">{curso.Horas}</td>
+          <td className="px-3 py-1 border text-left">
+            {formatearHorario(curso).map((h, i) => (
+              <div key={i}>
+                <strong>{h.dia}</strong> {h.ini} - {h.fin}
+              </div>
+            ))}
+          </td>
+          <td className="px-3 py-1 border">{curso.Lugar}</td>
+          <td className="px-3 py-1 border">{curso.Linea}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Estado</th>
+          <th className="px-3 py-1 border">Modalidad</th>
+          <th className="px-3 py-1 border">Profesor</th>
+          <th className="px-3 py-1 border">Segundo Profesor</th>
+          <th className="px-3 py-1 border">Profesor Externo</th>
+          <th className="px-3 py-1 border">Unidad</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.Estado}</td>
+          <td className="px-3 py-1 border">{curso.Modalidad}</td>
+          <td className="px-3 py-1 border">{curso.NombreProfesor}</td>
+          <td className="px-3 py-1 border">{curso.SegundoPro}</td>
+          <td className="px-3 py-1 border">{curso.Proexterno}</td>
+          <td className="px-3 py-1 border">{curso.Unidad}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Tipo</th>
+          <th className="px-3 py-1 border" colSpan={5}>Descripción</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.IdTipoCurso}</td>
+          <td className="px-3 py-1 border text-left" colSpan={5}>{curso.Descripcion}</td>
+        </tr>
+
+        {showInscripciones.length > 0 && (
+          <>
+            <tr className="bg-[#990000] text-white font-semibold">
+              <th colSpan={6} className="px-3 py-2 text-left">
+                Inscritos en el Curso
+              </th>
+            </tr>
+            <tr className="bg-gray-100 text-[#990000] font-medium">
+              <th className="px-3 py-1 border">Documento</th>
+              <th className="px-3 py-1 border">Nombre</th>
+              <th className="px-3 py-1 border">Fecha Registro</th>
+              <th className="px-3 py-1 border">Nota</th>
+              <th className="px-3 py-1 border">Calificador</th>
+              <th className="px-3 py-1 border">Fecha Calificación</th>
+            </tr>
+            {showInscripciones.map((ins, i) => (
+              <tr key={i} className="text-gray-700 text-center even:bg-gray-50 text-xs">
+                <td className="px-1 py-1 border">{ins.docInscr}</td>
+                <td className="px-1 py-1 border">{ins.nombre || "No disponible"}</td>
+                <td className="px-1 py-1 border">{new Date(ins.fecreg).toLocaleDateString()}</td>
+                <td className="px-1 py-1 border"></td>
+                <td className="px-1 py-1 border"></td>
+                <td className="px-1 py-1 border"></td>
+              </tr>
+            ))}
+          </>
+        )}
+  
       </tbody>
     </table>
   </div>
 )}
+
+
+               </div>
+  
               </div>
               
               ))
