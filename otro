@@ -435,9 +435,7 @@ useEffect(()  => {
     </table>
   </div>
 )}
-
-
-               </div>
+              </div>
   
               </div>
               
@@ -449,15 +447,8 @@ useEffect(()  => {
          </div>
        
        </div>  
-       
-  
-   
-   
+ 
   </div>
-
-    
-
-    
-    
+   
    );
  }
