@@ -1,4 +1,3 @@
-// Cargar públicos desde el backend
 const fetchPublicos = async () => {
   try {
     const response = await fetch("http://localhost:8090/api/cursos/publico/1");
@@ -13,7 +12,7 @@ useEffect(() => {
   fetchPublicos();
 }, []);
 
-// Filtro por público
+
 const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
   const valor = parseInt(event.target.value);
   setFiltroPublico(valor === 0 ? null : valor);
@@ -29,8 +28,8 @@ const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
 <select onChange={handleFiltroPublico}>
   <option value={0}>Todos</option>
   {publicos.map((pub) => (
-    <option key={pub.Publico} value={pub.Publico}>
-      {pub.NombrePublico}
+    <option key={pub.id} value={pub.id}>
+      {pub.Especificacion}
     </option>
   ))}
 </select>
