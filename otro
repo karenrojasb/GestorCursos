@@ -1,28 +1,37 @@
-const [filtroPublico, setFiltroPublico] = useState<number | null>(null);
+// Cargar públicos desde el backend
+const fetchPublicos = async () => {
+  try {
+    const response = await fetch("http://localhost:8090/api/cursos/publico/1");
+    const data = await response.json();
+    setPublicos(data);
+  } catch (error) {
+    console.error("Error al obtener públicos:", error);
+  }
+};
 
+useEffect(() => {
+  fetchPublicos();
+}, []);
+
+// Filtro por público
 const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
   const valor = parseInt(event.target.value);
   setFiltroPublico(valor === 0 ? null : valor);
-  const cursosFiltrados = cursos.filter(c => (valor === 0 ? true : c.Publico === valor));
+
+  const cursosFiltrados = cursos.filter(c => {
+    if (valor === 0) return true;
+    return Number(c.Publico) === valor;
+  });
+
   setCursosFiltrados(cursosFiltrados);
 };
 
 
-
-<div className="flex items-center space-x-4 mt-4">
-  <label htmlFor="filtroPublico" className="text-[#990000] font-semibold">
-    Público:
-  </label>
-  <select
-    id="filtroPublico"
-    onChange={handleFiltroPublico}
-    className="border border-gray-300 rounded px-3 py-2"
-  >
-    <option value={0}>Todos</option>
-    {publicos.map((p) => (
-      <option key={p.id} value={p.id}>
-        {p.Especificacion}
-      </option>
-    ))}
-  </select>
-</div>
+			<select onChange={handleFiltroPublico}>
+  <option value={0}>Todos</option>
+  {publicos.map((pub) => (
+    <option key={pub.Publico} value={pub.Publico}>
+      {pub.NombrePublico}
+    </option>
+  ))}
+</select>
