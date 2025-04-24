@@ -59,10 +59,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
   const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [showInscripciones, setShowInscripciones] = useState<Inscripcion[]>([]); 
   const [ publicos, setPublicos] = useState<Publico[]>([]);
   const [filtroPublico, setFiltroPublico] = useState<number | null>(null);
@@ -142,10 +139,6 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
       .filter(d => d.ini && d.fin)
      ; 
   };
-
-
-
-
 
   // EXPANDIR DETALLES DEL CURSO
   const handleVerMas = async (id: number) => {
@@ -432,15 +425,15 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
          </div>
        
        </div>  
-       {showSuccess && (
-  <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-[9999]">
+       
+  
    
-    <p className="text-white text-2xl font-bold mt-2 animate-fade-in">Curso eliminado correctamente</p>
+   
   </div>
-)}
+
     
 
     
-     </div>
+    
    );
  }
