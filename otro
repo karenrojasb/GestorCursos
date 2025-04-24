@@ -1,7 +1,96 @@
-{/* Tabla de inscritos y notas */}
-<table className="min-w-full mt-6 text-[0.8rem] border border-gray-300">
-  <thead className="bg-[#990000] text-white">
-    <tr>
+ <table className="min-w-full table-fixed text-[0.8rem] shadow-md rounded-lg border border-gray-300 bg-white">
+      <colgroup>
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+      </colgroup>
+      <thead>
+        <tr className="bg-[#990000] text-white">
+          <th colSpan={6} className="text-center py-2 text-base font-semibold border-b border-gray-300">
+            Datos del Curso
+          </th>
+        </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">ID</th>
+          <th className="px-3 py-1 border">Nombre</th>
+          <th className="px-3 py-1 border">Valor</th>
+          <th className="px-3 py-1 border">Público</th>
+          <th className="px-3 py-1 border">Periodo</th>
+          <th className="px-3 py-1 border">Cupo Máx</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.id}</td>
+          <td className="px-3 py-1 border">{curso.NombreCurso}</td>
+          <td className="px-3 py-1 border">{curso.Valor}</td>
+          <td className="px-3 py-1 border">
+  {publicos.find(p => p.id === curso.Publico)?.Especificacion || "Sin público"}
+</td>
+          <td className="px-3 py-1 border">{curso.Periodo}</td>
+          <td className="px-3 py-1 border">{curso.CupoMax}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Inicio</th>
+          <th className="px-3 py-1 border">Fin</th>
+          <th className="px-3 py-1 border">Horas</th>
+          <th className="px-3 py-1 border">Horario</th>
+          <th className="px-3 py-1 border">Lugar</th>
+          <th className="px-3 py-1 border">Línea</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.Inicio}</td>
+          <td className="px-3 py-1 border">{curso.Fin}</td>
+          <td className="px-3 py-1 border">{curso.Horas}</td>
+          <td className="px-3 py-1 border text-left">
+            {formatearHorario(curso).map((h, i) => (
+              <div key={i}>
+                <strong>{h.dia}</strong> {h.ini} - {h.fin}
+              </div>
+            ))}
+          </td>
+          <td className="px-3 py-1 border">{curso.Lugar}</td>
+          <td className="px-3 py-1 border">{curso.Linea}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Estado</th>
+          <th className="px-3 py-1 border">Modalidad</th>
+          <th className="px-3 py-1 border">Profesor</th>
+          <th className="px-3 py-1 border">Segundo Profesor</th>
+          <th className="px-3 py-1 border">Profesor Externo</th>
+          <th className="px-3 py-1 border">Unidad</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.Estado}</td>
+          <td className="px-3 py-1 border">{curso.Modalidad}</td>
+          <td className="px-3 py-1 border">{curso.NombreProfesor}</td>
+          <td className="px-3 py-1 border">{curso.SegundoPro  || " - - "}</td>
+          <td className="px-3 py-1 border">{curso.Proexterno || " - - "}</td>
+          <td className="px-3 py-1 border">{curso.Unidad}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Tipo</th>
+          <th className="px-3 py-1 border" colSpan={5}>Descripción</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.IdTipoCurso}</td>
+          <td className="px-3 py-1 border text-left" colSpan={5}>{curso.Descripcion  || "Sin descripción"}</td>
+        </tr>
+
+        {showInscripciones.length > 0 && (
+          <>
+            <tr className="bg-[#990000] text-white font-semibold">
+              <th colSpan={6} className="px-3 py-2 text-left">
+                Inscritos en el Curso
+              </th>
+            </tr>
+            <tr>
       <th className="px-3 py-2 border">Documento</th>
       <th className="px-3 py-2 border">Nombre</th>
       <th className="px-3 py-2 border">Fecha Inscripción</th>
@@ -24,5 +113,11 @@
         </tr>
       );
     })}
-  </tbody>
-</table>
+
+          </>
+        )}
+  
+      </tbody>
+    </table>
+  </div>
+)}
