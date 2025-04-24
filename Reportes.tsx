@@ -49,6 +49,10 @@ interface Inscripcion {
    fecreg: string;
    idCur: number;
 }
+interface Publico {
+  id: number; 
+  Especificacion: string;
+}
 
 export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   
@@ -60,6 +64,8 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showInscripciones, setShowInscripciones] = useState<Inscripcion[]>([]); 
+  const [ publicos, setPublicos] = useState<Publico[]>([]);
+  const [filtroPublico, setFiltroPublico] = useState<number | null>(null);
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
@@ -98,6 +104,28 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   };
 
 
+  // OBTENER PUBLICO
+  const fetchPublicos = async () => {
+    try {
+      const response= await fetch ("http://localhost:8090/api/cursos/publico/1");
+      const data = await response.json();
+        setPublicos(data);
+      } catch (error) {
+        console.error("Error al obtener públicos:", error);
+      }
+    }; 
+    useEffect (() => {
+      fetchPublicos();
+    }, []);
+
+
+    const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const valor = parseInt(event.target.value);
+      setFiltroPublico(valor === 0 ? null : valor);
+      const cursosFiltrados = cursos.filter(c => (valor === 0 ? true : c.Publico === valor));
+      setCursosFiltrados(cursosFiltrados);
+    };
+  
 
   const formatearHorario = (curso: Curso) => {
     const dias = [
@@ -115,22 +143,9 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
      ; 
   };
 
-  // BUSCAR CURSOS
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
 
-  const handleMouseEnter = () => {
-    setIsSearchActive(true);
-  };
 
-  const handleMouseLeave = () => {
-    if (busqueda === "") {
-      setIsSearchActive(true);
-    }
-  };
+
 
   // EXPANDIR DETALLES DEL CURSO
   const handleVerMas = async (id: number) => {
@@ -215,24 +230,24 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
                 <XMarkIcon className="h-6 w-6" />
               </button>
 
-        {/* BARRA DE BUSQUEDA */}
-        <div className="relative flex items-center"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}>
-            <button 
-            
-            onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
-              {isSearchActive ? <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />}
-            </button>
-            <input
-              type="text"
-              placeholder="Busque el nombre del curso"
-              value={busqueda}
-              onChange={handleBuscar}
-              className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
-                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />
-          </div>
+     
+          <div className="flex items-center space-x-4 mt-4">
+  <label htmlFor="filtroPublico" className="text-[#990000] font-semibold">
+    Público:
+  </label>
+  <select
+    id="filtroPublico"
+    onChange={handleFiltroPublico}
+    className="border border-gray-300 rounded px-3 py-2"
+  >
+    <option value={0}>Selecciona una opción</option>
+    {publicos.map((p) => (
+      <option key={p.id} value={p.id}>
+        {p.Especificacion}
+      </option>
+    ))}
+  </select>
+</div>
 
 
          <div className="w-full  justify-between grid grid-cols-5 text-[#990000] font-semibold px-4 py-2 rounded-t-lg">
@@ -279,7 +294,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
                     onClick={() => exportarCursoAExcel(curso, showInscripciones)}
                     className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-transform hover:scale-110 active:scale-95 items-center text-base"
                      >
-                    <ArrowDownTrayIcon className="h-4 w-4 text-center"/>
+                    <ArrowDownTrayIcon className="h-5 w-5 text-center"/>
                     Exportar
                    </button>
                    </div>
@@ -357,8 +372,8 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
           <td className="px-3 py-1 border">{curso.Estado}</td>
           <td className="px-3 py-1 border">{curso.Modalidad}</td>
           <td className="px-3 py-1 border">{curso.NombreProfesor}</td>
-          <td className="px-3 py-1 border">{curso.SegundoPro}</td>
-          <td className="px-3 py-1 border">{curso.Proexterno}</td>
+          <td className="px-3 py-1 border">{curso.SegundoPro  || " - - "}</td>
+          <td className="px-3 py-1 border">{curso.Proexterno || " - - "}</td>
           <td className="px-3 py-1 border">{curso.Unidad}</td>
         </tr>
 
@@ -368,7 +383,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
         </tr>
         <tr className="text-gray-700 text-center">
           <td className="px-3 py-1 border">{curso.IdTipoCurso}</td>
-          <td className="px-3 py-1 border text-left" colSpan={5}>{curso.Descripcion}</td>
+          <td className="px-3 py-1 border text-left" colSpan={5}>{curso.Descripcion  || "Sin descripción"}</td>
         </tr>
 
         {showInscripciones.length > 0 && (
