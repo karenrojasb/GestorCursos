@@ -53,6 +53,14 @@ interface Publico {
   id: number; 
   Especificacion: string;
 }
+interface Nota {
+  id: number;
+  idCurso:  number;
+  idInscrito: number; 
+  Nota: number;
+  Especificacion: string; 
+  NombreCurso: string;
+}
 
 export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   
@@ -63,6 +71,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   const [showInscripciones, setShowInscripciones] = useState<Inscripcion[]>([]); 
   const [ publicos, setPublicos] = useState<Publico[]>([]);
   const [filtroPublico, setFiltroPublico] = useState<number | null>(null);
+  const [nota, setNota] = useState<any[]>([]);
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
@@ -99,6 +108,23 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
       console.error("Error al obtener inscripciones:", error);
     }
   };
+
+
+useEffect(()  => {
+  async function fetcNotas() {
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas");
+      if (!response.ok) throw new Error("Error al obtener los Notas");
+
+      const data = await response.json();
+      console.log("Notas recibidas:", data); 
+      setNota(data);
+    } catch(error){
+      console.error("Error cargando lista de Notas:", error);
+    }
+  }
+  fetcNotas(); 
+}, []);
 
 
   // OBTENER PUBLICO
