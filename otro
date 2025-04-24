@@ -1,27 +1,25 @@
 const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
   const valor = parseInt(event.target.value);
 
-  // Actualizar el estado de filtro
+  // Si el valor es 0 o null, mostrar todos los cursos
   setFiltroPublico(valor === 0 ? null : valor);
 
-  // Filtrar los cursos según el valor del público seleccionado
-  const cursosFiltrados = cursos.filter((c) => {
-    if (valor === 0) return true; // Mostrar todos los cursos si el valor es 0
-    return c.Publico === valor; // Filtrar solo los cursos que coinciden con el público seleccionado
+  const cursosFiltrados = cursos.filter(curso => {
+    if (valor === 0 || valor === null) return true; // Muestra todos los cursos si no hay filtro
+    return Number(curso.Publico) === valor; // Filtra según el valor seleccionado
   });
 
   setCursosFiltrados(cursosFiltrados);
 };
-const fetchCursos = async () => {
-  setIsLoading(true);
-  try {
-    const response = await fetch("http://localhost:8090/api/cursos");
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
-    setCursos(data);
-    setCursosFiltrados(data);  // Inicializar cursos filtrados con todos los cursos
-  } catch (error) {
-    console.error("Error al obtener los cursos:", error);
-  }
-  setIsLoading(false);
-};
+
+
+
+
+<select onChange={handleFiltroPublico}>
+  <option value={0}>Todos</option>
+  {publicos.map((pub) => (
+    <option key={pub.id} value={pub.id}>
+      {pub.Especificacion}
+    </option>
+  ))}
+</select>
