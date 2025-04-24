@@ -1,13 +1,28 @@
-{showInscripciones.map((ins, i) => {
-  const notaInscrito = nota.find(n => n.idInscrito === ins.id); // Filtra la nota por idInscrito
-  return (
-    <tr key={i} className="text-gray-700 text-center even:bg-gray-50 text-xs">
-      <td className="px-1 py-1 border">{ins.docInscr}</td>
-      <td className="px-1 py-1 border">{ins.nombre || "No disponible"}</td>
-      <td className="px-1 py-1 border">{new Date(ins.fecreg).toLocaleDateString()}</td>
-      <td className="px-1 py-1 border">{notaInscrito?.Nota || "-"}</td>
-      <td className="px-1 py-1 border">{notaInscrito?.idRegistro || "-"}</td>
-      <td className="px-1 py-1 border">{notaInscrito?.FechaRegistro ? new Date(notaInscrito.FechaRegistro).toLocaleDateString() : "-"}</td>
+{/* Tabla de inscritos y notas */}
+<table className="min-w-full mt-6 text-[0.8rem] border border-gray-300">
+  <thead className="bg-[#990000] text-white">
+    <tr>
+      <th className="px-3 py-2 border">Documento</th>
+      <th className="px-3 py-2 border">Nombre</th>
+      <th className="px-3 py-2 border">Fecha Inscripción</th>
+      <th className="px-3 py-2 border">Nota</th>
+      <th className="px-3 py-2 border">Calificador</th>
+      <th className="px-3 py-2 border">Fecha de Calificación</th>
     </tr>
-  );
-})}
+  </thead>
+  <tbody>
+    {showInscripciones.map(ins => {
+      const notaInscrito = nota.find(n => n.idInscrito === ins.id && n.idCurso === curso.id);
+      return (
+        <tr key={ins.id} className="text-center text-gray-700">
+          <td className="px-3 py-2 border">{ins.docInscr}</td>
+          <td className="px-3 py-2 border">{ins.nombre}</td>
+          <td className="px-3 py-2 border">{new Date(ins.fecreg).toLocaleDateString()}</td>
+          <td className="px-3 py-2 border">{notaInscrito?.Nota ?? 'Sin nota'}</td>
+          <td className="px-3 py-2 border">{notaInscrito?.idRegistro ?? '-'}</td>
+          <td className="px-3 py-2 border">{notaInscrito?.FechaRegistro ? new Date(notaInscrito.FechaRegistro).toLocaleDateString() : '-'}</td>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
