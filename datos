@@ -1,16 +1,22 @@
-@Get('publicos')
-getPublicos() {
-  return this.cursosService.obtenerPublicos();
+// OBTENER LISTA DE PÚBLICO
+async obtenerPublicos() {
+  return this.prisma.$queryRaw<{ id: number; Especificacion: string }[]>`
+    SELECT id, Especificacion FROM gescur.listas WHERE Tipo = 1
+  `;
 }
 
-@Get('estados')
-getEstados() {
-  return this.cursosService.obtenerEstados();
+// OBTENER LISTA DE ESTADOS
+async obtenerEstados() {
+  return this.prisma.$queryRaw<{ id: number; Especificacion: string }[]>`
+    SELECT id, Especificacion FROM gescur.listas WHERE Tipo = 4
+  `;
 }
 
-@Get('tipos-curso')
-getTiposCurso() {
-  return this.cursosService.obtenerTiposCurso();
+// OBTENER LISTA DE TIPOS DE CURSO
+async obtenerTiposCurso() {
+  return this.prisma.$queryRaw<{ id: number; Especificacion: string }[]>`
+    SELECT id, Especificacion FROM gescur.listas WHERE Tipo = 8
+  `;
 }
 
 
