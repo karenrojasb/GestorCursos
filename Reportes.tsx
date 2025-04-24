@@ -102,26 +102,33 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
 
 
   // OBTENER PUBLICO
-  const fetchPublicos = async () => {
-    try {
-      const response= await fetch ("http://localhost:8090/api/cursos/publico/1");
-      const data = await response.json();
-        setPublicos(data);
-      } catch (error) {
-        console.error("Error al obtener públicos:", error);
-      }
-    }; 
-    useEffect (() => {
-      fetchPublicos();
-    }, []);
+// Cargar públicos desde el backend
+const fetchPublicos = async () => {
+  try {
+    const response = await fetch("http://localhost:8090/api/cursos/publico/1");
+    const data = await response.json();
+    setPublicos(data);
+  } catch (error) {
+    console.error("Error al obtener públicos:", error);
+  }
+};
 
+useEffect(() => {
+  fetchPublicos();
+}, []);
 
-    const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const valor = parseInt(event.target.value);
-      setFiltroPublico(valor === 0 ? null : valor);
-      const cursosFiltrados = cursos.filter(c => (valor === 0 ? true : c.Publico === valor));
-      setCursosFiltrados(cursosFiltrados);
-    };
+// Filtro por público
+const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const valor = parseInt(event.target.value);
+  setFiltroPublico(valor === 0 ? null : valor);
+
+  const cursosFiltrados = cursos.filter(c => {
+    if (valor === 0) return true;
+    return Number(c.Publico) === valor;
+  });
+
+  setCursosFiltrados(cursosFiltrados);
+};
   
 
   const formatearHorario = (curso: Curso) => {
@@ -199,15 +206,6 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   
     saveAs(blob, `Curso_${curso.NombreCurso}.xlsx`);
   };
-
-
-
-
-
-
-
-
-
 
 
 
