@@ -26,8 +26,7 @@ const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
   setCursosFiltrados(cursosFiltrados);
 };
 
-
-			<select onChange={handleFiltroPublico}>
+<select onChange={handleFiltroPublico}>
   <option value={0}>Todos</option>
   {publicos.map((pub) => (
     <option key={pub.Publico} value={pub.Publico}>
