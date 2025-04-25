@@ -253,7 +253,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
               </thead>
               <tbody className="text-sm">
                 {cursosFiltrados.map((curso, index) => {
-                 const inscripcion = inscripciones.find(ins => ins.idCur === curso.id);
+                 const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.docInscr === idEmp);
                   return (
                     <tr key={curso.id} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} text-center transition`}>
 
