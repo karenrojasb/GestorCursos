@@ -122,13 +122,13 @@ useEffect(()  => {
   async function fetcNotas() {
     try {
       const response = await fetch("http://localhost:8090/api/Notas");
-      if (!response.ok) throw new Error("Error al obtener los periodos");
+      if (!response.ok) throw new Error("Error al obtener los Notas");
 
       const data = await response.json();
       console.log("Notas recibidas:", data); 
       setNota(data);
     } catch(error){
-      console.error("Error cargando lista de periodos:", error);
+      console.error("Error cargando lista de Notas:", error);
     }
   }
   fetcNotas(); 
@@ -373,7 +373,7 @@ const guardarNota = async (notaTexto: string) => {
         <>
           {notaEncontrada && (
             <span className="text-black font-semibold text-sm">
-               {notaEncontrada.Listas?.Especificacion}
+               {notaEncontrada.Especificacion}
             </span>
           )}
           <button
