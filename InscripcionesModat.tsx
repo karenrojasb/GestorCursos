@@ -211,6 +211,8 @@ const guardarNota = async (notaTexto: string) => {
     acc[cursoId].push(inscripcion);
     return acc;
   }, {} as { [key: number]: Inscripcion[] });
+  
+  console.log("Grouped Inscripciones:", groupedInscripciones);
 
   // AALTERAR EXPANSIÓN DE CURSO
   const toggleExpand = (cursoId: number) => {
@@ -362,7 +364,7 @@ const guardarNota = async (notaTexto: string) => {
                                 </thead>
                                 <tbody className="text-sm">
                                   {inscripciones
-                                  .filter((inscripciones) => Number(inscripciones.est) ===1)
+                         
                                   .map((inscripciones, index) => (
                                     <tr key={inscripciones.id} className={`${index % 2 === 0 ? "bg-gray-200" : "bg-white"} text-center transition`}>
                                       <td className=" p-1">{inscripciones.nombre || "No disponible"}</td>
