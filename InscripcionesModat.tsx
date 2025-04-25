@@ -124,21 +124,25 @@ const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 
 
-useEffect(()  => {
-  async function fetcNotas() {
-    try {
-      const response = await fetch("http://localhost:8090/api/Notas");
-      if (!response.ok) throw new Error("Error al obtener los Notas");
 
-      const data = await response.json();
-      console.log("Notas recibidas:", data); 
-      setNota(data);
-    } catch(error){
-      console.error("Error cargando lista de Notas:", error);
-    }
+useEffect(() => {
+  if (inscritoSeleccionado) {  // Solo ejecutamos si hay un inscrito seleccionado
+    const fetchNotas = async () => {
+      try {
+        const response = await fetch(`http://localhost:8090/api/Notas/${inscritoSeleccionado.doc}`);
+        if (!response.ok) throw new Error("Error al obtener las Notas");
+
+        const data = await response.json();
+        console.log("Notas recibidas:", data); 
+        setNota(data);
+      } catch(error){
+        console.error("Error cargando lista de Notas:", error);
+      }
+    };
+    fetchNotas();
   }
-  fetcNotas(); 
-}, []);
+}, [inscritoSeleccionado]);  
+
 
 
 const abrirModalCalificar = async (nombre: string, doc: string) => {
