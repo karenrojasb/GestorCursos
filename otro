@@ -1,317 +1,457 @@
-import { Injectable } from '@nestjs/common';
-import { CreateNotaDto } from './dto/create-nota.dto';
-import { UpdateNotaDto } from './dto/update-nota.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { CreateCursoDto } from './dto/create-curso.dto';
 
 @Injectable()
-export class NotasService {
-  updateNote(arg0: number, UpdateNotaDto: UpdateNotaDto) {
-    throw new Error('Method not implemented.');
-  }
+export class CursosService {
   constructor(private readonly prisma: PrismaService) {}
 
-//  OBTENER TODAS LAS NOTAS
+//  OBTENER CURSOS
+  async getCourses() {
+    return this.prisma.$queryRaw`
+    SELECT 
+      c.id,
+      c.NombreCurso,
+      c.Valor,
+      lp.Especificacion AS Publico,
+      c.Periodo,
+      c.Inicio,
+      c.Fin,
+      c.Horas,
+      c.CupoMax,
+      c.Lugar,                          
+      c.LunesIni,                          
+      c.LunesFin,                         
+      c.MartesIni,                       
+      c.MartesFin,                        
+      c.MiercolesIni,                      
+      c.MiercolesFin,                      
+      c.JuevesIni,                         
+      c.JuevesFin,                         
+      c.ViernesIni,                        
+      c.ViernesFin,                        
+      c.SabadoIni,                         
+      c.SabadoFin,                         
+      c.DomingoIni,                        
+      c.DomingoFin,                        
+      c.Linea,
+      l.Especificacion AS Linea,    
+      c.Estado,
+      est.Especificacion AS Estado, 
+      c.Modalidad,
+      m.Especificacion AS Modalidad,
+      u.nombre AS Unidad,                            
+      c.Profesor,                          
+      c.SegundoPro,
+      sp.nombre AS SegundoPro,                        
+      c.Proexterno,                       
+      c.Descripcion,                       
+      c.IdTipoCurso,
+      tc.Especificacion AS IdTipoCurso,
+      e.nombre AS NombreProfesor
+    FROM gescur.cursos c
+    LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+    LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+    LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+    LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+    LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
+    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
+    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+    LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
 
-async findAll() {
-  const notas = await this.prisma.notas.findMany({
-    include: {
-      Listas: {
-        select: {
-          Especificacion: true,
-        },
-      },
-    },
-  });
+    ;
+    `
+}
 
-  const notasConInscrito = await Promise.all(notas.map(async (nota) => {
-    const inscrito = await this.prisma.inscripciones.findFirst({
-      where: {
-        docInscr: nota.idInscrito,
-      },
-      select: {
-        
-        docInscr: true,
-      },
-    });
+//  OBTENER CURSOS POR ID DEL USUARIO
+async getCoursesUser(id_emp: string) {
+  try {
+      // OBTENER EL VALOR DE "PÚBLICO" DEL USUARIO
+      const usuario = await this.prisma.$queryRaw<{ publico: number }[]>`
+          SELECT publico FROM gescur.emp_nomina WHERE id_emp = CAST(${id_emp} AS VARCHAR)
+      `;
 
-    return {
-      ...nota,
-      inscrito: inscrito || null,
-    };
-  }));
+      if (!usuario || usuario.length === 0) {
+          throw new Error('Usuario no encontrado en gescur.emp_nomina');
+      }
 
-  return notasConInscrito;
+      const publico = usuario[0].publico;
+
+      console.log(`Usuario ${id_emp} tiene publico: ${publico}`);
+
+      // OBTENER CURSOS SEGÚN EL PÚBLICO
+      let cursos;
+      if (publico === 3) {
+          cursos = await this.prisma.$queryRaw`
+              SELECT 
+                  c.id,
+                  c.NombreCurso,
+                  c.Valor,
+                  lp.Especificacion AS Publico,
+                  c.Periodo,
+                  c.Inicio,
+                  c.Fin,
+                  c.Horas,
+                  c.LunesIni,                          
+                  c.LunesFin,                         
+                  c.MartesIni,                       
+                  c.MartesFin,                        
+                  c.MiercolesIni,                      
+                  c.MiercolesFin,                      
+                  c.JuevesIni,                         
+                  c.JuevesFin,                         
+                  c.ViernesIni,                        
+                  c.ViernesFin,                        
+                  c.SabadoIni,                         
+                  c.SabadoFin,                         
+                  c.DomingoIni,                        
+                  c.DomingoFin,
+                  c.CupoMax,
+                  c.Lugar,
+                  c.Linea,
+                  c.Proexterno, 
+                  l.Especificacion AS Linea,
+                  c.Estado,
+                  est.Especificacion AS Estado,
+                  c.Modalidad,
+                  m.Especificacion AS Modalidad,
+                  u.nombre AS Unidad,
+                  e.nombre AS NombreProfesor,
+                  sp.nombre AS SegundoPro
+              FROM gescur.cursos c
+              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+              ORDER BY c.id
+          `;
+      } else {
+          cursos = await this.prisma.$queryRaw`
+              SELECT 
+                  c.id,
+                  c.NombreCurso,
+                  c.Valor,
+                  lp.Especificacion AS Publico,
+                  c.Periodo,
+                  c.Inicio,
+                  c.Fin,
+                  c.Horas,
+                  c.LunesIni,                          
+                  c.LunesFin,                         
+                  c.MartesIni,                       
+                  c.MartesFin,                        
+                  c.MiercolesIni,                      
+                  c.MiercolesFin,                      
+                  c.JuevesIni,                         
+                  c.JuevesFin,                         
+                  c.ViernesIni,                        
+                  c.ViernesFin,                        
+                  c.SabadoIni,                         
+                  c.SabadoFin,                         
+                  c.DomingoIni,                        
+                  c.DomingoFin,    
+                  c.CupoMax,
+                  c.Lugar,
+                  c.Linea,
+                   c.Proexterno, 
+                  l.Especificacion AS Linea,
+                  c.Estado,
+                  est.Especificacion AS Estado,
+                  c.Modalidad,
+                  m.Especificacion AS Modalidad,
+                  u.nombre AS Unidad,
+                  e.nombre AS NombreProfesor,
+                  sp.nombre AS SegundoPro
+              FROM gescur.cursos c
+              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+              WHERE c.publico = ${publico} OR c.publico = 3
+              ORDER BY c.id
+              
+          `;
+      }
+
+      console.log(`Cursos obtenidos para usuario ${id_emp}:`, cursos);
+
+      return cursos;
+  } catch (error) {
+      console.error('Error al obtener cursos:', error.message);
+      throw new Error('No se pudieron obtener los cursos.');
+  }
 }
 
 
-  //  MÉTODO PARA CREAR NOTA
-    async createNote(CreateNotaDto: CreateNotaDto) {
-      const newNote = await this.prisma.notas.create({
-        data: {
-          idCurso: CreateNotaDto.idCurso,
-          idInscrito: CreateNotaDto.idInscrito,
-          Nota: CreateNotaDto.Nota,
-          idRegistro: CreateNotaDto.idRegistro,
-          FechaRegistro:  new Date()  ,
-        },
-      });
-      return newNote;
+// CREAR CURSO
+async createCourses(data: CreateCursoDto) {
+  console.log("Data recibida:", data);
+
+  try {
+    const cursoCreado = await this.prisma.cursos.create({ data });
+
+   
+    if (data.Profesor) {
+      const profesorEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
+        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${data.Profesor} AS VARCHAR)
+      `;
+
+      if (profesorEmail.length > 0) {
+        const email = profesorEmail[0].e_mail;
+
+        // VERIFICA SI EL USUARIO EXISTE
+        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
+          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
+        `;
+
+        if (yaExiste[0].count === 0) {
+          await this.prisma.$executeRaw`
+            INSERT INTO gescur.rol_usuario (usuario, id_rol)
+            VALUES (${email}, 2)
+          `;
+        }
+      }
     }
 
+    // Insertar en rol_usuario si hay SegundoPro
+    if (data.SegundoPro) {
+      const segundoEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
+        SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${data.SegundoPro} AS VARCHAR)
+      `;
 
-    // OBTENER NOTA POR ID INSCRITO 
-    async getWrittenNote(idInscrito: number) {
-      const notas = await this.prisma.notas.findMany({
-        where: { idInscrito },
-        include: {
-          Listas: {
-            select: {
-              Especificacion: true,
-            },
-          },
-        },
-      });
-    
-      const notasConCurso = await Promise.all(
-        notas.map(async (nota) => {
-          if (!nota.idCurso) {
-            return {
-              ...nota,
-              NombreCurso: null,
-              Lugar: null,
-              Inicio: null,
-              Fin: null,
-              LunesIni: null,
-              LunesFin: null,
-              MartesIni: null,
-              MartesFin: null,
-              MiercolesIni: null,
-              MiercolesFin: null,
-              JuevesIni: null,
-              JuevesFin: null,
-              ViernesIni: null,
-              ViernesFin: null,
-              SabadoIni: null,
-              SabadoFin: null,
-              Profesor: null,
-              Proexterno: null,
-              SegundoPro: null,
-              ProfesorNombre: null,
-              SegundoProNombre: null,
-            };
-          }
-    
-          const curso = await this.prisma.cursos.findFirst({
-            where: {
-              id: nota.idCurso,
-            },
-            select: {
-              NombreCurso: true,
-              Lugar: true,
-              Inicio: true,
-              Fin: true,
-              LunesIni: true,
-              LunesFin: true,
-              MartesIni: true,
-              MartesFin: true,
-              MiercolesIni: true,
-              MiercolesFin: true,
-              JuevesIni: true,
-              JuevesFin: true,
-              ViernesIni: true,
-              ViernesFin: true,
-              SabadoIni: true,
-              SabadoFin: true,
-              Profesor: true,
-              SegundoPro: true,
-              Proexterno: true,
-            },
-          });
-    
-          const profesorId = curso?.Profesor?.toString() || '0';
-          const segundoProId = curso?.SegundoPro?.toString() || '0';
-    
-          const [profesor] = await this.prisma.$queryRaw<
-            { nombre: string }[]
-          >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
-    
-          const [segundoPro] = await this.prisma.$queryRaw<
-            { nombre: string }[]
-          >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
-    
-          return {
-            ...nota,
-            NombreCurso: curso?.NombreCurso || null,
-            Lugar: curso?.Lugar || null,
-            Inicio: curso?.Inicio || null,
-            Fin: curso?.Fin || null,
-            LunesIni: curso?.LunesIni || null,
-            LunesFin: curso?.LunesFin || null,
-            MartesIni: curso?.MartesIni || null,
-            MartesFin: curso?.MartesFin || null,
-            MiercolesIni: curso?.MiercolesIni || null,
-            MiercolesFin: curso?.MiercolesFin || null,
-            JuevesIni: curso?.JuevesIni || null,
-            JuevesFin: curso?.JuevesFin || null,
-            ViernesIni: curso?.ViernesIni || null,
-            ViernesFin: curso?.ViernesFin || null,
-            SabadoIni: curso?.SabadoIni || null,
-            SabadoFin: curso?.SabadoFin || null,
-            ProExterno: curso?.Proexterno || null,
-            Profesor: curso?.Profesor || null,
-            SegundoPro: curso?.SegundoPro || null,
-            ProfesorNombre: profesor?.nombre ?? null,
-            SegundoProNombre: segundoPro?.nombre ?? null,
-          };
-        })
-      );
-    
-      return notasConCurso;
+      if (segundoEmail.length > 0) {
+        const email = segundoEmail[0].e_mail;
+
+        const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
+          SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
+        `;
+
+        if (yaExiste[0].count === 0) {
+          await this.prisma.$executeRaw`
+            INSERT INTO gescur.rol_usuario (usuario, id_rol)
+            VALUES (${email}, 2)
+          `;
+        }
+      }
     }
 
-    
-// OBTENER NOTAS APROVADAS POR IDINSCRITO 
-async getAprovado(idInscrito: number | string) {
-  const idInscritoInt = Number(idInscrito);
-  if (isNaN(idInscritoInt)) {
-    throw new Error('El ID del inscrito debe ser un número válido');
+    return cursoCreado;
+  } catch (error) {
+    console.error("Error al crear el curso en el backend", error);
+    throw new Error("Error al crear el curso");
+  }
+}
+
+  // OBTENER OPCIONES PARA EL DESPLEGABLE
+  async getSpecification() {
+    try {
+      return await this.prisma.listas.findMany(); 
+    } catch (error) {
+      console.error("Error al obtener las especificaciones:", error);
+      throw new Error("Error al obtener las especificaciones");
+    }
   }
 
-  const notas = await this.prisma.notas.findMany({
-    where: {
-      idInscrito: idInscritoInt,
-      Nota: 33,
-    },
-    include: {
-      Listas: {
-        select: {
-          Especificacion: true,
-        },
-      },
-    },
-  });
+  // OBTENER CURSO POR ID
+  async getCourseId(id: number) {
+    const curso = await this.prisma.$queryRaw<
+      Array<any>
+    >(Prisma.sql`
+      SELECT 
+        c.*,
+        e.nombre AS NombreProfesor,
+        sp.nombre AS NombreSegundoPro
+      FROM gescur.cursos c
+      LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+      LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+      WHERE c.id = ${id}
+    `);
+  
+    if (!curso || curso.length === 0) {
+      throw new NotFoundException(`El curso con ID ${id} no fue encontrado`);
+    }
+  
+    return curso[0];
+  }
+  
 
-  const notasConCurso = await Promise.all(
-    notas.map(async (nota) => {
-      if (!nota.idCurso) {
-        return {
-          ...nota,
-          NombreCurso: null,
-          Lugar: null,
-          Inicio: null,
-          Fin: null,
-          LunesIni: null,
-          LunesFin: null,
-          MartesIni: null,
-          MartesFin: null,
-          MiercolesIni: null,
-          MiercolesFin: null,
-          JuevesIni: null,
-          JuevesFin: null,
-          ViernesIni: null,
-          ViernesFin: null,
-          SabadoIni: null,
-          SabadoFin: null,
-          Profesor: null,
-          Proexterno: null,
-          SegundoPro: null,
-          ProfesorNombre: null,
-          SegundoProNombre: null,
-        };
-      }
-
-      const curso = await this.prisma.cursos.findFirst({
-        where: {
-          id: nota.idCurso,
-        },
-        select: {
-          NombreCurso: true,
-          Lugar: true,
-          Inicio: true,
-          Fin: true,
-          LunesIni: true,
-          LunesFin: true,
-          MartesIni: true,
-          MartesFin: true,
-          MiercolesIni: true,
-          MiercolesFin: true,
-          JuevesIni: true,
-          JuevesFin: true,
-          ViernesIni: true,
-          ViernesFin: true,
-          SabadoIni: true,
-          SabadoFin: true,
-          Profesor: true,
-          SegundoPro: true,
-          Proexterno: true,
-        },
+  async updateCourse(id: number, data: Prisma.CursosUpdateInput) {
+    console.log('ID recibido:', id);
+    console.log('Datos recibidos:', data);
+  
+    try {
+      // Actualiza el curso
+      const cursoActualizado = await this.prisma.cursos.update({
+        where: { id },
+        data,
       });
+  
+      // Si hay profesor, verificar si está en rol_usuario
+      if (data.Profesor) {
+        const profesorId = data.Profesor as number;
+  
+        const profesorEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
+          SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)
+        `;
+  
+        if (profesorEmail.length > 0) {
+          const email = profesorEmail[0].e_mail;
+  
+          const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
+            SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
+          `;
+  
+          if (yaExiste[0].count === 0) {
+            await this.prisma.$executeRaw`
+              INSERT INTO gescur.rol_usuario (usuario, id_rol)
+              VALUES (${email}, 2)
+            `;
+          }
+        }
+      }
+  
+      // Si hay SegundoPro, verificar si está en rol_usuario
+      if (data.SegundoPro) {
+        const segundoId = data.SegundoPro as number;
+  
+        const segundoEmail = await this.prisma.$queryRaw<{ e_mail: string }[]>`
+          SELECT e_mail FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoId} AS VARCHAR)
+        `;
+  
+        if (segundoEmail.length > 0) {
+          const email = segundoEmail[0].e_mail;
+  
+          const yaExiste = await this.prisma.$queryRaw<{ count: number }[]>`
+            SELECT COUNT(*) as count FROM gescur.rol_usuario WHERE usuario = ${email}
+          `;
+  
+          if (yaExiste[0].count === 0) {
+            await this.prisma.$executeRaw`
+              INSERT INTO gescur.rol_usuario (usuario, id_rol)
+              VALUES (${email}, 2)
+            `;
+          }
+        }
+      }
+  
+      return cursoActualizado;
+  
+    } catch (error) {
+      console.error('Error al actualizar el curso:', error);
+      throw new Error('El curso no se pudo actualizar');
+    }
+  }
+ 
 
-      const profesorId = curso?.Profesor?.toString() || '0';
-      const segundoProId = curso?.SegundoPro?.toString() || '0';
+  // ELIMINAR CURSO POR ID
+  async deleteCourse(id: number) {
+    return this.prisma.cursos.delete({ where: { id } });
+  }
 
-      const [profesor] = await this.prisma.$queryRaw<
-        { nombre: string }[]
-      >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
+// OBTENER EL NOMBRE DEL PROFESOR
+async getTeacher(){
+  const query = `SELECT id_emp, nombre, publico FROM gescur.emp_nomina WHERE publico = 1`;
+  const profesores = await this.prisma.$queryRawUnsafe(query);
+  return profesores;
+}
 
-      const [segundoPro] = await this.prisma.$queryRaw<
-        { nombre: string }[]
-      >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
+// OBTENER NOMBRE DEL PROFESOR POR ID
+async getNameTeacher(id_emp: string): Promise<string | null> {
+  try {
+    const resultado = await this.prisma.$queryRaw<{ nombre: string }[]>`
+      SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${id_emp} AS VARCHAR)
+    `;
 
-      return {
-        ...nota,
-        NombreCurso: curso?.NombreCurso || null,
-        Lugar: curso?.Lugar || null,
-        Inicio: curso?.Inicio || null,
-        Fin: curso?.Fin || null,
-        LunesIni: curso?.LunesIni || null,
-        LunesFin: curso?.LunesFin || null,
-        MartesIni: curso?.MartesIni || null,
-        MartesFin: curso?.MartesFin || null,
-        MiercolesIni: curso?.MiercolesIni || null,
-        MiercolesFin: curso?.MiercolesFin || null,
-        JuevesIni: curso?.JuevesIni || null,
-        JuevesFin: curso?.JuevesFin || null,
-        ViernesIni: curso?.ViernesIni || null,
-        ViernesFin: curso?.ViernesFin || null,
-        SabadoIni: curso?.SabadoIni || null,
-        SabadoFin: curso?.SabadoFin || null,
-        ProExterno: curso?.Proexterno || null,
-        Profesor: curso?.Profesor || null,
-        SegundoPro: curso?.SegundoPro || null,
-        ProfesorNombre: profesor?.nombre ?? null,
-        SegundoProNombre: segundoPro?.nombre ?? null,
-      };
-    }),
-  );
-
-  return notasConCurso;
+    if (resultado.length > 0) {
+      return resultado[0].nombre;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error al obtener el nombre del profesor:', error);
+    throw new Error('No se pudo obtener el nombre del profesor');
+  }
 }
 
 
-    // MÉTODO PARA ACTUALIZAR
-    async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
-      console.log ('id received:', id);
-      console.log ('data received:', data);
 
-      try {
-        const UpdateNote = await this.prisma.notas.update({
-          where: {id},
-          data,
-        });
-        console.log ('update note:', UpdateNote);
-        return UpdateNote;
-      }
-      catch (error){
-        console.error ('error when updating note:', error);
-        throw new error('the note was not updated');
-      }
-    }
 
-    // MÉTODO PARA ELIMINAR
-    async deleteNote(id:number){
-      return this.prisma.notas.delete({where: {id}});
-    }
+async getUnit () {
+  return this.prisma.$queryRaw<
+  Array<{ codigo: number; nombre: string}>
+  >(Prisma.sql`
+    SELECT codigo, nombre FROM gescur.unidad`);
+}
+
+
+// OBTENER PERIODOS
+async getPeriods(){
+  return this.prisma.$queryRaw<
+  {  periodo: string; fecha_ini: Date; fecha_fin: Date}[]
+  >`
+  SELECT  periodo, fecha_ini, fecha_fin
+  FROM gescur.periodos
+  WHERE YEAR(fecha_ini) = YEAR(GETDATE())
+  ORDER BY fecha_ini ASC
+  `;
+}
+
+// OBTENER LISTA DE P´´ÚBLICOS
+async getPublicos () {
+  try {
+    return await this.prisma.$queryRaw<{ id: number ; Especificcion: string} []> `
+    SELECT id, Especificacion
+    FROM gescur.listas 
+    WHERE Tipo = 1
+    ORDER BY Especificacion ASC`
+    ;
+  } catch (error) {
+    console.error('Error al obtener los públicos:' , error);
+    throw new Error ('No se pudieron obtener los publicos');
+  }
+}
+
+// OBTENER TIPOS DE CURSOS
+async getTipoCurso () {
+  try {
+    return await this.prisma.$queryRaw<{ id: number ; Especificcion: string} []> `
+    SELECT id, Especificacion
+    FROM gescur.listas 
+    WHERE Tipo = 8
+    ORDER BY Especificacion ASC`
+    ;
+  } catch (error) {
+    console.error('Error al obtener los públicos:' , error);
+    throw new Error ('No se pudieron obtener los publicos');
+  }
+}
+
+// OBTENER LISTADO DE ESTADOS
+async getEstados () {
+  try {
+    return await this.prisma.$queryRaw<{ id: number ; Especificcion: string} []> `
+    SELECT id, Especificacion
+    FROM gescur.listas 
+    WHERE Tipo = 4
+    ORDER BY Especificacion ASC`
+    ;
+  } catch (error) {
+    console.error('Error al obtener los públicos:' , error);
+    throw new Error ('No se pudieron obtener los publicos');
+  }
+}
+
+
+
+
+
+
 
 }
