@@ -392,11 +392,15 @@ const guardarNota = async (notaTexto: string) => {
       
       return (
         <>
-       {notaEncontrada && (
-  <span className="text-black font-semibold text-sm">
-    {notaEncontrada.Nota} - {notaEncontrada.Especificacion}
-  </span>
-)}
+ {
+  notaEncontrada ? (
+    <span className="text-black font-semibold text-sm">
+      {notaEncontrada.Nota} - {notaEncontrada.Especificacion}
+    </span>
+  ) : (
+    <span className="text-gray-500 text-sm">No disponible</span>
+  )
+}
           <button
     onClick={() =>
       abrirModalCalificar(inscripciones.nombre, inscripciones.docInscr)
