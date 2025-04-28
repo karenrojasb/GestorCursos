@@ -5,10 +5,14 @@ const fetchCursos = async () => {
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
     const data: Curso[] = await response.json();
 
+    console.log("Cursos recibidos:", data);
+
     if (idEmp !== null) {
-      const cursosFiltradosPorProfesor = data.filter(curso => 
-        curso.Profesor === idEmp || Number(curso.SegundoPro) === idEmp
-      );
+      const cursosFiltradosPorProfesor = data.filter(curso => {
+        console.log(`Curso: ${curso.NombreCurso} | Profesor: ${curso.Profesor} | SegundoPro: ${curso.SegundoPro}`);
+        return curso.Profesor === idEmp || Number(curso.SegundoPro) === idEmp;
+      });
+      
       setCursos(cursosFiltradosPorProfesor);
       setCursosFiltrados(cursosFiltradosPorProfesor);
     } else {
