@@ -53,6 +53,16 @@ interface Publico {
   id: number; 
   Especificacion: string;
 }
+interface Nota {
+  id: number;
+  idCurso:  number;
+  idInscrito: number; 
+  Nota: number;
+  idRegistro: number; 
+  Especificacion: string; 
+  FechaRegistro: string;
+  NombreCurso: string;
+}
 
 export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   
@@ -63,6 +73,7 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   const [showInscripciones, setShowInscripciones] = useState<Inscripcion[]>([]); 
   const [ publicos, setPublicos] = useState<Publico[]>([]);
   const [filtroPublico, setFiltroPublico] = useState<number | null>(null);
+  const [nota, setNota] = useState<any[]>([]);
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
@@ -101,34 +112,52 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   };
 
 
-  // OBTENER PUBLICO
-// Cargar públicos desde el backend
-const fetchPublicos = async () => {
-  try {
-    const response = await fetch("http://localhost:8090/api/cursos/publico/1");
-    const data = await response.json();
-    setPublicos(data);
-  } catch (error) {
-    console.error("Error al obtener públicos:", error);
-  }
-};
+useEffect(()  => {
+  async function fetcNotas() {
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas");
+      if (!response.ok) throw new Error("Error al obtener los Notas");
 
-useEffect(() => {
-  fetchPublicos();
+      const data = await response.json();
+      console.log("Notas recibidas:", data); 
+      setNota(data);
+    } catch(error){
+      console.error("Error cargando lista de Notas:", error);
+    }
+  }
+  fetcNotas(); 
 }, []);
 
-// Filtro por público
-const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  const valor = parseInt(event.target.value);
-  setFiltroPublico(valor === 0 ? null : valor);
 
-  const cursosFiltrados = cursos.filter(c => {
-    if (valor === 0) return true;
-    return Number(c.Publico) === valor;
-  });
-
-  setCursosFiltrados(cursosFiltrados);
-};
+  // OBTENER PUBLICO
+  const fetchPublicos = async () => {
+    try {
+      const response = await fetch("http://localhost:8090/api/cursos/publico/1");
+      const data = await response.json();
+      setPublicos(data);
+    } catch (error) {
+      console.error("Error al obtener públicos:", error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchPublicos();
+  }, []);
+  
+  
+  const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const valor = parseInt(event.target.value);
+  
+   
+    setFiltroPublico(valor === 0 ? null : valor);
+  
+    const cursosFiltrados = cursos.filter(curso => {
+      if (valor === 0 || valor === null) return true;
+      return Number(curso.Publico) === valor; 
+    });
+  
+    setCursosFiltrados(cursosFiltrados);
+  };
   
 
   const formatearHorario = (curso: Curso) => {
@@ -210,7 +239,7 @@ const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
 
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg bg-opacity-50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl h-[90vh] overflow-y-auto">
         
        {/* BOTÓN CERRAR */}
@@ -220,24 +249,22 @@ const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
-
+              <h2 className="text-2xl justify-center text-center font-bold text-[#990000]">Reportes</h2>
      
           <div className="flex items-center space-x-4 mt-4">
+            
   <label htmlFor="filtroPublico" className="text-[#990000] font-semibold">
     Público:
   </label>
-  <select
-    id="filtroPublico"
-    onChange={handleFiltroPublico}
-    className="border border-gray-300 rounded px-3 py-2"
-  >
-    <option value={0}>Selecciona una opción</option>
-    {publicos.map((p) => (
-      <option key={p.id} value={p.id}>
-        {p.Especificacion}
-      </option>
-    ))}
-  </select>
+  <select onChange={handleFiltroPublico}>
+  <option value={0}>Selecciona una opción</option>
+  {publicos.map((pub) => (
+    <option key={pub.id} value={pub.id}>
+      {pub.Especificacion}
+    </option>
+  ))}
+</select>
+
 </div>
 
 
@@ -323,7 +350,9 @@ const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
           <td className="px-3 py-1 border">{curso.id}</td>
           <td className="px-3 py-1 border">{curso.NombreCurso}</td>
           <td className="px-3 py-1 border">{curso.Valor}</td>
-          <td className="px-3 py-1 border">{curso.Publico}</td>
+          <td className="px-3 py-1 border">
+  {publicos.find(p => p.id === curso.Publico)?.Especificacion || "Sin público"}
+</td>
           <td className="px-3 py-1 border">{curso.Periodo}</td>
           <td className="px-3 py-1 border">{curso.CupoMax}</td>
         </tr>
@@ -409,9 +438,7 @@ const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
     </table>
   </div>
 )}
-
-
-               </div>
+         </div>
   
               </div>
               
@@ -423,15 +450,8 @@ const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
          </div>
        
        </div>  
-       
-  
-   
-   
+ 
   </div>
-
-    
-
-    
     
    );
  }
