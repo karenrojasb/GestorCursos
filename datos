@@ -1,7 +1,5 @@
-const notaEncontrada = nota.find(n => {
-  const mismoCurso = n.idCurso === Number(cursoId);
-  const mismoDoc = n.idInscrito === Number(inscripciones.docInscr); // <--- Aquí tienes que asegurarte que ambos realmente coincidan.
-  console.log({ mismoCurso, mismoDoc, idCurso: n.idCurso, idInscrito: n.idInscrito, docInscr: inscripciones.docInscr });
-
-  return mismoCurso && mismoDoc;
-});
+  async getRegistrationId(id: number) {
+    const inscripcion = await this.prisma.inscripciones.findUnique({ where: { id } });
+    if (!inscripcion) throw new NotFoundException('Inscripción no encontrada');
+    return inscripcion;
+  }
