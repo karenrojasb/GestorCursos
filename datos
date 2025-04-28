@@ -1,12 +1,7 @@
 const notaEncontrada = nota.find(n => {
-  const mismoInscrito = n.idInscrito === Number(inscripciones.docInscr);
   const mismoCurso = n.idCurso === Number(cursoId);
-  console.log("Comparando nota:", {
-    nota: n,
-    doc: inscripciones.docInscr,
-    cursoId: cursoId,
-    mismoInscrito,
-    mismoCurso
-  });
-  return mismoInscrito && mismoCurso;
+  const mismoDoc = n.idInscrito === Number(inscripciones.docInscr); // <--- Aquí tienes que asegurarte que ambos realmente coincidan.
+  console.log({ mismoCurso, mismoDoc, idCurso: n.idCurso, idInscrito: n.idInscrito, docInscr: inscripciones.docInscr });
+
+  return mismoCurso && mismoDoc;
 });
