@@ -6,9 +6,8 @@ const fetchCursos = async () => {
     const data: Curso[] = await response.json();
 
     if (idEmp !== null) {
-      const idEmpStr = idEmp.toString(); // Convertimos a string
-      const cursosFiltradosPorProfesor = data.filter(
-        curso => curso.Profesor === idEmpStr || curso.SegundoPro === idEmpStr
+      const cursosFiltradosPorProfesor = data.filter(curso => 
+        curso.Profesor === idEmp || Number(curso.SegundoPro) === idEmp
       );
       setCursos(cursosFiltradosPorProfesor);
       setCursosFiltrados(cursosFiltradosPorProfesor);
