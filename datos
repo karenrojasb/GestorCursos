@@ -30,7 +30,7 @@ async getCoursesTeacher(idProfesor: number) {
       e.nombre,
       i.fecreg,
       c.CupoMax,
-      (SELECT TOP 1 n.Nota FROM gescur.Notas n WHERE n.idInscrito = i.id ORDER BY n.id ASC) as Nota,
+      (SELECT TOP 1 n.Nota FROM gescur.Notas n WHERE n.docInscr = i.docInscr ORDER BY n.id ASC) as Nota, -- Cambio aquí
       CASE 
         WHEN c.Profesor = ${idProfesor} THEN 'Titular'
         WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
