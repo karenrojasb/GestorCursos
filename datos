@@ -1,4 +1,3 @@
-// OBTENER LOS CURSOS POR DOCINSCR DEL PROFESOR Y NOTA DEL INSCRITO
 async getCoursesTeacher(idProfesor: number) {
   return this.prisma.$queryRawUnsafe<
     Array<{
@@ -15,7 +14,7 @@ async getCoursesTeacher(idProfesor: number) {
       fecreg: Date;
       rol: string;
       CupoMax: number | null;
-      Nota: number | null; // AGREGADO
+      Nota: number | null;
     }>
   >(
     `SELECT 
@@ -31,7 +30,7 @@ async getCoursesTeacher(idProfesor: number) {
       e.nombre,
       i.fecreg,
       c.CupoMax,
-      n.Nota, -- AGREGADO
+      (SELECT TOP 1 n.Nota FROM gescur.Notas n WHERE n.idInscrito = i.id ORDER BY n.id ASC) as Nota,
       CASE 
         WHEN c.Profesor = ${idProfesor} THEN 'Titular'
         WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
@@ -40,7 +39,6 @@ async getCoursesTeacher(idProfesor: number) {
     FROM gescur.Cursos c
     LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
     LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
-    LEFT JOIN gescur.Notas n ON i.id = n.idInscrito -- AGREGADO: Uniendo Inscripciones con Notas
     WHERE c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor}`
   );
 }
