@@ -1,9 +1,42 @@
- {
-  notaEncontrada ? (
-    <span className="text-black font-semibold text-sm">
-      {notaEncontrada.Nota} - {notaEncontrada.Especificacion}
-    </span>
-  ) : (
-    <span className="text-gray-500 text-sm">No disponible</span>
-  )
-}
+  async getCoursesTeacher(idProfesor: number) {
+    return this.prisma.$queryRawUnsafe<
+      Array<{
+        id: number;
+        idCur: number;
+        NombreCurso: string;
+        Profesor: number;
+        SegundoPro: number;
+        Lugar: string;
+        Inicio: Date;
+        Fin: Date;
+        docInscr: string;
+        nombre: string | null;
+        fecreg: Date;
+        rol: string;
+        CupoMax: number | null;
+      }>
+    >(
+      `SELECT 
+        i.id,
+        i.idCur,
+        c.NombreCurso,
+        c.Profesor,
+        c.SegundoPro,
+        c.Lugar,
+        c.Inicio,
+        c.Fin,
+        i.docInscr,
+        e.nombre,
+        i.fecreg,
+        c.CupoMax,
+        CASE 
+          WHEN c.Profesor = ${idProfesor} THEN 'Titular'
+          WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
+          ELSE 'Otro'
+        END AS rol
+      FROM gescur.Cursos c
+      LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
+      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
+      WHERE c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor}`
+    );
+  }
