@@ -269,7 +269,7 @@ const guardarNota = async (notaTexto: string) => {
 };
 
   return (
-    <div className="p-6 rounded-lg shadow-lg fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="p-6 rounded-lg shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative flex flex-col  gap-4 w-full max-w-4xl bg-white py-8 px-10 rounded-lg shadow-md  min-h-[800px]">
         
         {/* BOTÓN CERRAR */}
