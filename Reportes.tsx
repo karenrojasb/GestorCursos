@@ -74,12 +74,20 @@ export default function ReportesModal ({ onClose }: { onClose: () => void }) {
   const [ publicos, setPublicos] = useState<Publico[]>([]);
   const [filtroPublico, setFiltroPublico] = useState<number | null>(null);
   const [nota, setNota] = useState<any[]>([]);
+  const [idEmp, setIdEmp] = useState<number | null>(null);
+
+  useEffect(() => {
+    const storedIdEmp = localStorage.getItem('id_emp');
+    if (storedIdEmp) {
+      setIdEmp(parseInt(storedIdEmp, 10));
+    }
+  }, []);
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8090/api/cursos");
+      const response = await fetch(`http://localhost:8090/api/cursos`);
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
       const data = await response.json();
       setCursos(data);
