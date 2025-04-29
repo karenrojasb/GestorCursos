@@ -43,6 +43,6 @@ async getCoursesTeacher(idProfesor: number) {
     LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
     LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
     WHERE (c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor})
-      AND c.est = 1`  -- CORREGIDO: columna en minúsculas
+      AND c.est = 1`
   );
 }
