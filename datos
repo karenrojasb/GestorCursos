@@ -15,6 +15,7 @@ async getCoursesTeacher(idProfesor: number) {
       rol: string;
       CupoMax: number | null;
       Nota: number | null;
+      InscritoNumerico: number | null;
     }>
   >(
     `SELECT 
@@ -30,9 +31,10 @@ async getCoursesTeacher(idProfesor: number) {
       e.nombre,
       i.fecreg,
       c.CupoMax,
+      TRY_CAST(i.docInscr AS INT) AS InscritoNumerico,
       (SELECT TOP 1 n.Nota 
         FROM gescur.Notas n 
-        WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT) 
+        WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT)
         ORDER BY n.id ASC) AS Nota,
       CASE 
         WHEN c.Profesor = ${idProfesor} THEN 'Titular'
