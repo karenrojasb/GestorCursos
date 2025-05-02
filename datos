@@ -1,4 +1,24 @@
-             c.id,
+async getCoursesUser(id_emp: string) {
+  try {
+      // OBTENER EL VALOR DE "PÚBLICO" DEL USUARIO
+      const usuario = await this.prisma.$queryRaw<{ publico: number }[]>`
+          SELECT publico FROM gescur.emp_nomina WHERE id_emp = CAST(${id_emp} AS VARCHAR)
+      `;
+
+      if (!usuario || usuario.length === 0) {
+          throw new Error('Usuario no encontrado en gescur.emp_nomina');
+      }
+
+      const publico = usuario[0].publico;
+
+      console.log(`Usuario ${id_emp} tiene publico: ${publico}`);
+
+      // OBTENER CURSOS SEGÚN EL PÚBLICO
+      let cursos;
+      if (publico === 3) {
+          cursos = await this.prisma.$queryRaw`
+              SELECT 
+                  c.id,
                   c.NombreCurso,
                   c.Valor,
                   lp.Especificacion AS Publico,
