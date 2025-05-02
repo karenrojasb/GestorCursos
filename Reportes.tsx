@@ -1,10 +1,8 @@
-"use client";
-import {  XMarkIcon,  ArrowDownTrayIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-
-
+import { useState, useEffect } from "react";
+import { XMarkIcon, MagnifyingGlassIcon, ArrowDownTrayIcon, PencilIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
+import React from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 interface Curso {
   id: number;
@@ -44,187 +42,146 @@ interface Curso {
   
 }
 interface Inscripcion {
-   id: number;
-   docInscr: number; 
-   nombre: string;
-   fecreg: string;
-   idCur: number;
-   est: boolean;
-}
-interface Publico {
-  id: number; 
-  Especificacion: string;
-}
-interface Nota {
+  NombreCurso: string | undefined;
   id: number;
-  idCurso:  number;
-  idInscrito: number; 
+  idCur?: number;
+  Cursos?: {
+    id: number;
+    NombreCurso: string;
+  };
+  curso?: {
+    id: number;
+    NombreCurso: string;
+    id_emp: number;
+  };
+  docInscr: string;
+  nombre: string;
+  est: number;
+  fecreg: string;
   Nota: number;
-  idRegistro: number; 
   Especificacion: string; 
-  FechaRegistro: string;
-  NombreCurso: string;
 }
 
-export default function ReportesModal ({ onClose }: { onClose: () => void }) {
-  
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showInscripciones, setShowInscripciones] = useState<Inscripcion[]>([]); 
-  const [ publicos, setPublicos] = useState<Publico[]>([]);
-  const [filtroPublico, setFiltroPublico] = useState<number | null>(null);
-  const [nota, setNota] = useState<Nota[]>([]);
-  const [idEmp, setIdEmp] = useState<number | null>(null);
+interface InscripcionesModalProps {
+  onClose: () => void;
+}
 
 
 
+export default function ReportesModal({ onClose }: InscripcionesModalProps) {
+  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
+  const [expandedCourses, setExpandedCourses] = useState<{ [key: number]: boolean }>({});
+  const [busqueda, setBusqueda] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [modalCalificarAbierto, setModalCalificarAbierto] = useState(false);
+  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:string} | null>(null);
+  const [idProfesor, setIdProfesor] = useState<number | null>(null);
 
 
-  const fetchCursos = async () => {
-    setIsLoading(true);
-    try {
-      const responseCursos = await fetch(`http://localhost:8090/api/cursos`);
-      const responseInscripciones = await fetch(`http://localhost:8090/api/inscripciones`);
-  
-      if (!responseCursos.ok || !responseInscripciones.ok) {
-        throw new Error(`Error HTTP al obtener cursos o inscripciones`);
+
+  useEffect(() => {
+   const id = localStorage.getItem("id_emp");
+    if (id) setIdProfesor(Number(id));
+  }, []);
+
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      try {
+        const idProfesor = localStorage.getItem('id_emp');
+        if (!idProfesor) {
+          console.error('ID del profesor no encontrado en localStorage');
+          return;
+        }
+        const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
+        if (!response.ok) throw new Error("Error al obtener inscripciones");
+    
+        const data: Inscripcion[] = await response.json();
+        console.log("Datos recibidos en el frontend:", JSON.stringify(data, null, 2));
+    
+        setInscripciones(data);
+        setInscripcionesFiltradas(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error al obtener cursos del profesor:', error);
+        setIsLoading(false);
       }
+    };
   
-      const dataCursos: Curso[] = await responseCursos.json();
-      const dataInscripciones: Inscripcion[] = await responseInscripciones.json();
-  
-      // Filtrar cursos con inscripciones activas (est = true)
-      const cursosConInscritosActivos = dataCursos.filter(curso =>
-        dataInscripciones.some(insc => insc.idCur === curso.id && insc.est === true)
-      );
-  
-      // Filtrar por profesor si aplica
-      const cursosFiltradosPorProfesor = idEmp !== null
-        ? cursosConInscritosActivos.filter(curso => curso.Profesor === idEmp || Number(curso.SegundoPro) === idEmp)
-        : cursosConInscritosActivos;
-  
-      setCursos(cursosFiltradosPorProfesor);
-      setCursosFiltrados(cursosFiltradosPorProfesor);
-    } catch (error) {
-      console.error("Error al obtener los cursos o inscripciones:", error);
-    }
-    setIsLoading(false);
-  };
-  
-  
-  
-
-
-  useEffect(() => {
-    const storedIdEmp = localStorage.getItem('id_emp'); 
-    if (storedIdEmp) {
-      setIdEmp(Number(storedIdEmp)); 
-    }
+    fetchInscripciones();
   }, []);
+
+
+  // FILTRAR INSCRIPCIONES EN TIEMPO REAL
   
-  useEffect(() => {
-    if (idEmp !== null) {
-      fetchCursos();
+const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const texto = e.target.value.toLowerCase();
+  setBusqueda(texto);
+
+  const filtrados = inscripciones.filter((inscripcion) => {
+    const cursoNombre =
+      inscripcion.Cursos?.NombreCurso ||
+      inscripcion.curso?.NombreCurso ||
+      inscripcion.NombreCurso ||
+      "";
+    console.log("Curso Nombre:", cursoNombre);
+  
+    const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
+    console.log("Fecha Registro:", fechaRegistro);
+  
+    const idCurso =
+      String(inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.curso?.id || "");
+    console.log("ID Curso:", idCurso);
+  
+    const nombreInscrito = String(inscripcion.nombre || "");
+    console.log("Nombre Inscrito:", nombreInscrito);
+  
+    const docInscrito = String(inscripcion.docInscr || "");
+    console.log("Documento Inscrito:", docInscrito);
+  
+    return (
+      idCurso.includes(texto) ||
+      cursoNombre.toLowerCase().includes(texto) ||
+      fechaRegistro.includes(texto) ||
+      nombreInscrito.toLowerCase().includes(texto) ||
+      docInscrito.includes(texto)
+    );
+  });
+
+  setInscripcionesFiltradas(filtrados);
+};
+
+
+
+
+  // AGRUPAR INSCRIPCIONES POR IDCUR
+  const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
+    const cursoId = inscripcion.idCur || inscripcion.Cursos?.id || inscripcion.curso?.id || 0;
+    if (!acc[cursoId]) {
+      acc[cursoId] = [];
     }
-  }, [idEmp]);
+    acc[cursoId].push(inscripcion);
+    return acc;
+  }, {} as { [key: number]: Inscripcion[] });
   
-  
-  const handleUpdate = () => {
-    fetchCursos();
+  console.log("Grouped Inscripciones:", groupedInscripciones);
+
+  // AALTERAR EXPANSIÓN DE CURSO
+  const toggleExpand = (cursoId: number) => {
+    setExpandedCourses((prev) => ({ ...prev, [cursoId]: !prev[cursoId] }));
   };
 
 
-  const fetchInscripciones = async (idCurso: number) => {
-    try {
-      const response = await fetch(`http://localhost:8090/api/inscripciones`);
-      const data = await response.json();
-      // Filtra las inscripciones del curso actual
-      const filtradas = data.filter((i: Inscripcion) => i.idCur === idCurso);
-      setShowInscripciones(filtradas);
-    } catch (error) {
-      console.error("Error al obtener inscripciones:", error);
-    }
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
   };
 
-
-useEffect(()  => {
-  async function fetcNotas() {
-    try {
-      const response = await fetch("http://localhost:8090/api/Notas");
-      if (!response.ok) throw new Error("Error al obtener los Notas");
-
-      const data = await response.json();
-      console.log("Notas recibidas:", data); 
-
-      setNota(data);
-    } catch(error){
-      console.error("Error cargando lista de Notas:", error);
-    }
-  }
-  fetcNotas(); 
-}, []);
-
-
-  // OBTENER PUBLICO
-  const fetchPublicos = async () => {
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos/publico/1");
-      const data = await response.json();
-      setPublicos(data);
-    } catch (error) {
-      console.error("Error al obtener públicos:", error);
-    }
-  };
-  
-  useEffect(() => {
-    fetchPublicos();
-  }, []);
-  
-  
-  const handleFiltroPublico = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const valor = parseInt(event.target.value);
-  
-   
-    setFiltroPublico(valor === 0 ? null : valor);
-  
-    const cursosFiltrados = cursos.filter(curso => {
-      if (valor === 0 || valor === null) return true;
-      return Number(curso.Publico) === valor; 
-    });
-  
-    setCursosFiltrados(cursosFiltrados);
-  };
-  
-
-  const formatearHorario = (curso: Curso) => {
-    const dias = [
-      { dia: "Lunes", ini: curso.LunesIni, fin: curso.LunesFin },
-      { dia: "Martes", ini: curso.MartesIni, fin: curso.MartesFin },
-      { dia: "Miércoles", ini: curso.MiercolesIni, fin: curso.MiercolesFin },
-      { dia: "Jueves", ini: curso.JuevesIni, fin: curso.JuevesFin },
-      { dia: "Viernes", ini: curso.ViernesIni, fin: curso.ViernesFin },
-      { dia: "Sábado", ini: curso.SabadoIni, fin: curso.SabadoFin },
-      { dia: "Domingo", ini: curso.DomingoIni, fin: curso.DomingoFin },
-    ];
-  
-    return dias
-      .filter(d => d.ini && d.fin)
-     ; 
-  };
-
-  // EXPANDIR DETALLES DEL CURSO
-  const handleVerMas = async (id: number) => {
-    if (expandedCursoId === id) {
-      setExpandedCursoId(null);
-      setShowInscripciones([]); 
-    } else {
-      await fetchInscripciones(id);
-      setExpandedCursoId(id);
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(true);
     }
   };
-
 
   const exportarCursoAExcel = (curso: Curso, inscripciones: Inscripcion[]) => {
     // Datos del curso
@@ -275,6 +232,8 @@ useEffect(()  => {
   };
 
 
+  
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg bg-opacity-50 z-50">
@@ -291,17 +250,7 @@ useEffect(()  => {
      
           <div className="flex items-center space-x-4 mt-4">
             
-  <label htmlFor="filtroPublico" className="text-[#990000] font-semibold">
-    Público:
-  </label>
-  <select onChange={handleFiltroPublico}>
-  <option value={0}>Selecciona una opción</option>
-  {publicos.map((pub) => (
-    <option key={pub.id} value={pub.id}>
-      {pub.Especificacion}
-    </option>
-  ))}
-</select>
+  
 
 </div>
 
