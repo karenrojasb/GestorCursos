@@ -1,66 +1,10 @@
- async getCoursesTeacher(idProfesor: number) {
-    return this.prisma.$queryRawUnsafe<
-      Array<{
-        id: number;
-        idCur: number;
-        NombreCurso: string;
-        Profesor: number;
-        SegundoPro: number;
-        Lugar: string;
-        Inicio: Date;
-        Fin: Date;
-        docInscr: string;
-        nombre: string | null;
-        fecreg: Date;
-        rol: string;
-        CupoMax: number | null;
-        Nota: number | null;
-        Especificacion: string | null;
-        InscritoNumerico: number | null;
-      }>
-    >(
-      `SELECT 
-        i.id,
-        i.idCur,
-        c.NombreCurso,
-        c.Profesor,
-        c.SegundoPro,
-        c.Lugar,
-        c.Inicio,
-        c.Fin,
-        i.docInscr,
-        e.nombre,
-        i.fecreg,
-        c.CupoMax,
-        TRY_CAST(i.docInscr AS INT) AS InscritoNumerico,
-        n.Nota,
-        l.Especificacion,
-        CASE 
-          WHEN c.Profesor = ${idProfesor} THEN 'Titular'
-          WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
-          ELSE 'Otro'
-        END AS rol
-      FROM gescur.Cursos c
-      LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
-      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
-      OUTER APPLY (
-        SELECT TOP 1 n.Nota 
-        FROM gescur.Notas n 
-        WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT)
-        ORDER BY n.id ASC
-      ) n
-      LEFT JOIN gescur.Listas l ON l.id = n.Nota
-      WHERE (c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor})
-        AND i.est = 1`
-    );
-  }
-  
-
-
-  async getCourses() {
-    return this.prisma.$queryRaw`
-    SELECT 
-      c.id,
+async getCoursesTeacher(idProfesor: number) {
+  return this.prisma.$queryRawUnsafe<
+    Array<any>
+  >(
+    `SELECT 
+      i.id,
+      i.idCur,
       c.NombreCurso,
       c.Valor,
       lp.Especificacion AS Publico,
@@ -69,46 +13,58 @@
       c.Fin,
       c.Horas,
       c.CupoMax,
-      c.Lugar,                          
-      c.LunesIni,                          
-      c.LunesFin,                         
-      c.MartesIni,                       
-      c.MartesFin,                        
-      c.MiercolesIni,                      
-      c.MiercolesFin,                      
-      c.JuevesIni,                         
-      c.JuevesFin,                         
-      c.ViernesIni,                        
-      c.ViernesFin,                        
-      c.SabadoIni,                         
-      c.SabadoFin,                         
-      c.DomingoIni,                        
-      c.DomingoFin,                        
+      c.Lugar,
+      c.LunesIni, c.LunesFin,
+      c.MartesIni, c.MartesFin,
+      c.MiercolesIni, c.MiercolesFin,
+      c.JuevesIni, c.JuevesFin,
+      c.ViernesIni, c.ViernesFin,
+      c.SabadoIni, c.SabadoFin,
+      c.DomingoIni, c.DomingoFin,
       c.Linea,
-      l.Especificacion AS Linea,    
+      li.Especificacion AS Linea,
       c.Estado,
-      est.Especificacion AS Estado, 
+      est.Especificacion AS Estado,
       c.Modalidad,
       m.Especificacion AS Modalidad,
-      u.nombre AS Unidad,                            
-      c.Profesor,                          
+      u.nombre AS Unidad,
+      c.Profesor,
+      e.nombre AS NombreProfesor,
       c.SegundoPro,
-      sp.nombre AS SegundoPro,                        
-      c.Proexterno,                       
-      c.Descripcion,                       
+      sp.nombre AS SegundoPro,
+      c.Proexterno,
+      c.Descripcion,
       c.IdTipoCurso,
       tc.Especificacion AS IdTipoCurso,
-      e.nombre AS NombreProfesor
-    FROM gescur.cursos c
+      i.docInscr,
+      emp.nombre AS nombre,
+      i.fecreg,
+      TRY_CAST(i.docInscr AS INT) AS InscritoNumerico,
+      n.Nota,
+      l.Especificacion,
+      CASE 
+        WHEN c.Profesor = ${idProfesor} THEN 'Titular'
+        WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
+        ELSE 'Otro'
+      END AS rol
+    FROM gescur.Cursos c
+    LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id AND i.est = 1
+    LEFT JOIN gescur.emp_nomina emp ON i.docInscr = emp.id_emp
     LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
-    LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+    LEFT JOIN gescur.listas li ON li.id = c.Linea AND li.Tipo = 2
     LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
     LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
     LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
-    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
+    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp
     LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
     LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
-
-    ;
-    `
+    OUTER APPLY (
+      SELECT TOP 1 n.Nota 
+      FROM gescur.Notas n 
+      WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT)
+      ORDER BY n.id ASC
+    ) n
+    LEFT JOIN gescur.Listas l ON l.id = n.Nota
+    WHERE c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor}`
+  );
 }
