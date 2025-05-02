@@ -278,7 +278,7 @@ useEffect(()  => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl h-[90vh] ">
+      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl h-[91vh] ">
         
        {/* BOTÓN CERRAR */}
               <button
