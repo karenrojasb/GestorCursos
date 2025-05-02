@@ -1,9 +1,94 @@
-[Nest] 9116  - 02/05/2025, 9:30:51 a. m.   ERROR [ExceptionsHandler] TypeError: Do not know how to serialize a BigInt
-    at JSON.stringify (<anonymous>)
-    at stringify (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\express\lib\response.js:1008:12)
-    at ServerResponse.json (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\express\lib\response.js:234:14)
-    at ExpressAdapter.reply (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\platform-express\adapters\express-adapter.js:62:62)
-    at RouterResponseController.apply (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-response-controller.js:15:36)
-    at C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:176:48
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:47:13
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17
+             c.id,
+                  c.NombreCurso,
+                  c.Valor,
+                  lp.Especificacion AS Publico,
+                  c.Periodo,
+                  c.Inicio,
+                  c.Fin,
+                  c.Horas,
+                  c.LunesIni,                          
+                  c.LunesFin,                         
+                  c.MartesIni,                       
+                  c.MartesFin,                        
+                  c.MiercolesIni,                      
+                  c.MiercolesFin,                      
+                  c.JuevesIni,                         
+                  c.JuevesFin,                         
+                  c.ViernesIni,                        
+                  c.ViernesFin,                        
+                  c.SabadoIni,                         
+                  c.SabadoFin,                         
+                  c.DomingoIni,                        
+                  c.DomingoFin,
+                  c.CupoMax,
+                  c.Lugar,
+                  c.Linea,
+                  c.Proexterno, 
+                  l.Especificacion AS Linea,
+                  c.Estado,
+                  est.Especificacion AS Estado,
+                  c.Modalidad,
+                  m.Especificacion AS Modalidad,
+                  u.nombre AS Unidad,
+                  e.nombre AS NombreProfesor,
+                  sp.nombre AS SegundoPro
+              FROM gescur.cursos c
+              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+              ORDER BY c.id
+          `;
+      } else {
+          cursos = await this.prisma.$queryRaw`
+              SELECT 
+                  c.id,
+                  c.NombreCurso,
+                  c.Valor,
+                  lp.Especificacion AS Publico,
+                  c.Periodo,
+                  c.Inicio,
+                  c.Fin,
+                  c.Horas,
+                  c.LunesIni,                          
+                  c.LunesFin,                         
+                  c.MartesIni,                       
+                  c.MartesFin,                        
+                  c.MiercolesIni,                      
+                  c.MiercolesFin,                      
+                  c.JuevesIni,                         
+                  c.JuevesFin,                         
+                  c.ViernesIni,                        
+                  c.ViernesFin,                        
+                  c.SabadoIni,                         
+                  c.SabadoFin,                         
+                  c.DomingoIni,                        
+                  c.DomingoFin,    
+                  c.CupoMax,
+                  c.Lugar,
+                  c.Linea,
+                   c.Proexterno, 
+                  l.Especificacion AS Linea,
+                  c.Estado,
+                  est.Especificacion AS Estado,
+                  c.Modalidad,
+                  m.Especificacion AS Modalidad,
+                  u.nombre AS Unidad,
+                  e.nombre AS NombreProfesor,
+                  sp.nombre AS SegundoPro
+              FROM gescur.cursos c
+              LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+              LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+              LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+              LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+              LEFT JOIN gescur.emp_nomina e ON CAST(c.Profesor AS VARCHAR) = e.id_emp
+              LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+              LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+              WHERE c.publico = ${publico} OR c.publico = 3
+              ORDER BY c.id
+              
+          `;
+      }
