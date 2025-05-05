@@ -1,102 +1,120 @@
-  async getCoursesTeacher(idProfesor: number) {
-    return this.prisma.$queryRawUnsafe<
-      Array<{
-        id: number;
-        idCur: number;
-        NombreCurso: string;
-        Publico: number;
-        Profesor: number;
-        SegundoPro: number;
-        Valor: number; 
-        Horas: number;
-        Lugar: string;
-        Inicio: Date;
-        Fin: Date;
-        LunesIni: string;
-        LunesFin: string;
-        MartesIni: string;                       
-        MartesFin: string;                        
-        MiercolesIni: string;
-        MiercolesFin: string;              
-        JuevesIni: string;                       
-        JuevesFin: string;                  
-        ViernesIni: string;                 
-        ViernesFin: string;                     
-        SabadoIni: string;                      
-        SabadoFin: string;                       
-        DomingoIni: string;                     
-        DomingoFin: string;
-        Periodo: number;
-        Linea: number;
-        Proexterno, 
-        Estado: number;
-        Modalidad: number;
-        Unidad: number;
-        docInscr: string;
-        nombre: string | null;
-        fecreg: Date;
-        rol: string;
-        CupoMax: number | null;
-        Nota: number | null;
-        Especificacion: string | null;
-        InscritoNumerico: number | null;
-      }>
-    >(
-      `SELECT 
-        i.id,
-        i.idCur,
-        c.NombreCurso,
-        c.Publico,
-        c.Profesor,
-        c.SegundoPro,
-        c.Valor,
-        c.Horas,
-        c.Lugar,
-        c.Inicio,
-        c.Fin,
-        c.LunesIni,                          
-        c.LunesFin,                         
-        c.MartesIni,                       
-        c.MartesFin,                        
-        c.MiercolesIni,                      
-        c.MiercolesFin,                      
-        c.JuevesIni,                         
-        c.JuevesFin,                         
-        c.ViernesIni,                        
-        c.ViernesFin,                        
-        c.SabadoIni,                         
-        c.SabadoFin,                         
-        c.DomingoIni,                        
-        c.DomingoFin,
-        c.Periodo,
-        c.Linea,
-        c.Proexterno, 
-        c.Estado,
-        c.Modalidad,
-        c.Unidad,
-        i.docInscr,
-        e.nombre,
-        i.fecreg,
-        c.CupoMax,
-        TRY_CAST(i.docInscr AS INT) AS InscritoNumerico,
-        n.Nota,
-        l.Especificacion,
-        CASE 
-          WHEN c.Profesor = ${idProfesor} THEN 'Titular'
-          WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
-          ELSE 'Otro'
-        END AS rol
-      FROM gescur.Cursos c
-      LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
-      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
-      OUTER APPLY (
-        SELECT TOP 1 n.Nota 
-        FROM gescur.Notas n 
-        WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT)
-        ORDER BY n.id ASC
-      ) n
-      LEFT JOIN gescur.Listas l ON l.id = n.Nota
-      WHERE (c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor})
-        AND i.est = 1`
-    );
-  }
+async getCoursesTeacher(idProfesor: number) {
+  return this.prisma.$queryRawUnsafe<
+    Array<{
+      id: number;
+      idCur: number;
+      NombreCurso: string;
+      Publico: number;
+      PublicoNombre: string | null;
+      Profesor: number;
+      SegundoPro: number;
+      Valor: number; 
+      Horas: number;
+      Lugar: string;
+      Inicio: Date;
+      Fin: Date;
+      LunesIni: string;
+      LunesFin: string;
+      MartesIni: string;                       
+      MartesFin: string;                        
+      MiercolesIni: string;
+      MiercolesFin: string;              
+      JuevesIni: string;                       
+      JuevesFin: string;                  
+      ViernesIni: string;                 
+      ViernesFin: string;                     
+      SabadoIni: string;                      
+      SabadoFin: string;                       
+      DomingoIni: string;                     
+      DomingoFin: string;
+      Periodo: number;
+      PeriodoNombre: string | null;
+      Linea: number;
+      LineaNombre: string | null;
+      Proexterno: string;
+      Estado: number;
+      EstadoNombre: string | null;
+      Modalidad: number;
+      ModalidadNombre: string | null;
+      Unidad: number;
+      UnidadNombre: string | null;
+      docInscr: string;
+      nombre: string | null;
+      fecreg: Date;
+      rol: string;
+      CupoMax: number | null;
+      Nota: number | null;
+      Especificacion: string | null;
+      InscritoNumerico: number | null;
+    }>
+  >(
+    `SELECT 
+      i.id,
+      i.idCur,
+      c.NombreCurso,
+      c.Publico,
+      lPublico.Especificacion AS PublicoNombre,
+      c.Profesor,
+      c.SegundoPro,
+      c.Valor,
+      c.Horas,
+      c.Lugar,
+      c.Inicio,
+      c.Fin,
+      c.LunesIni,                          
+      c.LunesFin,                         
+      c.MartesIni,                       
+      c.MartesFin,                        
+      c.MiercolesIni,                      
+      c.MiercolesFin,                      
+      c.JuevesIni,                         
+      c.JuevesFin,                         
+      c.ViernesIni,                        
+      c.ViernesFin,                        
+      c.SabadoIni,                         
+      c.SabadoFin,                         
+      c.DomingoIni,                        
+      c.DomingoFin,
+      c.Periodo,
+      lPeriodo.Especificacion AS PeriodoNombre,
+      c.Linea,
+      lLinea.Especificacion AS LineaNombre,
+      c.Proexterno,
+      c.Estado,
+      lEstado.Especificacion AS EstadoNombre,
+      c.Modalidad,
+      lModalidad.Especificacion AS ModalidadNombre,
+      c.Unidad,
+      lUnidad.Especificacion AS UnidadNombre,
+      i.docInscr,
+      e.nombre,
+      i.fecreg,
+      c.CupoMax,
+      TRY_CAST(i.docInscr AS INT) AS InscritoNumerico,
+      n.Nota,
+      lNota.Especificacion,
+      CASE 
+        WHEN c.Profesor = ${idProfesor} THEN 'Titular'
+        WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
+        ELSE 'Otro'
+      END AS rol
+    FROM gescur.Cursos c
+    LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
+    LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
+    OUTER APPLY (
+      SELECT TOP 1 n.Nota 
+      FROM gescur.Notas n 
+      WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT)
+      ORDER BY n.id ASC
+    ) n
+    LEFT JOIN gescur.Listas lNota ON lNota.id = n.Nota
+    LEFT JOIN gescur.Listas lPublico ON lPublico.id = c.Publico
+    LEFT JOIN gescur.Listas lPeriodo ON lPeriodo.id = c.Periodo
+    LEFT JOIN gescur.Listas lLinea ON lLinea.id = c.Linea
+    LEFT JOIN gescur.Listas lEstado ON lEstado.id = c.Estado
+    LEFT JOIN gescur.Listas lModalidad ON lModalidad.id = c.Modalidad
+    LEFT JOIN gescur.Listas lUnidad ON lUnidad.id = c.Unidad
+    WHERE (c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor})
+      AND i.est = 1`
+  );
+}
