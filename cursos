@@ -5,9 +5,13 @@ import {
   ArrowDownTrayIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  PlusCircleIcon,
+  DocumentPlusIcon,
 } from "@heroicons/react/24/solid";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import CalificarModalProps from "./calificarmodal";
+import { MagnifyingGlassPlusIcon, PlusIcon } from "@heroicons/react/20/solid";
 
 interface Inscripcion {
   NombreCurso: string;
@@ -21,19 +25,22 @@ interface Inscripcion {
   Especificacion: string;
   Inicio: string;
   Fin: string;
+  Profesor: number;
 }
 
-interface ReportesModalProps {
+interface InscripcionesModalProps {
   onClose: () => void;
 }
 
-const ReportesModal: React.FC<ReportesModalProps> = ({ onClose }) => {
+const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [expandedCursos, setExpandedCursos] = useState<{ [key: number]: boolean }>({});
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [modalCalificarAbierto, setModalCalificarAbierto] = useState(false);
+  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:string} | null>(null);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -127,6 +134,56 @@ const ReportesModal: React.FC<ReportesModalProps> = ({ onClose }) => {
       setIsSearchActive(true);
     }
   };
+
+  const abrirModalCalificar = async (nombre: string, doc: string) => {
+    setInscritoSeleccionado({ nombre, doc });
+    setModalCalificarAbierto(true);
+  
+    try {
+      const response = await fetch(`http://localhost:8090/api/Notas/${doc}`);
+      if (!response.ok) throw new Error("Error al obtener notas");
+  
+      // Fusiona las nuevas notas con las anteriores, reemplazando las del mismo idInscrito
+     
+    } catch (error) {
+      console.error("Error al obtener notas del inscrito:", error);
+    }
+  };
+  
+  const guardarNota = async (notaTexto: string) => {
+    if (!inscritoSeleccionado) return;
+  
+    const cursoId = Object.keys(groupedInscripciones).find(cursoId =>
+      groupedInscripciones[Number(cursoId)].some(ins =>
+        ins.docInscr === inscritoSeleccionado.doc
+      )
+    );
+  
+    const idCurso = Number(cursoId);
+    const idInscrito = Number(inscritoSeleccionado.doc); 
+    const Nota = Number(notaTexto); 
+    const idRegistro = 1; 
+  
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idCurso,
+          idInscrito,
+          Nota,
+          idRegistro,
+        }),
+      });
+  
+      if (!response.ok) throw new Error("Error al guardar la nota");
+  
+      console.log("Nota guardada exitosamente");
+    } catch (error) {
+      console.error("Error al guardar nota:", error);
+    }
+  };
+  
 
   return (
     <div className="p-6 rounded-lg shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -237,7 +294,14 @@ const ReportesModal: React.FC<ReportesModalProps> = ({ onClose }) => {
                             <td className="px-4 py-2">
                               {new Date(inscripcion.fecreg).toLocaleDateString()}
                             </td>
-                            <td className="px-4 py-2">{inscripcion.Nota ?? "N/A"}</td>
+                            <td className="px-4 py-2">{inscripcion.Especificacion ?? "Sin Nota"}
+                            <button 
+                              onClick={() => abrirModalCalificar(inscripcion.nombre, inscripcion.docInscr)}
+                               className="inline-flex items-center text-white gap-1 px-2 py-1 rounded-md transition hover:scale-110 active:scale-95 bg-green-600 hover:bg-green-700">
+                                <PlusIcon className="w-4 h-4" />
+                                  <span>Calificar</span>
+                                    </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -249,8 +313,17 @@ const ReportesModal: React.FC<ReportesModalProps> = ({ onClose }) => {
           </div>
         )}
       </div>
+
+      {modalCalificarAbierto && inscritoSeleccionado && (
+  <CalificarModalProps
+            nombre={inscritoSeleccionado.nombre}
+            documento={inscritoSeleccionado.doc}
+            onClose={() => setModalCalificarAbierto(false)}
+            onGuardar={guardarNota} idCurso={0}  />
+)}
+
     </div>
   );
 };
 
-export default ReportesModal;
+export default InscripcionesModal;
