@@ -1,11 +1,180 @@
+import React, { useState, useEffect } from "react";
+import {
+  XMarkIcon,
+  MagnifyingGlassIcon,
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/24/solid";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
+interface Inscripcion {
+  NombreCurso: string;
+  id: number;
+  idCur?: number;
+  docInscr: string;
+  nombre: string;
+  est: number;
+  fecreg: string;
+  Nota: number;
+  Especificacion: string;
+  Inicio: string;
+  Fin: string;
+}
+
+interface ReportesModalProps {
+  onClose: () => void;
+}
+
+const ReportesModal: React.FC<ReportesModalProps> = ({ onClose }) => {
+  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [expandedCursos, setExpandedCursos] = useState<{ [key: number]: boolean }>({});
+  const [isSearchActive, setIsSearchActive] = useState(false);
+
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      try {
+        const idProfesor = localStorage.getItem("id_emp");
+        if (!idProfesor) return;
+
+        const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
+        const data: Inscripcion[] = await response.json();
+
+        setInscripciones(data);
+        setInscripcionesFiltradas(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error al obtener inscripciones:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchInscripciones();
+  }, []);
+
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+
+    const filtrados = inscripciones.filter((inscripcion) => {
+      const cursoNombre = inscripcion.NombreCurso || "";
+      const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
+      const idCurso = String(inscripcion.idCur || "");
+      const nombreInscrito = inscripcion.nombre.toLowerCase();
+      const docInscrito = inscripcion.docInscr;
+
+      return (
+        idCurso.includes(texto) ||
+        cursoNombre.toLowerCase().includes(texto) ||
+        fechaRegistro.includes(texto) ||
+        nombreInscrito.includes(texto) ||
+        docInscrito.includes(texto)
+      );
+    });
+
+    setInscripcionesFiltradas(filtrados);
+  };
+
+  const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
+    const cursoId = inscripcion.idCur || 0;
+    if (!acc[cursoId]) acc[cursoId] = [];
+    acc[cursoId].push(inscripcion);
+    return acc;
+  }, {} as { [key: number]: Inscripcion[] });
+
+  const toggleCurso = (cursoId: number) => {
+    setExpandedCursos((prev) => ({
+      ...prev,
+      [cursoId]: !prev[cursoId],
+    }));
+  };
+
+  const handleDownloadExcelByCurso = (cursoId: number) => {
+    const datosCurso = inscripcionesFiltradas.filter(
+      (inscripcion) => inscripcion.idCur === cursoId
+    );
+
+    const data = datosCurso.map((inscripcion) => ({
+      "ID Curso": inscripcion.idCur,
+      "Nombre del Curso": inscripcion.NombreCurso || "Desconocido",
+      Documento: inscripcion.docInscr,
+      Nombre: inscripcion.nombre,
+      Estado: inscripcion.est === 1 ? "Inscrito" : "Cancelado",
+      "Fecha Registro": new Date(inscripcion.fecreg).toLocaleDateString(),
+    }));
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inscripciones");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, `Inscripciones_Curso_${cursoId}.xlsx`);
+  };
+
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(true);
+    }
+  };
+
+  return (
+    <div className="p-6 rounded-lg shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative flex flex-col gap-4 w-full max-w-5xl bg-white py-8 px-10 rounded-lg shadow-md max-h-[90vh] overflow-y-auto">
+        {/* BOTÓN CERRAR */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+
+        <h2 className="text-3xl font-bold text-[#990000] text-center">Reportes</h2>
+
+        {/* BUSCADOR */}
+        {/* BARRA DE BÚSQUEDA ANIMADA */}
+               <div className="relative flex items-center"
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}>
+                   <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+                     <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
+                   </button>
+                   <input
+                     type="text"
+                     placeholder="Buscar por ID, Nombre o Fecha"
+                     value={busqueda}
+                     onChange={handleBuscar}
+                     className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+                       ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+                   /> 
+                   </div>
+
+        {/* LISTADO DE CURSOS */}
+        {isLoading ? (
+          <div className="flex justify-center my-4">
+            <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+           
 {Object.entries(groupedInscripciones).map(([cursoId, inscripciones]) => {
   const cursoAbierto = expandedCursos[Number(cursoId)] || false;
   const cursoNombre = inscripciones[0]?.NombreCurso || `Curso ${cursoId}`;
-  const fechaInicio = inscripciones[0]?.fecini
-    ? new Date(inscripciones[0].fecini).toLocaleDateString()
+  const fechaInicio = inscripciones[0]?.Inicio
+    ? new Date(inscripciones[0].Inicio).toLocaleDateString()
     : "Sin fecha";
-  const fechaFin = inscripciones[0]?.fecfin
-    ? new Date(inscripciones[0].fecfin).toLocaleDateString()
+  const fechaFin = inscripciones[0]?.Fin
+    ? new Date(inscripciones[0].Fin).toLocaleDateString()
     : "Sin fecha";
 
   return (
@@ -44,3 +213,44 @@
           </button>
         </div>
       </div>
+
+
+                  {cursoAbierto && (
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-[#990000] text-white">
+                        <tr>
+                          <th className="px-4 py-2">Documento</th>
+                          <th className="px-4 py-2">Nombre</th>
+                          <th className="px-4 py-2">Estado</th>
+                          <th className="px-4 py-2">Fecha Registro</th>
+                          <th className="px-4 py-2">Nota</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inscripciones.map((inscripcion) => (
+                          <tr key={inscripcion.id} className="border-t">
+                            <td className="px-4 py-2">{inscripcion.docInscr}</td>
+                            <td className="px-4 py-2">{inscripcion.nombre}</td>
+                            <td className="px-4 py-2">
+                              {inscripcion.est === 1 ? "Inscrito" : "Cancelado"}
+                            </td>
+                            <td className="px-4 py-2">
+                              {new Date(inscripcion.fecreg).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-2">{inscripcion.Nota ?? "N/A"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ReportesModal;
