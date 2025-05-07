@@ -14,7 +14,8 @@ interface LayoutProps {
 interface Usuario {
   nombre: string;
   publico: number;
-  esAdmin: boolean; 
+  esAdmin: boolean;
+  esProfesor: boolean; 
 }
 
 export default function RootLayout({ children }: LayoutProps) {
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: LayoutProps) {
         nombre: data.nombre,
         publico: data.publico,
         esAdmin: Boolean(data.esAdmin),
+        esProfesor: Boolean(data.esProfesor),
       });
     } catch (error: any) {
       setError(error.message);
@@ -115,16 +117,16 @@ export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="es">
       <body className="bg-gray-100 flex flex-col min-h-screen">
-        <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+        <header className="w-full flex items-center justify-between px-6 py-2 bg-white shadow-md">
           <img
             src="/img/ecijg126.png"
             alt="Logo"
             className="h-20 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-95"
           />
-          <div className="flex flex-col items-center ml-auto">
-            <span className="text-xl font-medium text-gray-700">{usuario.nombre}</span>
+          <div className="flex flex-col items-end ml-auto">
+            <span className="text-xl font-medium text-gray-800">{usuario.nombre}</span>
             <button
-              className="border border-[#990000] px-3 py-2 rounded hover:bg-[#990000] hover:text-white transition"
+              className="border text-[#990000]  border-[#990000] px-2 py-1 rounded hover:bg-[#990000] hover:text-white transition"
               onClick={cerrarSesion}
             >
               Cerrar Sesión
@@ -132,34 +134,35 @@ export default function RootLayout({ children }: LayoutProps) {
           </div>
         </header>
 
-        <main className="flex flex-col items-center justify-center flex-1 p-6">
+        <main className="flex flex-col items-center justify-start flex-1 px-6 py-2 ">
           <motion.h1
             className="text-4xl font-bold text-[#990000] mb-6 text-center"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 3, y: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 5, y: -10 }}
+            animate={{ opacity: 5, y: 100 }}
+            transition={{ duration: 1.0 }}
           >
             Bienvenido a Gestión de Cursos
           </motion.h1>
 
           {/* PASAMOS LOS ROLES AL COMPONENTE DE BOTONES */}
-          <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} onSelect={() => {}} />
+
+          <MainButtonsProps publico={usuario.publico} esAdmin={usuario.esAdmin} esProfesor={usuario.esProfesor} onSelect={() => {}} />
+
 
           {children}
         </main>
         
-        <div className="ml-4 bg-blue-800 text-white rounded w-52 h-20 flex justify-center items-center "> 
+        <div className="ml-4 bg-blue-800 text-white rounded-lg w-48 h-20 p-2 flex justify-center items-center shadow-lg mb-6"> 
           <Image src="/img/osiris 2.png" alt="Logo OSIRIS" width={200} height={60} />
           </div>
 
-        <footer className="bg-white items-center text-center py-4 shadow-inner w-full">
-        
-          <div className="flex items-center justify-between px-6">
-            <p className="text-gray-700 text-center">
+        <footer className="bg-white items-center  py-2 shadow-inner w-full">
+               
+            <p className="text-gray-700 text-center ">
               &copy; {new Date().getFullYear()} - Plataforma de gestión de cursos
             </p>
            
-          </div>
+          
         </footer>
       </body>
     </html>
