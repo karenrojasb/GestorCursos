@@ -1,23 +1,21 @@
-<div key={cursoId} className="bg-white rounded-xl shadow-md hover:shadow-lg border border-gray-100 transition-all duration-300">
-  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center px-6 py-5 bg-[#f9fafb] rounded-t-xl">
+<div key={cursoId} className="bg-white rounded-xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-2xl">
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center px-6 py-5 bg-[#990000] text-white rounded-t-xl">
     <div>
-      <h2 className="text-xl font-bold text-gray-800">{cursoNombre}</h2>
-      <p className="text-sm text-gray-500 mt-1">
-        <span className="font-medium">Del</span> {fechaInicio} <span className="font-medium">al</span> {fechaFin}
-      </p>
+      <h2 className="text-xl font-bold">{cursoNombre}</h2>
+      <p className="text-sm mt-1">Del {fechaInicio} al {fechaFin}</p>
     </div>
 
     <div className="mt-4 sm:mt-0 flex gap-3">
       <button
         onClick={() => handleDownloadExcelByCurso(Number(cursoId))}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-[#10b981] text-white rounded-lg hover:bg-[#059669] transition"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#990000] font-semibold rounded-lg hover:bg-gray-100 transition"
       >
         <ArrowDownTrayIcon className="h-5 w-5" />
         Excel
       </button>
       <button
         onClick={() => toggleCurso(Number(cursoId))}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-[#3b82f6] text-white rounded-lg hover:bg-[#2563eb] transition"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
       >
         {cursoAbierto ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
         {cursoAbierto ? 'Ocultar' : 'Ver más'}
@@ -26,11 +24,11 @@
   </div>
 
   {cursoAbierto && (
-    <div className="px-6 py-4 animate-fade-in">
-      <h3 className="text-lg font-semibold text-[#1f2937] mb-4">Inscritos</h3>
+    <div className="px-6 py-4 bg-white animate-fade-in">
+      <h3 className="text-lg font-semibold text-black mb-4">Inscritos</h3>
       <div className="overflow-x-auto">
-        <table className="min-w-full table-auto border border-gray-200 rounded-lg text-sm">
-          <thead className="bg-gray-100 text-gray-700">
+        <table className="min-w-full table-auto border border-gray-200 text-sm rounded-lg">
+          <thead className="bg-[#990000] text-white">
             <tr>
               <th className="px-4 py-2 text-left">Nombre</th>
               <th className="px-4 py-2 text-left">Documento</th>
@@ -42,17 +40,17 @@
             {inscripciones.map((insc, index) => (
               <tr
                 key={insc.id}
-                className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition`}
+                className={`border-b ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition`}
               >
-                <td className="px-4 py-2">{insc.nombre}</td>
-                <td className="px-4 py-2">{insc.docInscr}</td>
-                <td className="px-4 py-2">{new Date(insc.fecreg).toLocaleDateString()}</td>
+                <td className="px-4 py-2 text-black">{insc.nombre}</td>
+                <td className="px-4 py-2 text-black">{insc.docInscr}</td>
+                <td className="px-4 py-2 text-black">{new Date(insc.fecreg).toLocaleDateString()}</td>
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
-                    <span>{insc.Especificacion || 'Sin Nota'}</span>
+                    <span className="text-black">{insc.Especificacion || 'Sin Nota'}</span>
                     <button
                       onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr)}
-                      className="flex items-center gap-1 px-2 py-1 bg-[#f59e0b] text-white text-xs rounded-md hover:bg-[#d97706] transition"
+                      className="flex items-center gap-1 px-2 py-1 bg-[#990000] text-white text-xs rounded-md hover:bg-red-800 transition"
                     >
                       <PlusCircleIcon className="w-4 h-4" />
                       Calificar
