@@ -1,67 +1,24 @@
 <div key={cursoId} className="bg-white rounded-lg shadow-lg border border-gray-100 transition-all duration-300 hover:shadow-xl transform hover:scale-105">
   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center px-6 py-5 bg-[#990000] text-white rounded-t-lg">
     <div>
-      <h2 className="text-xl font-semibold">{cursoNombre}</h2> {/* Reducción del tamaño */}
-      <p className="text-xs mt-1">{fechaInicio} - {fechaFin}</p> {/* Reducción de texto */}
+      <h2 className="text-2xl font-semibold">{cursoNombre}</h2>
+      <p className="text-sm mt-1">{fechaInicio} - {fechaFin}</p>
     </div>
 
     <div className="mt-4 sm:mt-0 flex gap-3">
       <button
         onClick={() => handleDownloadExcelByCurso(Number(cursoId))}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#990000] font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 text-xs" {/* Reducción del tamaño */}
+        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#990000] font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200"
       >
         <ArrowDownTrayIcon className="h-5 w-5" />
         Descargar Excel
       </button>
       <button
         onClick={() => toggleCurso(Number(cursoId))}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-[#990000] transition-all duration-200 text-xs" {/* Reducción del tamaño */}
+        className="inline-flex items-center gap-2 px-4 py-2 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-[#990000] transition-all duration-200"
       >
         {cursoAbierto ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
         {cursoAbierto ? 'Ocultar' : 'Ver más'}
       </button>
     </div>
   </div>
-
-  {cursoAbierto && (
-    <div className="px-6 py-4 bg-white animate-fade-in rounded-b-lg">
-      <h3 className="text-lg font-semibold text-[#990000] mb-4">Inscritos</h3> {/* Reducción de tamaño */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full table-auto text-xs"> {/* Reducción del tamaño de texto */}
-          <thead className="bg-[#990000] text-white">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs">Nombre</th> {/* Reducción del tamaño */}
-              <th className="px-4 py-2 text-left text-xs">Documento</th> {/* Reducción del tamaño */}
-              <th className="px-4 py-2 text-left text-xs">Inscripción</th> {/* Reducción del tamaño */}
-              <th className="px-4 py-2 text-left text-xs">Nota</th> {/* Reducción del tamaño */}
-            </tr>
-          </thead>
-          <tbody>
-            {inscripciones.map((insc, index) => (
-              <tr
-                key={insc.id}
-                className={`border-b ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-all duration-200`}
-              >
-                <td className="px-4 py-2 text-black text-xs">{insc.nombre}</td> {/* Reducción del tamaño */}
-                <td className="px-4 py-2 text-black text-xs">{insc.docInscr}</td> {/* Reducción del tamaño */}
-                <td className="px-4 py-2 text-black text-xs">{new Date(insc.fecreg).toLocaleDateString()}</td> {/* Reducción del tamaño */}
-                <td className="px-4 py-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-black text-xs">{insc.Especificacion || 'Sin Nota'}</span> {/* Reducción del tamaño */}
-                    <button
-                      onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr)}
-                      className="flex items-center gap-1 px-2 py-1 bg-[#990000] text-white text-xs rounded-md hover:bg-red-800 transition-all duration-200"
-                    >
-                      <PlusCircleIcon className="w-4 h-4" />
-                      Calificar
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )}
-</div>
