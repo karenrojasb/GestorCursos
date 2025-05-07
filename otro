@@ -1,21 +1,21 @@
-<div key={cursoId} className="bg-white rounded-xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-2xl">
-  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center px-6 py-5 bg-[#990000] text-white rounded-t-xl">
+<div key={cursoId} className="bg-white rounded-lg shadow-lg border border-gray-100 transition-all duration-300 hover:shadow-xl transform hover:scale-105">
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center px-6 py-5 bg-[#990000] text-white rounded-t-lg">
     <div>
-      <h2 className="text-xl font-bold">{cursoNombre}</h2>
-      <p className="text-sm mt-1">Del {fechaInicio} al {fechaFin}</p>
+      <h2 className="text-2xl font-semibold">{cursoNombre}</h2>
+      <p className="text-sm mt-1">{fechaInicio} - {fechaFin}</p>
     </div>
 
     <div className="mt-4 sm:mt-0 flex gap-3">
       <button
         onClick={() => handleDownloadExcelByCurso(Number(cursoId))}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#990000] font-semibold rounded-lg hover:bg-gray-100 transition"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#990000] font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200"
       >
         <ArrowDownTrayIcon className="h-5 w-5" />
-        Excel
+        Descargar Excel
       </button>
       <button
         onClick={() => toggleCurso(Number(cursoId))}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-[#990000] transition-all duration-200"
       >
         {cursoAbierto ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
         {cursoAbierto ? 'Ocultar' : 'Ver más'}
@@ -24,10 +24,10 @@
   </div>
 
   {cursoAbierto && (
-    <div className="px-6 py-4 bg-white animate-fade-in">
-      <h3 className="text-lg font-semibold text-black mb-4">Inscritos</h3>
+    <div className="px-6 py-4 bg-white animate-fade-in rounded-b-lg">
+      <h3 className="text-lg font-semibold text-[#990000] mb-4">Inscritos</h3>
       <div className="overflow-x-auto">
-        <table className="min-w-full table-auto border border-gray-200 text-sm rounded-lg">
+        <table className="min-w-full table-auto text-sm">
           <thead className="bg-[#990000] text-white">
             <tr>
               <th className="px-4 py-2 text-left">Nombre</th>
@@ -40,7 +40,7 @@
             {inscripciones.map((insc, index) => (
               <tr
                 key={insc.id}
-                className={`border-b ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition`}
+                className={`border-b ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-all duration-200`}
               >
                 <td className="px-4 py-2 text-black">{insc.nombre}</td>
                 <td className="px-4 py-2 text-black">{insc.docInscr}</td>
@@ -50,7 +50,7 @@
                     <span className="text-black">{insc.Especificacion || 'Sin Nota'}</span>
                     <button
                       onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr)}
-                      className="flex items-center gap-1 px-2 py-1 bg-[#990000] text-white text-xs rounded-md hover:bg-red-800 transition"
+                      className="flex items-center gap-1 px-2 py-1 bg-[#990000] text-white text-xs rounded-md hover:bg-red-800 transition-all duration-200"
                     >
                       <PlusCircleIcon className="w-4 h-4" />
                       Calificar
