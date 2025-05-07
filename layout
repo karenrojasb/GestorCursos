@@ -8,9 +8,7 @@
 </motion.h1>
 
 
-
-
 .seleccion-personalizada::selection {
-  color: #990000;
-  background: #fdd; /* Opcional: cambia el fondo al seleccionar */
+  color: white;         /* Texto blanco al seleccionar */
+  background: #990000;  /* Fondo vino al seleccionar */
 }
