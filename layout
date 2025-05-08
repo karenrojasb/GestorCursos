@@ -1,3 +1,99 @@
-<h2 className="text-2xl justify-center text-center font-bold text-[#990000] seleccion-personalizada">
-  Certificados de Cursos
-</h2>
+{cursoAbierto && (
+    <div className="relative bg-gray-100 p-4 mt-4 flex justify-center overflow-x-auto min-w-[700px]">
+      
+      <div className="min-w-full table-fixed text-[0.8rem] shadow-md rounded-lg border border-gray-300 bg-white">
+        <table className="min-w-full table-auto text-sm ">
+        
+        <colgroup>
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+      </colgroup>
+        
+          <thead className="bg-[#990000] text-white">
+        
+          <tr className="bg-[#990000] text-white">
+            <th colSpan={6} className="text-center py-2 text-base font-semibold border-b border-gray-300">
+             Datos del Curso
+              </th>
+                </tr>
+       
+        </thead>
+         <tr className="bg-gray-100 text-[#990000] font-medium">
+          
+          <th className="px-3 py-1 border">ID</th>
+          <th className="px-3 py-1 border">Nombre</th>
+          <th className="px-3 py-1 border">Valor</th>
+          <th className="px-3 py-1 border">Público</th>
+          <th className="px-3 py-1 border">Periodo</th>
+          <th className="px-3 py-1 border">Cupo Máx</th>
+        </tr>      
+        <tbody>{inscripciones.map((insc, index) => (
+          <><tr
+            key={insc.id}>
+            <td className="px-3 py-1 border">{insc.id}</td>
+            <td className="px-3 py-1 border">{insc.NombreCurso}</td>
+            <td className="px-3 py-1 border">{insc.Valor || " - - "}</td>
+            <td className="px-3 py-1 border">{insc.Publico}</td>
+            <td className="px-3 py-1 border">{insc.Periodo}</td>
+            <td className="px-3 py-1 border">{insc.CupoMax}</td>
+          </tr>
+
+          <tr className="bg-gray-100 text-[#990000] font-medium">
+              <th className="px-3 py-1 border">Inicio</th>
+              <th className="px-3 py-1 border">Fin</th>
+              <th className="px-3 py-1 border">Horas</th>
+              <th className="px-3 py-1 border">Horario</th>
+              <th className="px-3 py-1 border">Lugar</th>
+              <th className="px-3 py-1 border">Línea</th>
+            </tr>
+            <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{insc.Inicio}</td>
+          <td className="px-3 py-1 border">{insc.Fin}</td>
+          <td className="px-3 py-1 border">{insc.Horas}</td>
+          <td className="px-3 py-1 border text-left">
+            {formatearHorario(insc).map((h, i) => (
+              <div key={i}>
+                <strong>{h.dia}</strong> {h.ini} - {h.fin}
+              </div>
+            ))}
+          </td>
+          <td className="px-3 py-1 border">{insc.Lugar}</td>
+          <td className="px-3 py-1 border">{insc.Linea}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Estado</th>
+          <th className="px-3 py-1 border">Modalidad</th>
+          <th className="px-3 py-1 border">Profesor</th>
+          <th className="px-3 py-1 border">Segundo Profesor</th>
+          <th className="px-3 py-1 border">Profesor Externo</th>
+          <th className="px-3 py-1 border">Unidad</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{insc.Est}</td>
+          <td className="px-3 py-1 border">{insc.Modalidad}</td>
+          <td className="px-3 py-1 border">{insc.NombreProfesor}</td>
+          <td className="px-3 py-1 border">{insc.SegundoProfe  || " - - "}</td>
+          <td className="px-3 py-1 border">{insc.Proexterno || " - - "}</td>
+          <td className="px-3 py-1 border">{insc.Unidad}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Tipo</th>
+          <th className="px-3 py-1 border" colSpan={5}>Descripción</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{insc.IdTipoCurso}</td>
+          <td className="px-3 py-1 border text-left" colSpan={5}>{insc.Descripcion  || "Sin descripción"}</td>
+        </tr>
+
+       
+        </>
+        
+ ))}
+
+       
