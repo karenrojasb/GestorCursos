@@ -5,13 +5,9 @@ import {
   ArrowDownTrayIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  PlusCircleIcon,
-  DocumentPlusIcon,
 } from "@heroicons/react/24/solid";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import CalificarModalProps from "./calificarmodal";
-import { MagnifyingGlassPlusIcon, PlusIcon } from "@heroicons/react/20/solid";
 
 interface Inscripcion {
   NombreCurso: string;
@@ -25,14 +21,44 @@ interface Inscripcion {
   Especificacion: string;
   Inicio: string;
   Fin: string;
-  Profesor: number;
+  Horas: number;
+  Lugar: string;
+  Linea: string;
+  Valor: number;
+  Modalidad: string;
+  NombreProfesor: string;
+  SegundoProfe: string;
+  Proexterno: string;
+  IdTipoCurso: string;
+  Descripcion: string;
+  Unidad: string;
+  Publico: string;
+  Periodo: string;
+  CupoMax: number;
+  idRegistro: number;
+  FechaRegistro: number;
+  LunesIni: string;
+  LunesFin: string;
+  MartesIni: string;                       
+  MartesFin: string;                       
+  MiercolesIni: string;
+  MiercolesFin: string;              
+  JuevesIni: string;                       
+  JuevesFin: string;                  
+  ViernesIni: string;                 
+  ViernesFin: string;                     
+  SabadoIni: string;                      
+  SabadoFin: string;                       
+  DomingoIni: string;                     
+  DomingoFin: string;
 }
 
-interface InscripcionesModalProps {
+
+interface ReportesModalProps {
   onClose: () => void;
 }
 
-const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
+const ReportesModal: React.FC<ReportesModalProps> = ({ onClose }) => {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
   const [busqueda, setBusqueda] = useState("");
@@ -110,7 +136,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
       "Nombre del Curso": inscripcion.NombreCurso || "Desconocido",
       Documento: inscripcion.docInscr,
       Nombre: inscripcion.nombre,
-      Estado: inscripcion.Est,
+      Estado: inscripcion.Est ? "Inscrito" : "Cancelado",
       "Fecha Registro": new Date(inscripcion.fecreg).toLocaleDateString(),
     }));
 
@@ -183,6 +209,22 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
       console.error("Error al guardar nota:", error);
     }
   };
+
+  const formatearHorario = (Inscripcion: Inscripcion) => {
+    const dias = [
+      { dia: "Lunes", ini: Inscripcion.LunesIni, fin: Inscripcion.LunesFin },
+      { dia: "Martes", ini: Inscripcion.MartesIni, fin: Inscripcion.MartesFin },
+      { dia: "Miércoles", ini: Inscripcion.MiercolesIni, fin: Inscripcion.MiercolesFin },
+      { dia: "Jueves", ini: Inscripcion.JuevesIni, fin: Inscripcion.JuevesFin },
+      { dia: "Viernes", ini: Inscripcion.ViernesIni, fin: Inscripcion.ViernesFin },
+      { dia: "Sábado", ini: Inscripcion.SabadoIni, fin: Inscripcion.SabadoFin },
+      { dia: "Domingo", ini: Inscripcion.DomingoIni, fin: Inscripcion.DomingoFin },
+    ];
+  
+    return dias
+      .filter(d => d.ini && d.fin)
+     ; 
+  };
   
 
   return (
@@ -196,7 +238,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
           <XMarkIcon className="h-6 w-6" />
         </button>
 
-        <h2 className="text-3xl font-bold text-[#990000] text-center">Lista de Inscritos</h2>
+        <h2 className="text-3xl font-bold text-[#990000] text-center seleccion-personalizada">Lista de Inscritos</h2>
 
         {/* BUSCADOR */}
         {/* BARRA DE BÚSQUEDA ANIMADA */}
@@ -241,7 +283,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
  <div key={cursoId} className="border border-gray-300 rounded shadow-md  transition-all duration-300 hover:shadow-xl transform hover:scale-x-105">
       <div className="flex justify-between items-center bg-gray-100 px-4 py-3">
         <div>
-          <h3 className="text-lg font-bold text-[#990000]">{cursoNombre}</h3>
+          <h3 className="text-lg font-bold text-[#990000] seleccion-personalizada">{cursoNombre}</h3>
           <p className="text-sm text-gray-600">
             <span className="font-medium">Inicio:</span> {fechaInicio} &nbsp; | &nbsp;
             <span className="font-medium">Fin:</span> {fechaFin}
@@ -275,41 +317,105 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
       </div>
 
   {cursoAbierto && (
-    <div className="px-6 py-4 border border-gray-200 bg-white animate-fade-in rounded-b-lg">
-      <h3 className="text-lg font-semibold text-[#990000] mb-4">Inscritos</h3>
-      <div className="overflow-x-auto">
-        <table className="min-w-full table-auto text-sm  border border-gray-300">
+    <div className="relative bg-gray-100 p-4 mt-4 flex justify-center overflow-x-auto min-w-[700px]">
+      
+      <div className="min-w-full table-fixed text-[0.8rem] shadow-md rounded-lg border border-gray-300 bg-white">
+        <table className="min-w-full table-auto text-sm ">
+        
+        <colgroup>
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+      </colgroup>
+        
           <thead className="bg-[#990000] text-white">
-            <tr>
-              <th className="px-4 py-2 text-left">Nombre</th>
-              <th className="px-4 py-2 text-left">Documento</th>
-              <th className="px-4 py-2 text-left">Inscripción</th>
-              <th className="px-4 py-2 text-left">Nota</th>
+        
+          <tr className="bg-[#990000] text-white">
+            <th colSpan={6} className="text-center py-2 text-base font-semibold border-b border-gray-300">
+             Datos del Curso
+              </th>
+                </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          
+          <th className="px-3 py-1 border">ID</th>
+          <th className="px-3 py-1 border">Nombre</th>
+          <th className="px-3 py-1 border">Valor</th>
+          <th className="px-3 py-1 border">Público</th>
+          <th className="px-3 py-1 border">Periodo</th>
+          <th className="px-3 py-1 border">Cupo Máx</th>
+        </tr>      
+        </thead>
+        <tbody>{inscripciones.map((insc, index) => (
+          <><tr
+            key={insc.id}
+            className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-150'} hover:bg-gray-200 transition-all duration-200`}>
+            <td className="px-3 py-1 border">{insc.id}</td>
+            <td className="px-3 py-1 border">{insc.NombreCurso}</td>
+            <td className="px-3 py-1 border">{insc.Valor || " - - "}</td>
+            <td className="px-3 py-1 border">{insc.Publico}</td>
+            <td className="px-3 py-1 border">{insc.Periodo}</td>
+            <td className="px-3 py-1 border">{insc.CupoMax}</td>
+          </tr>
+
+          <tr className="bg-gray-100 text-[#990000] font-medium">
+              <th className="px-3 py-1 border">Inicio</th>
+              <th className="px-3 py-1 border">Fin</th>
+              <th className="px-3 py-1 border">Horas</th>
+              <th className="px-3 py-1 border">Horario</th>
+              <th className="px-3 py-1 border">Lugar</th>
+              <th className="px-3 py-1 border">Línea</th>
             </tr>
-          </thead>
-          <tbody>
-            {inscripciones.map((insc, index) => (
-              <tr
-                key={insc.id}
-                className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-150'} hover:bg-gray-200 transition-all duration-200`}
-              >
-                <td className="px-4 py-2 text-black">{insc.nombre}</td>
-                <td className="px-4 py-2 text-black">{insc.docInscr}</td>
-                <td className="px-4 py-2 text-black">{new Date(insc.fecreg).toLocaleDateString()}</td>
-                <td className="px-4 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-black">{insc.Especificacion || 'Sin Nota'}</span>
-                    <button
-                      onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr)}
-                      className="flex items-center gap-1 px-2 py-1 bg-[#990000] text-white text-xs rounded-md hover:bg-red-800 transition-all duration-200"
-                    >
-                      <PlusCircleIcon className="w-4 h-4" />
-                      Calificar
-                    </button>
-                  </div>
-                </td>
-              </tr>
+            <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{insc.Inicio}</td>
+          <td className="px-3 py-1 border">{insc.Fin}</td>
+          <td className="px-3 py-1 border">{insc.Horas}</td>
+          <td className="px-3 py-1 border text-left">
+            {formatearHorario(insc).map((h, i) => (
+              <div key={i}>
+                <strong>{h.dia}</strong> {h.ini} - {h.fin}
+              </div>
             ))}
+          </td>
+          <td className="px-3 py-1 border">{insc.Lugar}</td>
+          <td className="px-3 py-1 border">{insc.Linea}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Estado</th>
+          <th className="px-3 py-1 border">Modalidad</th>
+          <th className="px-3 py-1 border">Profesor</th>
+          <th className="px-3 py-1 border">Segundo Profesor</th>
+          <th className="px-3 py-1 border">Profesor Externo</th>
+          <th className="px-3 py-1 border">Unidad</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{insc.Est}</td>
+          <td className="px-3 py-1 border">{insc.Modalidad}</td>
+          <td className="px-3 py-1 border">{insc.NombreProfesor}</td>
+          <td className="px-3 py-1 border">{insc.SegundoProfe  || " - - "}</td>
+          <td className="px-3 py-1 border">{insc.Proexterno || " - - "}</td>
+          <td className="px-3 py-1 border">{insc.Unidad}</td>
+        </tr>
+
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Tipo</th>
+          <th className="px-3 py-1 border" colSpan={5}>Descripción</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{insc.IdTipoCurso}</td>
+          <td className="px-3 py-1 border text-left" colSpan={5}>{insc.Descripcion  || "Sin descripción"}</td>
+        </tr>
+
+       
+        </>
+        
+ ))}
+
+       
+       
           </tbody>
         </table>
       </div>
@@ -325,16 +431,9 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
         )}
       </div>
 
-      {modalCalificarAbierto && inscritoSeleccionado && (
-  <CalificarModalProps
-            nombre={inscritoSeleccionado.nombre}
-            documento={inscritoSeleccionado.doc}
-            onClose={() => setModalCalificarAbierto(false)}
-            onGuardar={guardarNota} idCurso={0}  />
-)}
-
+      
     </div>
   );
 };
 
-export default InscripcionesModal;
+export default ReportesModal;
