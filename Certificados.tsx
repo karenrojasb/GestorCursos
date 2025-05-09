@@ -29,7 +29,7 @@ export default function CalificarModal({
   useEffect(() => {
     const fetchOpciones = async () => {
       try {
-        const response = await fetch("http://localhost:8090/api/listas");
+        const response = await fetch("http://localhost:8090/api/listas/Especificaciones");
         if (!response.ok) throw new Error("Error al obtener lista de notas");
         const data = await response.json();
         setOpciones(data);
@@ -129,8 +129,3 @@ export default function CalificarModal({
     </div>
   );
 }
-
-
-
-Error: Error al obtener lista de notas
-    at CalificarModal.useEffect.fetchOpciones (http://localhost:3000/_next/static/chunks/app_744e9d._.js:3218:49)
