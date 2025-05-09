@@ -1,10 +1,340 @@
-TypeError: inscripcion.docInscr?.toLowerCase is not a function
-    at eval (http://localhost:3000/_next/static/chunks/app_744e9d._.js?id=%255Bproject%255D%252Fapp%252Fuser%252FReportes%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:73:55)
-    at Array.filter (<anonymous>)
-    at handleBuscar (http://localhost:3000/_next/static/chunks/app_744e9d._.js?id=%255Bproject%255D%252Fapp%252Fuser%252FReportes%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:68:41)
-    at processDispatchQueue (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8501:25)
-    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8798:13
-    at batchedUpdates$1 (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2090:44)
-    at dispatchEventForPluginEventSystem (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8583:9)
-    at dispatchEvent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:10685:37)
-    at dispatchDiscreteEvent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:10667:64)
+import React, { useState, useEffect } from "react";
+import {
+  XMarkIcon,
+  MagnifyingGlassIcon,
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusCircleIcon,
+  DocumentPlusIcon,
+} from "@heroicons/react/24/solid";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import CalificarModalProps from "./calificarmodal";
+import { MagnifyingGlassPlusIcon, PlusIcon } from "@heroicons/react/20/solid";
+
+interface Inscripcion {
+  NombreCurso: string;
+  id: number;
+  idCur?: number;
+  docInscr: string;
+  nombre: string;
+  Est: string;
+  fecreg: string;
+  Nota: number;
+  Especificacion: string;
+  Inicio: string;
+  Fin: string;
+  Profesor: number;
+}
+
+interface InscripcionesModalProps {
+  onClose: () => void;
+}
+
+const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
+  const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
+  const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [expandedCursos, setExpandedCursos] = useState<{ [key: number]: boolean }>({});
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [modalCalificarAbierto, setModalCalificarAbierto] = useState(false);
+  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:string} | null>(null);
+
+  useEffect(() => {
+    const fetchInscripciones = async () => {
+      try {
+        const idProfesor = localStorage.getItem("id_emp");
+        if (!idProfesor) return;
+
+        const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
+        const data: Inscripcion[] = await response.json();
+
+        setInscripciones(data);
+        setInscripcionesFiltradas(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error al obtener inscripciones:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchInscripciones();
+  }, []);
+
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+
+    const filtrados = inscripciones.filter((inscripcion) => {
+      const cursoNombre = inscripcion.NombreCurso || "";
+      const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
+      const idCurso = String(inscripcion.idCur || "");
+      const nombreInscrito = inscripcion.nombre.toLowerCase();
+      const docInscrito = inscripcion.docInscr;
+
+      return (
+        idCurso.includes(texto) ||
+        cursoNombre.toLowerCase().includes(texto) ||
+        fechaRegistro.includes(texto) ||
+        nombreInscrito.includes(texto) ||
+        docInscrito.includes(texto)
+      );
+    });
+
+    setInscripcionesFiltradas(filtrados);
+  };
+
+  const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
+    const cursoId = inscripcion.idCur || 0;
+    if (!acc[cursoId]) acc[cursoId] = [];
+    acc[cursoId].push(inscripcion);
+    return acc;
+  }, {} as { [key: number]: Inscripcion[] });
+
+  const toggleCurso = (cursoId: number) => {
+    setExpandedCursos((prev) => ({
+      ...prev,
+      [cursoId]: !prev[cursoId],
+    }));
+  };
+
+  const handleDownloadExcelByCurso = (cursoId: number) => {
+    const datosCurso = inscripcionesFiltradas.filter(
+      (inscripcion) => inscripcion.idCur === cursoId
+    );
+
+    const data = datosCurso.map((inscripcion) => ({
+      "ID Curso": inscripcion.idCur,
+      "Nombre del Curso": inscripcion.NombreCurso || "Desconocido",
+      Documento: inscripcion.docInscr,
+      Nombre: inscripcion.nombre,
+      Estado: inscripcion.Est,
+      "Fecha Registro": new Date(inscripcion.fecreg).toLocaleDateString(),
+    }));
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inscripciones");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, `Inscripciones_Curso_${cursoId}.xlsx`);
+  };
+
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(true);
+    }
+  };
+
+  const abrirModalCalificar = async (nombre: string, doc: string) => {
+    setInscritoSeleccionado({ nombre, doc });
+    setModalCalificarAbierto(true);
+  
+    try {
+      const response = await fetch(`http://localhost:8090/api/Notas/${doc}`);
+      if (!response.ok) throw new Error("Error al obtener notas");
+  
+      // Fusiona las nuevas notas con las anteriores, reemplazando las del mismo idInscrito
+     
+    } catch (error) {
+      console.error("Error al obtener notas del inscrito:", error);
+    }
+  };
+  
+  const guardarNota = async (notaTexto: string) => {
+    if (!inscritoSeleccionado) return;
+  
+    const cursoId = Object.keys(groupedInscripciones).find(cursoId =>
+      groupedInscripciones[Number(cursoId)].some(ins =>
+        ins.docInscr === inscritoSeleccionado.doc
+      )
+    );
+  
+    const idCurso = Number(cursoId);
+    const idInscrito = Number(inscritoSeleccionado.doc); 
+    const Nota = Number(notaTexto); 
+    const idRegistro = 1; 
+  
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idCurso,
+          idInscrito,
+          Nota,
+          idRegistro,
+        }),
+      });
+  
+      if (!response.ok) throw new Error("Error al guardar la nota");
+  
+      console.log("Nota guardada exitosamente");
+    } catch (error) {
+      console.error("Error al guardar nota:", error);
+    }
+  };
+  
+
+  return (
+    <div className="p-6 rounded-lg shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative flex flex-col gap-4 w-full max-w-5xl bg-white py-8 px-10 rounded-lg shadow-md max-h-[98vh] overflow-y-auto">
+        {/* BOTÓN CERRAR */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+
+        <h2 className="text-3xl font-bold text-[#990000] text-center seleccion-personalizada">Lista de Inscritos</h2>
+
+        {/* BUSCADOR */}
+        {/* BARRA DE BÚSQUEDA ANIMADA */}
+               <div className="relative flex items-center"
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}>
+                   <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+                     <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
+                   </button>
+                   <input
+                     type="text"
+                     placeholder="Buscar por ID, Nombre o Fecha"
+                     value={busqueda}
+                     onChange={handleBuscar}
+                     className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+                       ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+                   /> 
+                   </div>
+
+        {/* LISTADO DE CURSOS */}
+        {isLoading ? (
+          <div className="flex justify-center my-4">
+            <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+           
+{Object.entries(groupedInscripciones).map(([cursoId, inscripciones]) => {
+  const cursoAbierto = expandedCursos[Number(cursoId)] || false;
+  const cursoNombre = inscripciones[0]?.NombreCurso || `Curso ${cursoId}`;
+  const fechaInicio = inscripciones[0]?.Inicio
+    ? new Date(inscripciones[0].Inicio).toLocaleDateString()
+    : "Sin fecha";
+  const fechaFin = inscripciones[0]?.Fin
+    ? new Date(inscripciones[0].Fin).toLocaleDateString()
+    : "Sin fecha";
+
+  return (
+    
+
+
+ <div key={cursoId} className="border border-gray-300 rounded shadow-md  transition-all duration-300 hover:shadow-xl transform hover:scale-x-105">
+      <div className="flex justify-between items-center bg-gray-100 px-4 py-3">
+        <div>
+          <h3 className="text-lg font-bold text-[#990000] seleccion-personalizada">{cursoNombre}</h3>
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Inicio:</span> {fechaInicio} &nbsp; | &nbsp;
+            <span className="font-medium">Fin:</span> {fechaFin}
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => handleDownloadExcelByCurso(Number(cursoId))}
+            className="flex items-center bg-green-600 text-white px-3 py-1.5 rounded-md hover:bg-green-700 transition"
+          >
+            <ArrowDownTrayIcon className="h-5 w-5 mr-1" />
+            Descargar
+          </button>
+          <button
+            onClick={() => toggleCurso(Number(cursoId))}
+            className="flex items-center bg-[#990000] text-white px-3 py-1.5 rounded-md hover:bg-[#7a0000] transition"
+          >
+            {cursoAbierto ? (
+              <>
+                <ChevronUpIcon className="h-5 w-5 mr-1" />
+                Ver menos
+              </>
+            ) : (
+              <>
+                <ChevronDownIcon className="h-5 w-5 mr-1" />
+                Ver más
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+  {cursoAbierto && (
+    <div className="px-6 py-4 border border-gray-200 bg-white animate-fade-in rounded-b-lg">
+      <h3 className="text-lg font-semibold text-[#990000] mb-4 ">Inscritos</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto text-sm  border border-gray-300">
+          <thead className="bg-[#990000] text-white">
+            <tr>
+              <th className="px-4 py-2 text-left">Nombre</th>
+              <th className="px-4 py-2 text-left">Documento</th>
+              <th className="px-4 py-2 text-left">Fecha Inscripción</th>
+              <th className="px-4 py-2 text-left">Nota</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inscripciones.map((insc, index) => (
+              <tr
+                key={insc.id}
+                className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-150'} hover:bg-gray-200 transition-all duration-200`}
+              >
+                <td className="px-4 py-2 text-black">{insc.nombre}</td>
+                <td className="px-4 py-2 text-black">{insc.docInscr}</td>
+                <td className="px-4 py-2 text-black">{new Date(insc.fecreg).toLocaleDateString()}</td>
+                <td className="px-4 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-black">{insc.Especificacion || 'Sin Nota'}</span>
+                    <button
+                      onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr)}
+                      className="flex items-center gap-1 px-2 py-1 bg-[#990000] text-white text-xs rounded-md hover:bg-red-800 transition-all duration-200"
+                    >
+                      <PlusCircleIcon className="w-4 h-4" />
+                      Calificar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+</div>
+
+
+
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {modalCalificarAbierto && inscritoSeleccionado && (
+  <CalificarModalProps
+            nombre={inscritoSeleccionado.nombre}
+            documento={inscritoSeleccionado.doc}
+            onClose={() => setModalCalificarAbierto(false)}
+            onGuardar={guardarNota} idCurso={0}  />
+)}
+
+    </div>
+  );
+};
+
+export default InscripcionesModal;
