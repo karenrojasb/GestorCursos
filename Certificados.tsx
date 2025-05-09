@@ -1,18 +1,18 @@
 useEffect(() => {
   const fetchDatos = async () => {
     try {
-      // Obtener lista de opciones
+      // Obtener lista de notas
       const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
       if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
       const dataOpciones = await respOpciones.json();
       setOpciones(dataOpciones);
 
-      // Obtener nota existente
+      // Obtener nota actual del inscrito
       const respNota = await fetch(`http://localhost:8090/api/notas/${idCurso}/${documento}`);
       if (respNota.ok) {
-        const notaData = await respNota.json();
-        if (notaData?.Nota) {
-          setNotaSeleccionada(notaData.Nota);
+        const dataNota = await respNota.json();
+        if (dataNota?.Nota) {
+          setNotaSeleccionada(dataNota.Nota); // Mostrar la nota existente
         }
       }
     } catch (error) {
@@ -22,7 +22,6 @@ useEffect(() => {
 
   fetchDatos();
 }, [idCurso, documento]);
-
 
 
 
