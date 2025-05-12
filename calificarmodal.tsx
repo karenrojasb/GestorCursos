@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -27,9 +26,6 @@ export default function CalificarModal({
   const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  // Obtener el id_emp del localStorage
-  const idEmp = localStorage.getItem("id_emp");
-
   useEffect(() => {
     const fetchDatos = async () => {
       try {
@@ -54,6 +50,8 @@ export default function CalificarModal({
   
     fetchDatos();
   }, [idCurso, documento]);
+  
+  
 
   const handleGuardar = async () => {
     if (notaSeleccionada === null) {
@@ -91,15 +89,18 @@ export default function CalificarModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
+      <button
+            onClick={onClose}
+            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
         <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
 
-       
+
+        <p className="text-center mb-2">
+          <strong>Id Curso:</strong> {idCurso}
+        </p>
         <p className="text-center mb-2">
           <strong>Nombre:</strong> {nombre}
         </p>
@@ -107,29 +108,22 @@ export default function CalificarModal({
           <strong>Documento:</strong> {documento}
         </p>
 
-        {/* Mostrar el id_emp encima del nombre */}
-        {idEmp && (
-          <p className="text-center mb-2 text-sm text-gray-500">
-            <strong>Calificador (ID):</strong> {idEmp}
-          </p>
-        )}
-
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Selecciona una calificación:
           </label>
           <select
-            className="w-full border rounded px-3 py-2"
-            value={notaSeleccionada ?? ""}
-            onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
-          >
-            <option value="">-- Selecciona --</option>
-            {opciones.map((op) => (
-              <option key={op.id} value={op.id}>
-                {op.Especificacion}
-              </option>
-            ))}
-          </select>
+  className="w-full border rounded px-3 py-2"
+  value={notaSeleccionada ?? ""}
+  onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
+>
+  <option value="">-- Selecciona --</option>
+  {opciones.map((op) => (
+    <option key={op.id} value={op.id}>
+      {op.Especificacion}
+    </option>
+  ))}
+</select>
         </div>
 
         <div className="flex justify-center gap-4">
