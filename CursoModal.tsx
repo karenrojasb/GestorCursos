@@ -345,7 +345,6 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   <CalificarModalProps
             nombre={inscritoSeleccionado.nombre}
             documento={inscritoSeleccionado.doc}
-            idCurso={Curso.id}
             onClose={() => setModalCalificarAbierto(false)}
             onGuardar={guardarNota} idCurso={0}  />
 )}
