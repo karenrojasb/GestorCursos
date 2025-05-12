@@ -5,6 +5,7 @@ interface CalificarModalProps {
   nombre: string;
   documento: string;
   idCurso: number;
+
   onClose: () => void;
   onGuardar: (nota: string) => void;
 }
@@ -26,19 +27,31 @@ export default function CalificarModal({
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-    const fetchOpciones = async () => {
+    const fetchDatos = async () => {
       try {
-        const response = await fetch("http://localhost:8090/api/listas");
-        if (!response.ok) throw new Error("Error al obtener lista de notas");
-        const data = await response.json();
-        setOpciones(data);
+        // Obtener lista de notas
+        const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+        if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
+        const dataOpciones = await respOpciones.json();
+        setOpciones(dataOpciones);
+  
+        // Obtener nota actual del inscrito
+        const respNota = await fetch(`http://localhost:8090/api/notas/${idCurso}/${documento}`);
+        if (respNota.ok) {
+          const dataNota = await respNota.json();
+          if (dataNota?.Nota) {
+            setNotaSeleccionada(dataNota.Nota); // Mostrar la nota existente
+          }
+        }
       } catch (error) {
-        console.error("Error cargando lista:", error);
+        console.error("Error cargando datos:", error);
       }
     };
-
-    fetchOpciones();
-  }, []);
+  
+    fetchDatos();
+  }, [idCurso, documento]);
+  
+  
 
   const handleGuardar = async () => {
     if (notaSeleccionada === null) {
@@ -76,13 +89,12 @@ export default function CalificarModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform transform hover:scale-125"
-        >
-          <XMarkIcon className="w-6 h-6" />
-        </button>
-
+      <button
+            onClick={onClose}
+            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
         <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
 
         <p className="text-center mb-2">
@@ -97,30 +109,30 @@ export default function CalificarModal({
             Selecciona una calificación:
           </label>
           <select
-            className="w-full border rounded px-3 py-2"
-            value={notaSeleccionada ?? ""}
-            onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
-          >
-            <option value="">-- Selecciona --</option>
-            {opciones.map((op) => (
-              <option key={op.id} value={op.id}>
-                {op.Especificacion}
-              </option>
-            ))}
-          </select>
+  className="w-full border rounded px-3 py-2"
+  value={notaSeleccionada ?? ""}
+  onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
+>
+  <option value="">-- Selecciona --</option>
+  {opciones.map((op) => (
+    <option key={op.id} value={op.id}>
+      {op.Especificacion}
+    </option>
+  ))}
+</select>
         </div>
 
         <div className="flex justify-center gap-4">
           <button
             onClick={handleGuardar}
             disabled={guardando}
-            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition"
+            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition hover:scale-110 active:scale-95 "
           >
             {guardando ? "Guardando..." : "Guardar"}
           </button>
           <button
             onClick={onClose}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition"
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition hover:scale-110 active:scale-95 "
           >
             Cancelar
           </button>
