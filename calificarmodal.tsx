@@ -99,6 +99,7 @@ export default function CalificarModal({
         </button>
         <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
 
+       
         <p className="text-center mb-2">
           <strong>Nombre:</strong> {nombre}
         </p>
