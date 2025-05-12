@@ -1,376 +1,94 @@
-import { Injectable } from '@nestjs/common';
-import { CreateNotaDto } from './dto/create-nota.dto';
-import { UpdateNotaDto } from './dto/update-nota.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import axios from "axios";
 
-@Injectable()
-export class NotasService {
-  updateNote(arg0: number, UpdateNotaDto: UpdateNotaDto) {
-    throw new Error('Method not implemented.');
-  }
-  constructor(private readonly prisma: PrismaService) {}
-
-//  OBTENER TODAS LAS NOTAS
-
-async findAll() {
-  const notas = await this.prisma.notas.findMany({
-    include: {
-      Listas: {
-        select: {
-          Especificacion: true,
-        },
-      },
-    },
-  });
-
-  const notasConInscrito = await Promise.all(notas.map(async (nota) => {
-    const inscrito = await this.prisma.inscripciones.findFirst({
-      where: {
-        docInscr: nota.idInscrito,
-      },
-      select: {
-        
-        docInscr: true,
-      },
-    });
-
-    return {
-      ...nota,
-      inscrito: inscrito || null,
-    };
-  }));
-
-  return notasConInscrito;
+// Tipo para las notas
+interface Nota {
+  id: number;
+  Nota: number;
+  idInscrito: number;
+  NombreCurso: string;
+  ProfesorNombre: string;
 }
 
+const CalificarModal = ({ idInscrito }: { idInscrito: number }) => {
+  const [nota, setNota] = useState<Nota | null>(null);
+  const [nuevaNota, setNuevaNota] = useState<number | undefined>(undefined);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  //  MÉTODO PARA CREAR NOTA
-    async createNote(CreateNotaDto: CreateNotaDto) {
-      const newNote = await this.prisma.notas.create({
-        data: {
-          idCurso: CreateNotaDto.idCurso,
-          idInscrito: CreateNotaDto.idInscrito,
-          Nota: CreateNotaDto.Nota,
-          idRegistro: CreateNotaDto.idRegistro,
-          FechaRegistro:  new Date()  ,
-        },
-      });
-      return newNote;
-    }
-
-
-    // OBTENER NOTA POR ID INSCRITO 
-    async getWrittenNote(idInscrito: number) {
-      const notas = await this.prisma.notas.findMany({
-        where: { idInscrito },
-        include: {
-          Listas: {
-            select: {
-              Especificacion: true,
-            },
-          },
-        },
-      });
-    
-      const notasConCurso = await Promise.all(
-        notas.map(async (nota) => {
-          if (!nota.idCurso) {
-            return {
-              ...nota,
-              idCurso: null,
-              NombreCurso: null,
-              Lugar: null,
-              Inicio: null,
-              Fin: null,
-              LunesIni: null,
-              LunesFin: null,
-              MartesIni: null,
-              MartesFin: null,
-              MiercolesIni: null,
-              MiercolesFin: null,
-              JuevesIni: null,
-              JuevesFin: null,
-              ViernesIni: null,
-              ViernesFin: null,
-              SabadoIni: null,
-              SabadoFin: null,
-              Profesor: null,
-              Proexterno: null,
-              SegundoPro: null,
-              ProfesorNombre: null,
-              SegundoProNombre: null,
-            };
-          }
-    
-          const curso = await this.prisma.cursos.findFirst({
-            where: {
-              id: nota.idCurso,
-            },
-            select: {
-              NombreCurso: true,
-              Lugar: true,
-              Inicio: true,
-              Fin: true,
-              LunesIni: true,
-              LunesFin: true,
-              MartesIni: true,
-              MartesFin: true,
-              MiercolesIni: true,
-              MiercolesFin: true,
-              JuevesIni: true,
-              JuevesFin: true,
-              ViernesIni: true,
-              ViernesFin: true,
-              SabadoIni: true,
-              SabadoFin: true,
-              Profesor: true,
-              SegundoPro: true,
-              Proexterno: true,
-            },
-          });
-    
-          const profesorId = curso?.Profesor?.toString() || '0';
-          const segundoProId = curso?.SegundoPro?.toString() || '0';
-    
-          const [profesor] = await this.prisma.$queryRaw<
-            { nombre: string }[]
-          >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
-    
-          const [segundoPro] = await this.prisma.$queryRaw<
-            { nombre: string }[]
-          >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
-    
-          return {
-            ...nota,
-            NombreCurso: curso?.NombreCurso || null,
-            Lugar: curso?.Lugar || null,
-            Inicio: curso?.Inicio || null,
-            Fin: curso?.Fin || null,
-            LunesIni: curso?.LunesIni || null,
-            LunesFin: curso?.LunesFin || null,
-            MartesIni: curso?.MartesIni || null,
-            MartesFin: curso?.MartesFin || null,
-            MiercolesIni: curso?.MiercolesIni || null,
-            MiercolesFin: curso?.MiercolesFin || null,
-            JuevesIni: curso?.JuevesIni || null,
-            JuevesFin: curso?.JuevesFin || null,
-            ViernesIni: curso?.ViernesIni || null,
-            ViernesFin: curso?.ViernesFin || null,
-            SabadoIni: curso?.SabadoIni || null,
-            SabadoFin: curso?.SabadoFin || null,
-            ProExterno: curso?.Proexterno || null,
-            Profesor: curso?.Profesor || null,
-            SegundoPro: curso?.SegundoPro || null,
-            ProfesorNombre: profesor?.nombre ?? null,
-            SegundoProNombre: segundoPro?.nombre ?? null,
-          };
-        })
-      );
-    
-      return notasConCurso;
-    }
-
-    
-// OBTENER NOTAS APROVADAS POR IDINSCRITO 
-async getAprovado(idInscrito: number | string) {
-  const idInscritoInt = Number(idInscrito);
-  if (isNaN(idInscritoInt)) {
-    throw new Error('El ID del inscrito debe ser un número válido');
-  }
-
-  const notas = await this.prisma.notas.findMany({
-    where: {
-      idInscrito: idInscritoInt,
-      Nota: 33,
-    },
-    include: {
-      Listas: {
-        select: {
-          Especificacion: true,
-        },
-      },
-    },
-  });
-
-  const notasConCurso = await Promise.all(
-    notas.map(async (nota) => {
-      if (!nota.idCurso) {
-        return {
-          ...nota,
-          NombreCurso: null,
-          Lugar: null,
-          Inicio: null,
-          Fin: null,
-          LunesIni: null,
-          LunesFin: null,
-          MartesIni: null,
-          MartesFin: null,
-          MiercolesIni: null,
-          MiercolesFin: null,
-          JuevesIni: null,
-          JuevesFin: null,
-          ViernesIni: null,
-          ViernesFin: null,
-          SabadoIni: null,
-          SabadoFin: null,
-          Profesor: null,
-          Proexterno: null,
-          SegundoPro: null,
-          ProfesorNombre: null,
-          SegundoProNombre: null,
-        };
-      }
-
-      const curso = await this.prisma.cursos.findFirst({
-        where: {
-          id: nota.idCurso,
-        },
-        select: {
-          NombreCurso: true,
-          Lugar: true,
-          Inicio: true,
-          Fin: true,
-          LunesIni: true,
-          LunesFin: true,
-          MartesIni: true,
-          MartesFin: true,
-          MiercolesIni: true,
-          MiercolesFin: true,
-          JuevesIni: true,
-          JuevesFin: true,
-          ViernesIni: true,
-          ViernesFin: true,
-          SabadoIni: true,
-          SabadoFin: true,
-          Profesor: true,
-          SegundoPro: true,
-          Proexterno: true,
-        },
-      });
-
-      const profesorId = curso?.Profesor?.toString() || '0';
-      const segundoProId = curso?.SegundoPro?.toString() || '0';
-
-      const [profesor] = await this.prisma.$queryRaw<
-        { nombre: string }[]
-      >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
-
-      const [segundoPro] = await this.prisma.$queryRaw<
-        { nombre: string }[]
-      >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
-
-      return {
-        ...nota,
-        NombreCurso: curso?.NombreCurso || null,
-        Lugar: curso?.Lugar || null,
-        Inicio: curso?.Inicio || null,
-        Fin: curso?.Fin || null,
-        LunesIni: curso?.LunesIni || null,
-        LunesFin: curso?.LunesFin || null,
-        MartesIni: curso?.MartesIni || null,
-        MartesFin: curso?.MartesFin || null,
-        MiercolesIni: curso?.MiercolesIni || null,
-        MiercolesFin: curso?.MiercolesFin || null,
-        JuevesIni: curso?.JuevesIni || null,
-        JuevesFin: curso?.JuevesFin || null,
-        ViernesIni: curso?.ViernesIni || null,
-        ViernesFin: curso?.ViernesFin || null,
-        SabadoIni: curso?.SabadoIni || null,
-        SabadoFin: curso?.SabadoFin || null,
-        ProExterno: curso?.Proexterno || null,
-        Profesor: curso?.Profesor || null,
-        SegundoPro: curso?.SegundoPro || null,
-        ProfesorNombre: profesor?.nombre ?? null,
-        SegundoProNombre: segundoPro?.nombre ?? null,
-      };
-    }),
-  );
-
-  return notasConCurso;
-}
-
-
-    // MÉTODO PARA ACTUALIZAR
-    async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
-      console.log ('id received:', id);
-      console.log ('data received:', data);
-
+  // Función para obtener la nota actual
+  useEffect(() => {
+    const obtenerNota = async () => {
       try {
-        const UpdateNote = await this.prisma.notas.update({
-          where: {id},
-          data,
-        });
-        console.log ('update note:', UpdateNote);
-        return UpdateNote;
+        const { data } = await axios.get(`/api/notas/${idInscrito}`);
+        setNota(data);
+        setNuevaNota(data.Nota); // Inicializamos con la nota actual
+      } catch (err) {
+        console.error("Error al obtener la nota", err);
+        setError("Hubo un error al obtener la nota.");
       }
-      catch (error){
-        console.error ('error when updating note:', error);
-        throw new error('the note was not updated');
-      }
+    };
+
+    obtenerNota();
+  }, [idInscrito]);
+
+  // Función para manejar el cambio en la calificación
+  const handleNotaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value);
+    if (!isNaN(value)) {
+      setNuevaNota(value);
+    }
+  };
+
+  // Función para actualizar la nota
+  const actualizarNota = async () => {
+    if (nuevaNota === undefined || nuevaNota === nota?.Nota) {
+      setError("Por favor, ingresa una calificación válida.");
+      return;
     }
 
-    // MÉTODO PARA ELIMINAR
-    async deleteNote(id:number){
-      return this.prisma.notas.delete({where: {id}});
+    setLoading(true);
+    try {
+      await axios.put(`/api/notas/${nota?.id}`, { Nota: nuevaNota });
+      setLoading(false);
+      router.push("/reportes"); // Redirigir a otra página si es necesario
+    } catch (err) {
+      setLoading(false);
+      setError("Hubo un error al actualizar la calificación.");
+      console.error("Error al actualizar la nota", err);
     }
+  };
 
-}
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Put } from '@nestjs/common';
-import { NotasService } from './notas.service';
-import { CreateNotaDto } from './dto/create-nota.dto';
-import { UpdateNotaDto } from './dto/update-nota.dto';
-
-
-@Controller('notas')
-export class NotasController {  
-  constructor(private readonly notasService: NotasService) {}
-
-//  OBTENER DATOS
-@Get()
-async findAll() {
-  return this.notasService.findAll();
-}
-
-
-
-  // CREAR DATOS
-  @Post()
-  createNote (@Body() CreateNotaDto: CreateNotaDto){
-    return this.notasService.createNote(CreateNotaDto);
+  if (!nota) {
+    return <div>Cargando...</div>;
   }
 
+  return (
+    <div className="modal">
+      <h2>Calificación del Curso: {nota.NombreCurso}</h2>
+      <p>Profesor: {nota.ProfesorNombre}</p>
+      <p>Nota Actual: {nota.Nota}</p>
 
-  // OBTENER NOTA POR ID DEL INSCRITO
-  @Get(':idInscrito')
-async getWrittenNote(@Param('idInscrito') idInscrito: string) {
-  return this.notasService.getWrittenNote(Number(idInscrito));
-}
+      <label>
+        Nueva Nota:
+        <input
+          type="number"
+          min="0"
+          max="100"
+          value={nuevaNota}
+          onChange={handleNotaChange}
+        />
+      </label>
 
-// OBTENER APROVADOS POR ID DEL INSCRITO
-@Get('aprovado/:idInscrito')
-async getAprovado(@Param('idInscrito') idInscrito: number) {
-  return this.notasService.getAprovado(idInscrito);
-}
+      {error && <div style={{ color: "red" }}>{error}</div>}
 
-  // ACTUALIZAR DATOS
-  @Put(':id')
-  async updateNote(@Param('id') id:string, @Body() UpdateNotaDto: UpdateNotaDto){
-    const updateNote = await this.notasService.UpdateNote(Number(id), UpdateNotaDto)
-    if (!updateNote){
-      throw new NotFoundException(`The id#${id} not found`);
-    }
-    return updateNote;
-  } 
+      <button onClick={actualizarNota} disabled={loading}>
+        {loading ? "Actualizando..." : "Actualizar Nota"}
+      </button>
+    </div>
+  );
+};
 
-  // MÉTODO PARA ELIMINAR
-  @Delete(':id')
-  async deleteNote (@Param('id') id:string){
-    return this.notasService.deleteNote(Number(id));
-  }
-
-  
-
-
-
-}
+export default CalificarModal;
