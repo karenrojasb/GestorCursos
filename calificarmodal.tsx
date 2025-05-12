@@ -1,16 +1,101 @@
-Error: NextRouter was not mounted. https://nextjs.org/docs/messages/next-router-not-mounted
-    at useRouter (http://localhost:3000/_next/static/chunks/node_modules_next_723c52._.js:9353:15)
-    at CalificarModal (http://localhost:3000/_next/static/chunks/app_744e9d._.js:3215:167)
-    at react-stack-bottom-frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:13403:24)
-    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2977:24)
-    at updateFunctionComponent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:4732:21)
-    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:5364:24)
-    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
-    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7955:97)
-    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
-    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
-    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7589:56)
-    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8402:9)
-    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8326:245)
-    at processRootScheduleInMicrotask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8343:9)
-    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8413:126
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import axios from "axios";
+
+// Tipo para las notas
+interface Nota {
+  id: number;
+  Nota: number;
+  idInscrito: number;
+  NombreCurso: string;
+  ProfesorNombre: string;
+}
+
+const CalificarModal = ({ idInscrito }: { idInscrito: number }) => {
+  const [nota, setNota] = useState<Nota | null>(null);
+  const [nuevaNota, setNuevaNota] = useState<number | undefined>(undefined);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false); // Nuevo estado para verificar si es cliente
+
+  // Usar useEffect para asegurarte de que el componente esté montado en el cliente
+  useEffect(() => {
+    setIsClient(true); // Cambiar estado a true cuando el componente se haya montado
+  }, []);
+
+  const router = isClient ? useRouter() : null; // Usar useRouter solo en cliente
+
+  // Función para obtener la nota actual
+  useEffect(() => {
+    const obtenerNota = async () => {
+      try {
+        const { data } = await axios.get(`/api/notas/${idInscrito}`);
+        setNota(data);
+        setNuevaNota(data.Nota); // Inicializamos con la nota actual
+      } catch (err) {
+        console.error("Error al obtener la nota", err);
+        setError("Hubo un error al obtener la nota.");
+      }
+    };
+
+    obtenerNota();
+  }, [idInscrito]);
+
+  // Función para manejar el cambio en la calificación
+  const handleNotaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value);
+    if (!isNaN(value)) {
+      setNuevaNota(value);
+    }
+  };
+
+  // Función para actualizar la nota
+  const actualizarNota = async () => {
+    if (nuevaNota === undefined || nuevaNota === nota?.Nota) {
+      setError("Por favor, ingresa una calificación válida.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.put(`/api/notas/${nota?.id}`, { Nota: nuevaNota });
+      setLoading(false);
+      if (router) router.push("/reportes"); // Redirigir a otra página si es necesario
+    } catch (err) {
+      setLoading(false);
+      setError("Hubo un error al actualizar la calificación.");
+      console.error("Error al actualizar la nota", err);
+    }
+  };
+
+  if (!nota) {
+    return <div>Cargando...</div>;
+  }
+
+  return (
+    <div className="modal">
+      <h2>Calificación del Curso: {nota.NombreCurso}</h2>
+      <p>Profesor: {nota.ProfesorNombre}</p>
+      <p>Nota Actual: {nota.Nota}</p>
+
+      <label>
+        Nueva Nota:
+        <input
+          type="number"
+          min="0"
+          max="100"
+          value={nuevaNota}
+          onChange={handleNotaChange}
+        />
+      </label>
+
+      {error && <div style={{ color: "red" }}>{error}</div>}
+
+      <button onClick={actualizarNota} disabled={loading}>
+        {loading ? "Actualizando..." : "Actualizar Nota"}
+      </button>
+    </div>
+  );
+};
+
+export default CalificarModal;
