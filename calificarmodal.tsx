@@ -1,133 +1,31 @@
-import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+Error: The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
 
-interface CalificarModalProps {
-  nombre: string;
-  documento: string;
-  idCurso: number;
-  onClose: () => void;
-  onGuardar: (nota: string) => void;
-}
-
-interface OpcionLista {
-  id: number;
-  Especificacion: string;
-}
-
-export default function CalificarModal({
-  nombre,
-  documento,
-  idCurso,
-  onClose,
-  onGuardar,
-}: CalificarModalProps) {
-  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
-  const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
-  const [guardando, setGuardando] = useState(false);
-
-  useEffect(() => {
-    const fetchDatos = async () => {
-      try {
-        const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-        if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
-        const dataOpciones = await respOpciones.json();
-        setOpciones(dataOpciones);
-      } catch (error) {
-        console.error("Error cargando datos:", error);
-      }
-    };
-
-    fetchDatos();
-  }, []);
-
-  const handleGuardar = async () => {
-    if (notaSeleccionada === null) {
-      alert("Por favor selecciona una nota");
-      return;
-    }
-
-    setGuardando(true);
-
-    try {
-      const idRegistro = localStorage.getItem("id_emp");
-
-      const response = await fetch("http://localhost:8090/api/Notas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          idCurso,
-          idInscrito: documento,
-          Nota: notaSeleccionada,
-          idRegistro: idRegistro ? parseInt(idRegistro) : null,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Error al guardar la nota");
-
-      onGuardar(String(notaSeleccionada));
-      onClose();
-    } catch (error) {
-      console.error("Error al guardar nota:", error);
-      alert("Hubo un error al guardar la nota.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-        <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
-
-        <p className="text-center mb-2">
-          <strong>Nombre:</strong> {nombre}
-        </p>
-        <p className="text-center mb-4">
-          <strong>Documento:</strong> {documento}
-        </p>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Selecciona una calificación:
-          </label>
-          <select
-            className="w-full border rounded px-3 py-2"
-            value={notaSeleccionada ?? ""}
-            onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
-          >
-            <option value="">-- Selecciona --</option>
-            {opciones.map((op) => (
-              <option key={op.id} value={op.id}>
-                {op.Especificacion}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={handleGuardar}
-            disabled={guardando}
-            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition hover:scale-110 active:scale-95"
-          >
-            {guardando ? "Guardando..." : "Guardar"}
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition hover:scale-110 active:scale-95"
-          >
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+Previous: [0, 1000034366]
+Incoming: []
+    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
+    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
+    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
+    at areHookInputsEqual (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2961:56)
+    at updateEffectImpl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:3644:50)
+    at Object.useEffect (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:12860:13)
+    at exports.useEffect (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:1852:36)
+    at CalificarModal (http://localhost:3000/_next/static/chunks/app_744e9d._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252Fcalificarmodal.tsx+%255Bapp-client%255D+%2528ecmascript%2529:21:180)
+    at react-stack-bottom-frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:13403:24)
+    at renderWithHooksAgain (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:3032:24)
+    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2983:28)
+    at updateFunctionComponent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:4732:21)
+    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:5364:24)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7955:97)
+    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
+    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7565:211)
+    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8402:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8326:245)
+    at flushSyncWork$1 (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7709:86)
+    at Object.scheduleRefresh (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:298:13)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:395:33
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:388:38)
+    at applyUpdate (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:885:31)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:893:13
