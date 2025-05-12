@@ -1,101 +1,143 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import axios from "axios";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
-// Tipo para las notas
-interface Nota {
-  id: number;
-  Nota: number;
-  idInscrito: number;
-  NombreCurso: string;
-  ProfesorNombre: string;
+interface CalificarModalProps {
+  nombre: string;
+  documento: string;
+  idCurso: number;
+
+  onClose: () => void;
+  onGuardar: (nota: string) => void;
 }
 
-const CalificarModal = ({ idInscrito }: { idInscrito: number }) => {
-  const [nota, setNota] = useState<Nota | null>(null);
-  const [nuevaNota, setNuevaNota] = useState<number | undefined>(undefined);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isClient, setIsClient] = useState(false); // Nuevo estado para verificar si es cliente
+interface OpcionLista {
+  id: number;
+  Especificacion: string;
+}
 
-  // Usar useEffect para asegurarte de que el componente esté montado en el cliente
+export default function CalificarModal({
+  nombre,
+  documento,
+  idCurso,
+  onClose,
+  onGuardar,
+}: CalificarModalProps) {
+  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
+  const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
+
   useEffect(() => {
-    setIsClient(true); // Cambiar estado a true cuando el componente se haya montado
-  }, []);
-
-  const router = isClient ? useRouter() : null; // Usar useRouter solo en cliente
-
-  // Función para obtener la nota actual
-  useEffect(() => {
-    const obtenerNota = async () => {
+    const fetchDatos = async () => {
       try {
-        const { data } = await axios.get(`/api/notas/${idInscrito}`);
-        setNota(data);
-        setNuevaNota(data.Nota); // Inicializamos con la nota actual
-      } catch (err) {
-        console.error("Error al obtener la nota", err);
-        setError("Hubo un error al obtener la nota.");
+        // Obtener lista de notas
+        const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+        if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
+        const dataOpciones = await respOpciones.json();
+        setOpciones(dataOpciones);
+  
+        // Obtener nota actual del inscrito
+        const respNota = await fetch(`http://localhost:8090/api/notas/${idCurso}/${documento}`);
+        if (respNota.ok) {
+          const dataNota = await respNota.json();
+          if (dataNota?.Nota) {
+            setNotaSeleccionada(dataNota.Nota); // Mostrar la nota existente
+          }
+        }
+      } catch (error) {
+        console.error("Error cargando datos:", error);
       }
     };
+  
+    fetchDatos();
+  }, [idCurso, documento]);
+  
+  
 
-    obtenerNota();
-  }, [idInscrito]);
-
-  // Función para manejar el cambio en la calificación
-  const handleNotaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(event.target.value);
-    if (!isNaN(value)) {
-      setNuevaNota(value);
-    }
-  };
-
-  // Función para actualizar la nota
-  const actualizarNota = async () => {
-    if (nuevaNota === undefined || nuevaNota === nota?.Nota) {
-      setError("Por favor, ingresa una calificación válida.");
+  const handleGuardar = async () => {
+    if (notaSeleccionada === null) {
+      alert("Por favor selecciona una nota");
       return;
     }
 
-    setLoading(true);
+    setGuardando(true);
+
     try {
-      await axios.put(`/api/notas/${nota?.id}`, { Nota: nuevaNota });
-      setLoading(false);
-      if (router) router.push("/reportes"); // Redirigir a otra página si es necesario
-    } catch (err) {
-      setLoading(false);
-      setError("Hubo un error al actualizar la calificación.");
-      console.error("Error al actualizar la nota", err);
+      const response = await fetch("http://localhost:8090/api/Notas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idCurso,
+          idInscrito: documento,
+          Nota: notaSeleccionada,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error al guardar la nota");
+
+      onGuardar(String(notaSeleccionada));
+      onClose();
+    } catch (error) {
+      console.error("Error al guardar nota:", error);
+      alert("Hubo un error al guardar la nota.");
+    } finally {
+      setGuardando(false);
     }
   };
 
-  if (!nota) {
-    return <div>Cargando...</div>;
-  }
-
   return (
-    <div className="modal">
-      <h2>Calificación del Curso: {nota.NombreCurso}</h2>
-      <p>Profesor: {nota.ProfesorNombre}</p>
-      <p>Nota Actual: {nota.Nota}</p>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
+      <button
+            onClick={onClose}
+            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
 
-      <label>
-        Nueva Nota:
-        <input
-          type="number"
-          min="0"
-          max="100"
-          value={nuevaNota}
-          onChange={handleNotaChange}
-        />
-      </label>
+        <p className="text-center mb-2">
+          <strong>Nombre:</strong> {nombre}
+        </p>
+        <p className="text-center mb-4">
+          <strong>Documento:</strong> {documento}
+        </p>
 
-      {error && <div style={{ color: "red" }}>{error}</div>}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Selecciona una calificación:
+          </label>
+          <select
+  className="w-full border rounded px-3 py-2"
+  value={notaSeleccionada ?? ""}
+  onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
+>
+  <option value="">-- Selecciona --</option>
+  {opciones.map((op) => (
+    <option key={op.id} value={op.id}>
+      {op.Especificacion}
+    </option>
+  ))}
+</select>
+        </div>
 
-      <button onClick={actualizarNota} disabled={loading}>
-        {loading ? "Actualizando..." : "Actualizar Nota"}
-      </button>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={handleGuardar}
+            disabled={guardando}
+            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition hover:scale-110 active:scale-95 "
+          >
+            {guardando ? "Guardando..." : "Guardar"}
+          </button>
+          <button
+            onClick={onClose}
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition hover:scale-110 active:scale-95 "
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default CalificarModal;
+}
