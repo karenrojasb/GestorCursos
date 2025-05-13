@@ -17,7 +17,7 @@ import { MagnifyingGlassPlusIcon, PlusIcon } from "@heroicons/react/20/solid";
 interface Inscripcion {
   NombreCurso: string;
   id: number;
-  idCur?: number;
+  idCur: number;
   docInscr: string;
   nombre: string;
   Est: string;
@@ -71,7 +71,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
     const filtrados = inscripciones.filter((inscripcion) => {
       const cursoNombre = inscripcion.NombreCurso || "";
       const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
-      const idCurso = String(inscripcion.idCur || "");
+      const idCurso = String(inscripcion.idCur );
       const nombreInscrito = inscripcion.nombre.toLowerCase();
       const docInscrito = inscripcion.docInscr;
 
@@ -88,7 +88,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   };
 
   const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
-    const cursoId = inscripcion.idCur || 0;
+    const cursoId = inscripcion.idCur ;
     if (!acc[cursoId]) acc[cursoId] = [];
     acc[cursoId].push(inscripcion);
     return acc;
@@ -290,7 +290,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
                 key={insc.id}
                 className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-150'} hover:bg-gray-200 transition-all duration-200`}
               >
-                <td className="px-4 py-2 text-black">{insc.nombre}</td>
+                <td className="px-4 py-2 text-black">{insc.idCur}</td>
                 <td className="px-4 py-2 text-black">{insc.docInscr}</td>
                 <td className="px-4 py-2 text-black">{new Date(insc.fecreg).toLocaleDateString()}</td>
                 <td className="px-4 py-2">
@@ -300,7 +300,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
                    
 
                   <button
-      onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr, insc.idCur || 0)}
+      onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr, insc.idCur )}
       className={`flex items-center px-3 py-1.5 rounded-md text-white transition hover:scale-110 active:scale-95
         ${insc.Nota ? 'bg-blue-600 hover:bg-blue-800' : 'bg-[#990000] hover:bg-[#7a0000]'}`}
     >
@@ -341,8 +341,9 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   <CalificarModalProps
             nombre={inscritoSeleccionado.nombre}
             documento={inscritoSeleccionado.doc}
+            idCur={inscritoSeleccionado.idCur}
             onClose={() => setModalCalificarAbierto(false)}
-            onGuardar={guardarNota} idCur={0}  />
+            onGuardar={guardarNota}   />
 )}
 
     </div>
