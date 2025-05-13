@@ -41,7 +41,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   const [expandedCursos, setExpandedCursos] = useState<{ [key: number]: boolean }>({});
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [modalCalificarAbierto, setModalCalificarAbierto] = useState(false);
-  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:string, idCur: number} | null>(null);
+  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:number, idCur: number} | null>(null);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -136,7 +136,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
     }
   };
 
-  const abrirModalCalificar = async (nombre: string, doc: string, idCur: number) => {
+  const abrirModalCalificar = async (nombre: string, doc: number, idCur: number) => {
     setInscritoSeleccionado({ nombre, doc, idCur });
     setModalCalificarAbierto(true);
   
