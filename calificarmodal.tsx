@@ -1,3 +1,20 @@
+
+import { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+
+interface CalificarModalProps {
+  nombre: string;
+  documento: number;
+  idCur: number;
+  onClose: () => void;
+  onGuardar: (nota: string) => void;
+}
+
+interface OpcionLista {
+  id: number;
+  Especificacion: string;
+}
+
 // ...importaciones y definición de interfaces igual...
 
 export default function CalificarModal({
@@ -25,7 +42,7 @@ export default function CalificarModal({
         const dataOpciones = await respOpciones.json();
         setOpciones(dataOpciones);
 
-        const respNota = await fetch(`http://localhost:8090/api/notas?curso=${idCur}&inscrito=${documento}`);
+        const respNota = await fetch(`http://localhost:8090/api/notas`);
         if (respNota.ok) {
           const dataNota = await respNota.json();
           if (dataNota?.Nota !== undefined && dataNota?.Nota !== null) {
