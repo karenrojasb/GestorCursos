@@ -1,19 +1,4 @@
-
-import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
-
-interface CalificarModalProps {
-  nombre: string;
-  documento: number;
-  idCur: number;
-  onClose: () => void;
-  onGuardar: (nota: string) => void;
-}
-
-interface OpcionLista {
-  id: number;
-  Especificacion: string;
-}
+// ...importaciones y definición de interfaces igual...
 
 export default function CalificarModal({
   nombre,
@@ -27,7 +12,6 @@ export default function CalificarModal({
   const [idEmp, setIdEmp] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  // Obtener el id_emp desde localStorage solo en cliente
   useEffect(() => {
     const storedId = localStorage.getItem("id_emp");
     setIdEmp(storedId);
@@ -36,18 +20,16 @@ export default function CalificarModal({
   useEffect(() => {
     const fetchDatos = async () => {
       try {
-        // Obtener opciones de notas
         const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
         if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
         const dataOpciones = await respOpciones.json();
         setOpciones(dataOpciones);
 
-        // Obtener nota actual del inscrito en este curso
         const respNota = await fetch(`http://localhost:8090/api/notas?curso=${idCur}&inscrito=${documento}`);
         if (respNota.ok) {
           const dataNota = await respNota.json();
-          if (dataNota?.Nota) {
-            setNotaSeleccionada(dataNota.Nota);
+          if (dataNota?.Nota !== undefined && dataNota?.Nota !== null) {
+            setNotaSeleccionada(Number(dataNota.Nota));
           }
         }
       } catch (error) {
@@ -61,8 +43,8 @@ export default function CalificarModal({
   }, [idCur, documento]);
 
   const handleGuardar = async () => {
-    if (!notaSeleccionada) {
-      alert("Por favor selecciona una nota");
+    if (notaSeleccionada === null || isNaN(notaSeleccionada)) {
+      alert("Por favor selecciona una nota válida");
       return;
     }
 
@@ -83,7 +65,7 @@ export default function CalificarModal({
           idCurso: idCur,
           idInscrito: documento,
           idRegistro: idEmp,
-          Nota: notaSeleccionada,
+          Nota: Number(notaSeleccionada),
         }),
       });
 
@@ -141,13 +123,13 @@ export default function CalificarModal({
           <button
             onClick={handleGuardar}
             disabled={guardando}
-            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition hover:scale-110 active:scale-95 "
+            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition hover:scale-110 active:scale-95"
           >
             {guardando ? "Guardando..." : "Guardar"}
           </button>
           <button
             onClick={onClose}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition hover:scale-110 active:scale-95 "
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition hover:scale-110 active:scale-95"
           >
             Cancelar
           </button>
