@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -6,7 +5,6 @@ interface CalificarModalProps {
   nombre: string;
   documento: string;
   idCur: number;
-
   onClose: () => void;
   onGuardar: (nota: string) => void;
 }
@@ -25,26 +23,30 @@ export default function CalificarModal({
 }: CalificarModalProps) {
   const [opciones, setOpciones] = useState<OpcionLista[]>([]);
   const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
+  const [idEmp, setIdEmp] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  // Obtener el id_emp del localStorage
-  const idEmp = localStorage.getItem("id_emp");
+  // Obtener el id_emp desde localStorage solo en cliente
+  useEffect(() => {
+    const storedId = localStorage.getItem("id_emp");
+    setIdEmp(storedId);
+  }, []);
 
   useEffect(() => {
     const fetchDatos = async () => {
       try {
-        // Obtener lista de notas
+        // Obtener opciones de notas
         const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
         if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
         const dataOpciones = await respOpciones.json();
         setOpciones(dataOpciones);
 
-        // Obtener nota actual del inscrito
-        const respNota = await fetch(`http://localhost:8090/api/notas`);
+        // Obtener nota actual del inscrito en este curso
+        const respNota = await fetch(`http://localhost:8090/api/notas?curso=${idCur}&inscrito=${documento}`);
         if (respNota.ok) {
           const dataNota = await respNota.json();
           if (dataNota?.Nota) {
-            setNotaSeleccionada(dataNota.Nota); // Mostrar la nota existente
+            setNotaSeleccionada(dataNota.Nota);
           }
         }
       } catch (error) {
@@ -52,17 +54,24 @@ export default function CalificarModal({
       }
     };
 
-    fetchDatos();
+    if (idCur && documento) {
+      fetchDatos();
+    }
   }, [idCur, documento]);
 
   const handleGuardar = async () => {
-    if (notaSeleccionada === null) {
+    if (!notaSeleccionada) {
       alert("Por favor selecciona una nota");
       return;
     }
-  
+
+    if (!idEmp) {
+      alert("Error: ID de empleado no encontrado.");
+      return;
+    }
+
     setGuardando(true);
-  
+
     try {
       const response = await fetch("http://localhost:8090/api/Notas", {
         method: "POST",
@@ -70,20 +79,19 @@ export default function CalificarModal({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          idCurso: idCur, // Se sube como idCurso
-          idInscrito: documento, // Se sube como idInscrito
-          idRegistro: idEmp, // Se sube el id_emp como idRegistro
-          Nota: notaSeleccionada, // La nota seleccionada
+          idCurso: idCur,
+          idInscrito: documento,
+          idRegistro: idEmp,
+          Nota: notaSeleccionada,
         }),
       });
-  
-      // Revisar el status de la respuesta yss su cuerpo
+
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error detallado al guardar la nota:", errorData);
+        console.error("Error al guardar nota:", errorData);
         throw new Error("Error al guardar la nota");
       }
-  
+
       onGuardar(String(notaSeleccionada));
       onClose();
     } catch (error) {
@@ -105,18 +113,10 @@ export default function CalificarModal({
         </button>
         <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
 
-        <p className="text-center mb-2">
-          <strong>Id Curso:</strong> {idCur}
-        </p>
-        <p className="text-center mb-2">
-          <strong>Nombre:</strong> {nombre}
-        </p>
-        <p className="text-center mb-4">
-          <strong>Documento:</strong> {documento}
-        </p>
-        <p className="text-center mb-4">
-          <strong>id_emp actual:</strong> {idEmp ?? "No disponible"}
-        </p>
+        <p className="text-center mb-2"><strong>Id Curso:</strong> {idCur}</p>
+        <p className="text-center mb-2"><strong>Nombre:</strong> {nombre}</p>
+        <p className="text-center mb-2"><strong>Documento:</strong> {documento}</p>
+        <p className="text-center mb-4"><strong>Empleado actual:</strong> {idEmp ?? "No disponible"}</p>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
