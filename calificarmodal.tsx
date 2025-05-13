@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface CalificarModalProps {
   nombre: string;
-  documento: string;
+  documento: number;
   idCur: number;
   onClose: () => void;
   onGuardar: (nota: string) => void;
