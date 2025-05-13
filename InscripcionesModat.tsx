@@ -41,7 +41,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   const [expandedCursos, setExpandedCursos] = useState<{ [key: number]: boolean }>({});
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [modalCalificarAbierto, setModalCalificarAbierto] = useState(false);
-  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:string} | null>(null);
+  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:string, idCur: number} | null>(null);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -136,8 +136,8 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
     }
   };
 
-  const abrirModalCalificar = async (nombre: string, doc: string) => {
-    setInscritoSeleccionado({ nombre, doc });
+  const abrirModalCalificar = async (nombre: string, doc: string, idCur: number) => {
+    setInscritoSeleccionado({ nombre, doc, idCur });
     setModalCalificarAbierto(true);
   
     try {
@@ -151,26 +151,21 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
     }
   };
   
+
   const guardarNota = async (notaTexto: string) => {
     if (!inscritoSeleccionado) return;
   
-    const cursoId = Object.keys(groupedInscripciones).find(cursoId =>
-      groupedInscripciones[Number(cursoId)].some(ins =>
-        ins.docInscr === inscritoSeleccionado.doc
-      )
-    );
-  
-    const idCurso = Number(cursoId);
-    const idInscrito = Number(inscritoSeleccionado.doc); 
-    const Nota = Number(notaTexto); 
-    const idRegistro = 1; 
+    const idCur = inscritoSeleccionado.idCur;
+    const idInscrito = Number(inscritoSeleccionado.doc);
+    const Nota = Number(notaTexto);
+    const idRegistro = 1;
   
     try {
       const response = await fetch("http://localhost:8090/api/Notas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          idCurso,
+          idCur,
           idInscrito,
           Nota,
           idRegistro,
@@ -184,6 +179,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
       console.error("Error al guardar nota:", error);
     }
   };
+  
   
 
   return (
@@ -304,7 +300,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
                    
 
                   <button
-      onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr)}
+      onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr, insc.idCur || 0)}
       className={`flex items-center px-3 py-1.5 rounded-md text-white transition hover:scale-110 active:scale-95
         ${insc.Nota ? 'bg-blue-600 hover:bg-blue-800' : 'bg-[#990000] hover:bg-[#7a0000]'}`}
     >
@@ -345,9 +341,8 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   <CalificarModalProps
             nombre={inscritoSeleccionado.nombre}
             documento={inscritoSeleccionado.doc}
-            
             onClose={() => setModalCalificarAbierto(false)}
-            onGuardar={guardarNota} idCurso={0}  />
+            onGuardar={guardarNota} idCur={0}  />
 )}
 
     </div>
