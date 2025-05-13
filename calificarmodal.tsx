@@ -13,7 +13,6 @@ interface CalificarModalProps {
 interface OpcionLista {
   id: number;
   Especificacion: string;
-
 }
 
 export default function CalificarModal({
@@ -27,10 +26,6 @@ export default function CalificarModal({
   const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-
-  
-
-
   // Obtener el id_emp del localStorage
   const idEmp = localStorage.getItem("id_emp");
 
@@ -42,7 +37,7 @@ export default function CalificarModal({
         if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
         const dataOpciones = await respOpciones.json();
         setOpciones(dataOpciones);
-  
+
         // Obtener nota actual del inscrito
         const respNota = await fetch(`http://localhost:8090/api/notas`);
         if (respNota.ok) {
@@ -55,11 +50,9 @@ export default function CalificarModal({
         console.error("Error cargando datos:", error);
       }
     };
-  
+
     fetchDatos();
   }, [idCur, documento]);
-  
-  
 
   const handleGuardar = async () => {
     if (notaSeleccionada === null) {
@@ -76,9 +69,10 @@ export default function CalificarModal({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          idCur,
-          idInscrito: documento,
-          Nota: notaSeleccionada,
+          idCurso: idCur, // Se sube como idCurso
+          idInscrito: documento, // Se sube como idInscrito
+          idRegistro: idEmp, // Se sube el id_emp como idRegistro
+          Nota: notaSeleccionada, // La nota seleccionada
         }),
       });
 
@@ -97,14 +91,13 @@ export default function CalificarModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-      <button
-            onClick={onClose}
-            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
         <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
-
 
         <p className="text-center mb-2">
           <strong>Id Curso:</strong> {idCur}
@@ -116,25 +109,25 @@ export default function CalificarModal({
           <strong>Documento:</strong> {documento}
         </p>
         <p className="text-center mb-4">
-  <strong>id_emp actual:</strong> {idEmp ?? "No disponible"}
-</p>
+          <strong>id_emp actual:</strong> {idEmp ?? "No disponible"}
+        </p>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Selecciona una calificación:
           </label>
           <select
-  className="w-full border rounded px-3 py-2"
-  value={notaSeleccionada ?? ""}
-  onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
->
-  <option value="">-- Selecciona --</option>
-  {opciones.map((op) => (
-    <option key={op.id} value={op.id}>
-      {op.Especificacion}
-    </option>
-  ))}
-</select>
+            className="w-full border rounded px-3 py-2"
+            value={notaSeleccionada ?? ""}
+            onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
+          >
+            <option value="">-- Selecciona --</option>
+            {opciones.map((op) => (
+              <option key={op.id} value={op.id}>
+                {op.Especificacion}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="flex justify-center gap-4">
