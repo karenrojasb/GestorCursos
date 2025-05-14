@@ -1,10 +1,12 @@
-Debe subir estos datos:
- idCurso: CreateNotaDto.idCurso,
-        idInscrito: CreateNotaDto.idInscrito,
-        Nota: CreateNotaDto.Nota,
-        idRegistro: CreateNotaDto.idRegistro,
-        FechaRegistro: new Date(),
-  
+Error: Error al guardar nota: {}
+    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
+    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
+    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
+    at handleGuardar (http://localhost:3000/_next/static/chunks/app_744e9d._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252Fcalificarmodal.tsx+%255Bapp-client%255D+%2528ecmascript%2529:83:25)
+                      Error: Error al guardar la nota
+    at handleGuardar (http://localhost:3000/_next/static/chunks/app_744e9d._.js?id=%255Bproject%255D%252Fapp%252Fcomponents%252Fcalificarmodal.tsx+%255Bapp-client%255D+%2528ecmascript%2529:84:23)
+
+                      
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -89,6 +91,7 @@ export default function CalificarModal({
           idInscrito: documento,
           idRegistro: idEmp,
           Nota: Number(notaSeleccionada),
+          FechaRegistro: new Date()
         }),
       });
 
