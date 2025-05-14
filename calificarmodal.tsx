@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -26,7 +25,7 @@ export default function CalificarModal({
   const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
   const [idEmp, setIdEmp] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
-  const [notaExistenteId, setNotaExistenteId] = useState<number | null>(null); // NUEVO
+  const [notaExistenteId, setNotaExistenteId] = useState<number | null>(null);
 
   useEffect(() => {
     const storedId = localStorage.getItem("id_emp");
@@ -46,7 +45,8 @@ export default function CalificarModal({
           const dataNota = await respNota.json();
           if (dataNota && dataNota.Nota !== undefined) {
             setNotaSeleccionada(Number(dataNota.Nota));
-            setNotaExistenteId(dataNota.id); // Guarda el id para actualizar
+            setNotaExistenteId(dataNota.id);
+            console.log("Nota cargada:", dataNota.Nota);
           }
         }
       } catch (error) {
@@ -59,34 +59,27 @@ export default function CalificarModal({
     }
   }, [idCur, documento]);
 
-
   const handleGuardar = async () => {
     if (notaSeleccionada === null || isNaN(notaSeleccionada)) {
       alert("Por favor selecciona una nota válida");
       return;
     }
-  
+
     if (!idEmp) {
       alert("Error: ID de empleado no encontrado.");
       return;
     }
-  
+
     setGuardando(true);
-  
+
     try {
-      // Paso 1: Consultar si ya existe nota
       const responseGet = await fetch(
         `http://localhost:8090/api/notas/curso-inscrito?idCurso=${idCur}&idInscrito=${documento}`
       );
-  
-      if (!responseGet.ok) {
-        throw new Error("Error al verificar existencia de nota.");
-      }
-  
-      const notaExistente = await responseGet.json();
-  
+
+      const notaExistente = responseGet.ok ? await responseGet.json() : null;
+
       if (notaExistente && notaExistente.id) {
-        // Paso 2: Si existe, actualizar
         const responsePut = await fetch(`http://localhost:8090/api/notas/${notaExistente.id}`, {
           method: "PUT",
           headers: {
@@ -98,12 +91,9 @@ export default function CalificarModal({
             FechaRegistro: new Date(),
           }),
         });
-  
-        if (!responsePut.ok) {
-          throw new Error("Error al actualizar la nota.");
-        }
+
+        if (!responsePut.ok) throw new Error("Error al actualizar la nota.");
       } else {
-        // Paso 3: Si no existe, crear
         const responsePost = await fetch("http://localhost:8090/api/notas", {
           method: "POST",
           headers: {
@@ -117,12 +107,10 @@ export default function CalificarModal({
             FechaRegistro: new Date(),
           }),
         });
-  
-        if (!responsePost.ok) {
-          throw new Error("Error al crear la nota.");
-        }
+
+        if (!responsePost.ok) throw new Error("Error al crear la nota.");
       }
-  
+
       onGuardar(String(notaSeleccionada));
       onClose();
     } catch (error) {
@@ -132,7 +120,9 @@ export default function CalificarModal({
       setGuardando(false);
     }
   };
-  
+
+  const especificacionNota = opciones.find(op => op.id === notaSeleccionada)?.Especificacion;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
@@ -142,13 +132,17 @@ export default function CalificarModal({
         >
           <XMarkIcon className="h-6 w-6" />
         </button>
+
         <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
 
-        <br></br>      
         <p className="text-left mb-2"><strong>Nombre del Estudiante:</strong> {nombre}</p>
-        
         <p className="text-left mb-2"><strong>Documento:</strong> {documento}</p>
-      
+
+        {notaSeleccionada !== null && (
+          <p className="text-left mb-2">
+            <strong>Nota actual:</strong> {especificacionNota || "Sin especificación"}
+          </p>
+        )}
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
