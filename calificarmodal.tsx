@@ -1,127 +1,192 @@
-async getCoursesTeacher(idProfesor: number) {
-  return this.prisma.$queryRawUnsafe<
-    Array<{
-      id: number;
-      idRegistro: number | null;
-      FechaRegistro: Date | null;
-      idCur: number;
-      NombreCurso: string;
-      Publico: number;
-      Profesor: number;
-      SegundoPro: number;
-      Valor: number;
-      Horas: number;
-      Lugar: string;
-      Inicio: Date;
-      Fin: Date;
-      LunesIni: string;
-      LunesFin: string;
-      MartesIni: string;
-      MartesFin: string;
-      MiercolesIni: string;
-      MiercolesFin: string;
-      JuevesIni: string;
-      JuevesFin: string;
-      ViernesIni: string;
-      ViernesFin: string;
-      SabadoIni: string;
-      SabadoFin: string;
-      DomingoIni: string;
-      DomingoFin: string;
-      Periodo: number;
-      Linea: number;
-      Proexterno: string;
-      Estado: string;
-      Modalidad: number;
-      Unidad: number;
-      docInscr: string;
-      nombre: string | null;
-      fecreg: Date;
-      rol: string;
-      CupoMax: number | null;
-      Nota: number | null;
-      Especificacion: string | null;
-      InscritoNumerico: number | null;
-      SegundoProfe: string | null;
-      IdTipoCurso: string;
-      NombreProfesor: string | null;
-      Descripcion: string;
-    }>
-  >(
-    `SELECT 
-      i.id,
-      i.idCur,
-      c.NombreCurso,
-      lp.Especificacion AS Publico,
-      c.Profesor,
-      c.SegundoPro,
-      c.Valor,
-      c.Horas,
-      c.Lugar,
-      c.Inicio,
-      c.Fin,
-      c.LunesIni,
-      c.LunesFin,
-      c.MartesIni,
-      c.MartesFin,
-      c.MiercolesIni,
-      c.MiercolesFin,
-      c.JuevesIni,
-      c.JuevesFin,
-      c.ViernesIni,
-      c.ViernesFin,
-      c.SabadoIni,
-      c.SabadoFin,
-      c.DomingoIni,
-      c.DomingoFin,
-      c.Periodo,
-      ll.Especificacion AS Linea,
-      c.Proexterno,
-      c.Estado,
-      est.Especificacion AS Est,
-      m.Especificacion AS Modalidad,
-      u.nombre AS Unidad,
-      i.docInscr,
-      e.nombre,
-      i.fecreg,
-      c.CupoMax,
-      sp.nombre AS SegundoProfe,
-      tc.Especificacion AS IdTipoCurso,
-      p.nombre AS NombreProfesor,
-      TRY_CAST(i.docInscr AS INT) AS InscritoNumerico,
-      n.idRegistro,
-      n.FechaRegistro,
-      n.Nota,
-      l.Especificacion,
-      c.Descripcion,
-      CASE 
-        WHEN c.Profesor = ${idProfesor} THEN 'Titular'
-        WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
-        ELSE 'Otro'
-      END AS rol
-    FROM gescur.Cursos c
-    LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
-    LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
-    LEFT JOIN gescur.emp_nomina p ON CAST(c.Profesor AS VARCHAR) = p.id_emp
-    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-    OUTER APPLY (
-      SELECT TOP 1 
-        n.Nota,
-        n.idRegistro,
-        n.FechaRegistro
-      FROM gescur.Notas n 
-      WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT)
-        AND n.IdCurso = c.id
-      ORDER BY n.id ASC
-    ) n
-    LEFT JOIN gescur.Listas l ON l.id = n.Nota
-    LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
-    LEFT JOIN gescur.listas ll ON ll.id = c.Linea AND ll.Tipo = 2
-    LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
-    LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
-    LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
-    LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
-    WHERE (c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor})
-      AND i.est = 1`
+
+import { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+
+interface CalificarModalProps {
+  nombre: string;
+  documento: number;
+  idCur: number;
+  onClose: () => void;
+  onGuardar: (nota: string) => void;
+}
+
+interface OpcionLista {
+  id: number;
+  Especificacion: string;
+}
+
+// ...importaciones y definición de interfaces igual...
+
+export default function CalificarModal({
+  nombre,
+  documento,
+  idCur,
+  onClose,
+  onGuardar,
+}: CalificarModalProps) {
+  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
+  const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
+  const [idEmp, setIdEmp] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
+
+  useEffect(() => {
+    const storedId = localStorage.getItem("id_emp");
+    setIdEmp(storedId);
+  }, []);
+
+  useEffect(() => {
+    const fetchDatos = async () => {
+      try {
+        const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+        if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
+        const dataOpciones = await respOpciones.json();
+        setOpciones(dataOpciones);
+
+        const respNota = await fetch(`http://localhost:8090/api/notas`);
+        if (respNota.ok) {
+          const dataNota = await respNota.json();
+          if (dataNota?.Nota !== undefined && dataNota?.Nota !== null) {
+            setNotaSeleccionada(Number(dataNota.Nota));
+          }
+        }
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+      }
+    };
+
+    if (idCur && documento) {
+      fetchDatos();
+    }
+  }, [idCur, documento]);
+
+  const handleGuardar = async () => {
+    if (notaSeleccionada === null || isNaN(notaSeleccionada)) {
+      alert("Por favor selecciona una nota válida");
+      return;
+    }
+
+    if (!idEmp) {
+      alert("Error: ID de empleado no encontrado.");
+      return;
+    }
+
+    setGuardando(true);
+
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idCurso: idCur,
+          idInscrito: documento,
+          idRegistro: Number(idEmp),
+          Nota: Number(notaSeleccionada),
+          FechaRegistro: new Date()
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error al guardar nota:", errorData);
+        throw new Error("Error al guardar la nota");
+      }
+
+      onGuardar(String(notaSeleccionada));
+      onClose();
+    } catch (error) {
+      console.error("Error al guardar nota:", error);
+      alert("Hubo un error al guardar la nota.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+        <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
+
+        <p className="text-center mb-2"><strong>Id Curso:</strong> {idCur}</p>
+        <p className="text-center mb-2"><strong>Nombre:</strong> {nombre}</p>
+        <p className="text-center mb-2"><strong>Documento:</strong> {documento}</p>
+        <p className="text-center mb-4"><strong>Empleado actual:</strong> {idEmp ?? "No disponible"}</p>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Selecciona una calificación:
+          </label>
+          <select
+            className="w-full border rounded px-3 py-2"
+            value={notaSeleccionada ?? ""}
+            onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
+          >
+            <option value="">-- Selecciona --</option>
+            {opciones.map((op) => (
+              <option key={op.id} value={op.id}>
+                {op.Especificacion}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={handleGuardar}
+            disabled={guardando}
+            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition hover:scale-110 active:scale-95"
+          >
+            {guardando ? "Guardando..." : "Guardar"}
+          </button>
+          <button
+            onClick={onClose}
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition hover:scale-110 active:scale-95"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
+
+
+
+
+
+    // MÉTODO PARA ACTUALIZAR
+    async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
+      console.log ('id received:', id);
+      console.log ('data received:', data);
+
+      try {
+        const UpdateNote = await this.prisma.notas.update({
+          where: {id},
+          data,
+        });
+        console.log ('update note:', UpdateNote);
+        return UpdateNote;
+      }
+      catch (error){
+        console.error ('error when updating note:', error);
+        throw new error('the note was not updated');
+      }
+    }
+
+
+  // ACTUALIZAR DATOS
+  @Put(':id')
+  async updateNote(@Param('id') id:string, @Body() UpdateNotaDto: UpdateNotaDto){
+    const updateNote = await this.notasService.UpdateNote(Number(id), UpdateNotaDto)
+    if (!updateNote){
+      throw new NotFoundException(`The id#${id} not found`);
+    }
+    return updateNote;
+  } 
