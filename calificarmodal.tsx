@@ -111,6 +111,7 @@ async getCoursesTeacher(idProfesor: number) {
         n.FechaRegistro
       FROM gescur.Notas n 
       WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT)
+        AND n.IdCurso = c.id
       ORDER BY n.id ASC
     ) n
     LEFT JOIN gescur.Listas l ON l.id = n.Nota
