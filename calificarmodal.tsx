@@ -1,181 +1,181 @@
-import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
 
-interface CalificarModalProps {
-  nombre: string;
-  documento: number;
-  idCur: number;
-  onClose: () => void;
-  onGuardar: (nota: string) => void;
+"use client";
+
+import { useEffect, useState } from "react";
+import { DocumentArrowDownIcon, XMarkIcon, UserIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+
+
+interface NotaCurso {
+  idCurso: number;
+  NombreCurso: string;
+  Lugar: string;
+  Inicio: string;
+  Fin: string;
+  LunesIni: string;
+  LunesFin: string;
+  MartesIni: string;
+  MartesFin: string;
+  MiercolesIni: string;
+  MiercolesFin: string;
+  JuevesIni: string;
+  JuevesFin: string;
+  ViernesIni: string;
+  ViernesFin: string;
+  SabadoIni: string;
+  SabadoFin: string;
+  ProExterno: string;
+  ProfesorNombre: string;
+  SegundoProNombre: string;
 }
 
-interface OpcionLista {
-  id: number;
-  Especificacion: string;
-}
-
-export default function CalificarModal({
-  nombre,
-  documento,
-  idCur,
-  onClose,
-  onGuardar,
-}: CalificarModalProps) {
-  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
-  const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
-  const [idEmp, setIdEmp] = useState<string | null>(null);
-  const [guardando, setGuardando] = useState(false);
-  const [notaExistenteId, setNotaExistenteId] = useState<number | null>(null);
+export default function Certificados({ onClose }: { onClose: () => void }) {
+  const [notas, setNotas] = useState<NotaCurso[]>([]);
+  const [loading, setLoading] = useState(true);
+ const [cursosFiltrados, setCursosFiltrados] = useState<NotaCurso[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
   useEffect(() => {
-    const storedId = localStorage.getItem("id_emp");
-    setIdEmp(storedId);
+    const idEmp = localStorage.getItem("id_emp");
+    if (idEmp) {
+      fetchNotas(parseInt(idEmp));
+    }
   }, []);
 
-  useEffect(() => {
-    const fetchDatos = async () => {
-      try {
-        const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-        if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
-        const dataOpciones = await respOpciones.json();
-        setOpciones(dataOpciones);
-
-        const respNota = await fetch(`http://localhost:8090/api/notas/curso-inscrito?idCurso=${idCur}&idInscrito=${documento}`);
-        if (respNota.ok) {
-          const dataNota = await respNota.json();
-          if (dataNota && dataNota.Nota !== undefined) {
-            setNotaSeleccionada(Number(dataNota.Nota));
-            setNotaExistenteId(dataNota.id);
-            console.log("Nota cargada:", dataNota.Nota);
-          }
-        }
-      } catch (error) {
-        console.error("Error cargando datos:", error);
-      }
-    };
-
-    if (idCur && documento) {
-      fetchDatos();
-    }
-  }, [idCur, documento]);
-
-  const handleGuardar = async () => {
-    if (notaSeleccionada === null || isNaN(notaSeleccionada)) {
-      alert("Por favor selecciona una nota válida");
-      return;
-    }
-
-    if (!idEmp) {
-      alert("Error: ID de empleado no encontrado.");
-      return;
-    }
-
-    setGuardando(true);
-
+  const fetchNotas = async (id: number) => {
     try {
-      const responseGet = await fetch(
-        `http://localhost:8090/api/notas/curso-inscrito?idCurso=${idCur}&idInscrito=${documento}`
-      );
-
-      const notaExistente = responseGet.ok ? await responseGet.json() : null;
-
-      if (notaExistente && notaExistente.id) {
-        const responsePut = await fetch(`http://localhost:8090/api/notas/${notaExistente.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            Nota: notaSeleccionada,
-            idRegistro: Number(idEmp),
-            FechaRegistro: new Date(),
-          }),
-        });
-
-        if (!responsePut.ok) throw new Error("Error al actualizar la nota.");
-      } else {
-        const responsePost = await fetch("http://localhost:8090/api/notas", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            idCurso: idCur,
-            idInscrito: documento,
-            idRegistro: Number(idEmp),
-            Nota: notaSeleccionada,
-            FechaRegistro: new Date(),
-          }),
-        });
-
-        if (!responsePost.ok) throw new Error("Error al crear la nota.");
-      }
-
-      onGuardar(String(notaSeleccionada));
-      onClose();
+      const res = await fetch(`http://localhost:8090/api/notas/aprovado/${id}`);
+      const data = await res.json();
+      setNotas(data);
     } catch (error) {
-      console.error("Error al guardar nota:", error);
-      alert("Hubo un error al guardar la nota.");
+      console.error("Error al obtener certificados:", error);
     } finally {
-      setGuardando(false);
+      setLoading(false);
     }
   };
 
-  const especificacionNota = opciones.find(op => op.id === notaSeleccionada)?.Especificacion;
+  const formatearHorario = (curso: NotaCurso) => {
+    const dias = [
+      { dia: "Lunes", ini: curso.LunesIni, fin: curso.LunesFin },
+      { dia: "Martes", ini: curso.MartesIni, fin: curso.MartesFin },
+      { dia: "Miércoles", ini: curso.MiercolesIni, fin: curso.MiercolesFin },
+      { dia: "Jueves", ini: curso.JuevesIni, fin: curso.JuevesFin },
+      { dia: "Viernes", ini: curso.ViernesIni, fin: curso.ViernesFin },
+      { dia: "Sábado", ini: curso.SabadoIni, fin: curso.SabadoFin },
+    ];
+    return dias.filter((d) => d.ini && d.fin);
+  };
+
+  
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const texto = e.target.value.toLowerCase();
+    setBusqueda(texto);
+    setIsSearchActive(texto !== "");
+  
+    const resultadosFiltrados = notas.filter((nota) =>
+      nota.NombreCurso.toLowerCase().includes(texto)
+    );
+    setCursosFiltrados(resultadosFiltrados);
+  };
+
+  const handleMouseEnter = () => {
+    setIsSearchActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (busqueda === "") {
+      setIsSearchActive(true);
+    }
+  };
+
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
+    <div className="p-10 rounded-xl shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white rounded-lg p-6 shadow-md max-w-6xl w-full h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex justify-between items-center mb-4">
+        <div className="relative flex items-center"
+           onMouseEnter={handleMouseEnter}
+           onMouseLeave={handleMouseLeave}>
+            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
+            </button>
+            <input
+              type="text"
+              placeholder="Busque el nombre del curso"
+              value={busqueda}
+              onChange={handleBuscar}
+              className={`px-5 py-2 min-w-64 ml-4 border rounded-full transition-all duration-500 ease-in-out  
+                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+            />     
 
-        <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
-
-        <p className="text-left mb-2"><strong>Nombre del Estudiante:</strong> {nombre}</p>
-        <p className="text-left mb-2"><strong>Documento:</strong> {documento}</p>
-
-        {notaSeleccionada !== null && (
-          <p className="text-left mb-2">
-            <strong>Nota actual:</strong> {especificacionNota || "Sin especificación"}
-          </p>
-        )}
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Selecciona una calificación:
-          </label>
-          <select
-            className="w-full border rounded px-3 py-2"
-            value={notaSeleccionada ?? ""}
-            onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
-          >
-            <option value="">-- Selecciona --</option>
-            {opciones.map((op) => (
-              <option key={op.id} value={op.id}>
-                {op.Especificacion}
-              </option>
-            ))}
-          </select>
+         
         </div>
+        <button onClick={onClose} className="text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90">
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
+        
+<h2 className="text-2xl justify-center text-center font-bold text-[#990000] seleccion-personalizada">
+  Certificados de Cursos
+</h2>
 
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={handleGuardar}
-            disabled={guardando}
-            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition hover:scale-110 active:scale-95"
-          >
-            {guardando ? "Guardando..." : "Guardar"}
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition hover:scale-110 active:scale-95"
-          >
-            Cancelar
-          </button>
+          
+
+        <div className="overflow-y-auto flex-1">
+          {loading ? (
+            <div className="flex justify-center my-6">
+             <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+             </div>
+          ) : notas.length > 0 ? (
+            <table className="w-full mt-4 text-sm border border-gray-300">
+              <thead className="bg-[#990000] text-white">
+                <tr>
+                  <th className="p-2 border">Curso</th>
+                  <th className="p-2 border">Profesor</th>
+                  <th className="p-2 border">Horario</th>
+                  <th className="p-2 border">Lugar</th>
+                  <th className="p-2 border">Inicio</th>
+                  <th className="p-2 border">Fin</th>
+                  <th className="p-2 border">Certificado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {notas.map((curso, index) => (
+                  <tr key={index} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} text-center transition`}>
+                    <td className="p-2 border text-left font-semibold">{curso.NombreCurso}</td>
+                    <td className="p-2 border text-left">
+                      {[curso.ProfesorNombre, curso.SegundoProNombre, curso.ProExterno]
+                        .filter((p) => p && p.trim() !== "")
+                        .map((p, idx) => (
+                          <div key={idx} className="flex items-center gap-1 text-xs">
+                            <UserIcon className="h-4 w-4 text-[#990000]" />
+                            {p}
+                          </div>
+                        ))}
+                    </td>
+                    <td className="p-2 border text-left">
+                      {formatearHorario(curso).map((h, i) => (
+                        <div key={i}>
+                          <strong>{h.dia}</strong>: {h.ini} - {h.fin}
+                        </div>
+                      ))}
+                    </td>
+                    <td className="p-2 border">{curso.Lugar}</td>
+                    <td className="p-2 border">{curso.Inicio || "N/Aa"}</td>
+                    <td className="p-2 border">{curso.Fin || "N/A"}</td>
+                    <td className="p-2 border">
+                      <button className="text-[#990000] hover:scale-110 transition">
+                        <DocumentArrowDownIcon className="h-6 w-6 mx-auto" />
+                        <span className="text-xs">Descargar</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8">No se encontraron certificados.</div>
+          )}
         </div>
       </div>
     </div>
