@@ -1,4 +1,10 @@
-
+Debe subir estos datos:
+ idCurso: CreateNotaDto.idCurso,
+        idInscrito: CreateNotaDto.idInscrito,
+        Nota: CreateNotaDto.Nota,
+        idRegistro: CreateNotaDto.idRegistro,
+        FechaRegistro: new Date(),
+  
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
