@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -17,8 +16,6 @@ interface OpcionLista {
   Especificacion: string;
 }
 
-
-
 export default function CalificarModal({
   nombre,
   documento,
@@ -32,7 +29,6 @@ export default function CalificarModal({
   const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
   const [idEmp, setIdEmp] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
-  const [notaExistenteId, setNotaExistenteId] = useState<number | null>(null);
 
   useEffect(() => {
     const storedId = localStorage.getItem("id_emp");
@@ -40,86 +36,96 @@ export default function CalificarModal({
   }, []);
 
   useEffect(() => {
-  const fetchDatos = async () => {
+    const fetchDatos = async () => {
+      try {
+        const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+        if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
+        const dataOpciones = await respOpciones.json();
+        setOpciones(dataOpciones);
+      } catch (error) {
+        console.error("Error cargando opciones:", error);
+      }
+    };
+
+    fetchDatos();
+  }, []);
+
+  useEffect(() => {
+    const fetchNotaExistente = async () => {
+      try {
+        const res = await fetch(`http://localhost:8090/api/notas/existe?idCurso=${idCur}&idInscrito=${documento}`);
+        if (res.ok) {
+          const nota = await res.json();
+          if (nota?.Nota) {
+            setNotaSeleccionada(Number(nota.Nota));
+          }
+        }
+      } catch (error) {
+        console.error("Error verificando nota existente:", error);
+      }
+    };
+
+    if (idCur && documento) fetchNotaExistente();
+  }, [idCur, documento]);
+
+  const handleGuardar = async () => {
+    if (!notaSeleccionada || !idEmp) {
+      alert("Faltan datos para guardar la calificación.");
+      return;
+    }
+
+    setGuardando(true);
+
     try {
-      const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-      if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
-      const dataOpciones = await respOpciones.json();
-      setOpciones(dataOpciones);
+      const responseGet = await fetch(
+        `http://localhost:8090/api/notas/existe?idCurso=${idCur}&idInscrito=${documento}`
+      );
+      const notaExistente = responseGet.ok ? await responseGet.json() : null;
+
+      const notaYaExiste = notaExistente && typeof notaExistente === 'object' && 'id' in notaExistente;
+
+      if (notaYaExiste) {
+        await fetch(`http://localhost:8090/api/notas/${notaExistente.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            Nota: notaSeleccionada,
+            idRegistro: idEmp,
+            FechaRegistro: new Date(),
+          }),
+        });
+      } else {
+        await fetch("http://localhost:8090/api/notas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            idCurso: idCur,
+            idInscrito: documento,
+            Nota: notaSeleccionada,
+            idRegistro: idEmp,
+            FechaRegistro: new Date(),
+          }),
+        });
+      }
+
+      await fetch(`http://localhost:8090/api/inscripciones/${idIns}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Nota: notaSeleccionada,
+          idRegistro: idEmp,
+        }),
+      });
+
+      onGuardar(String(notaSeleccionada));
+      onClose();
     } catch (error) {
-      console.error("Error cargando opciones:", error);
+      console.error("Error al guardar nota:", error);
+      alert("Hubo un error al guardar la nota.");
+    } finally {
+      setGuardando(false);
     }
   };
-
-  fetchDatos();
-}, []);
-
-
-
-const handleGuardar = async () => {
-  if (!notaSeleccionada || !idEmp) {
-    alert("Faltan datos para guardar la calificación.");
-    return;
-  }
-
-  setGuardando(true);
-
-  try {
-    // Consultar si ya existe una nota para este curso y documento
-    const responseGet = await fetch(
-      `http://localhost:8090/api/notas/existe?idCurso=${idCur}&idInscrito=${documento}`
-    );
-
-    const notaExistente = responseGet.ok ? await responseGet.json() : null;
-    const notaYaExiste = notaExistente && typeof notaExistente === 'object' && 'id' in notaExistente;
-
-    if (notaYaExiste) {
-      // Actualizar nota existente
-      await fetch(`http://localhost:8090/api/notas/${notaExistente.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          Nota: notaSeleccionada,
-          idRegistro: idEmp,
-          FechaRegistro: new Date(),
-        }),
-      });
-    } else {
-      // Crear nueva nota
-      await fetch("http://localhost:8090/api/notas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idCurso: idCur,
-          idInscrito: documento,
-          Nota: notaSeleccionada,
-          idRegistro: idEmp,
-          FechaRegistro: new Date(),
-        }),
-      });
-    }
-
-    // Actualizar inscripción
-    await fetch(`http://localhost:8090/api/inscripciones/${idIns}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Nota: notaSeleccionada,
-        idRegistro: idEmp,
-      }),
-    });
-
-    onGuardar(String(notaSeleccionada));
-    onClose();
-  } catch (error) {
-    console.error("Error al guardar nota:", error);
-    alert("Hubo un error al guardar la nota.");
-  } finally {
-    setGuardando(false);
-  }
-};
-
-  const especificacionNota = opciones.find(op => op.id === notaSeleccionada)?.Especificacion;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -133,27 +139,21 @@ const handleGuardar = async () => {
 
         <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
 
-        <p className="text-left mb-2"><strong>Nombre del Estudiante:</strong> {idIns}</p>
+        <p className="text-left mb-2"><strong>Nombre del Estudiante:</strong> {nombre}</p>
         <p className="text-left mb-2"><strong>Documento:</strong> {documento}</p>
         
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Selecciona una calificación:
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Selecciona una calificación:</label>
           <select
-  className="w-full border rounded px-3 py-2"
-  value={Especificacion ?? ""}
-  onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
->
-  {Especificacion === null && (
-    <option value="">-- Selecciona --</option>
-  )}
-  {opciones.map((op) => (
-    <option key={op.id} value={op.id}>
-      {op.Especificacion}
-    </option>
-  ))}
-</select>
+            className="w-full border rounded px-3 py-2"
+            value={notaSeleccionada ?? ""}
+            onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
+          >
+            <option value="">-- Selecciona --</option>
+            {opciones.map((op) => (
+              <option key={op.id} value={op.id}>{op.Especificacion}</option>
+            ))}
+          </select>
         </div>
 
         <div className="flex justify-center gap-4">
