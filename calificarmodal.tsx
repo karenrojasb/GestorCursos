@@ -6,6 +6,22 @@ const guardarNota = async (notaTexto: string) => {
   const Nota = Number(notaTexto);
   const idRegistro = 1;
 
+  // Obtener texto según el valor de la nota
+  const obtenerEspecificacion = (nota: number): string => {
+    switch (nota) {
+      case 32:
+        return "No aprobado";
+      case 33:
+        return "Aprobado";
+      case 34:
+        return "Nunca asistió";
+      case 35:
+        return "Abandono";
+      default:
+        return `Nota: ${nota}`;
+    }
+  };
+
   try {
     const response = await fetch("http://localhost:8090/api/Notas", {
       method: "POST",
@@ -20,14 +36,15 @@ const guardarNota = async (notaTexto: string) => {
 
     if (!response.ok) throw new Error("Error al guardar la nota");
 
-    // Actualiza localmente la nota y la especificación para ese inscrito
+    const especificacion = obtenerEspecificacion(Nota);
+
     setInscripciones((prevInscripciones) =>
       prevInscripciones.map((insc) =>
         insc.docInscr === idInscrito && insc.idCur === idCur
           ? {
               ...insc,
               Nota,
-              Especificacion: Nota >= 33 ? "Aprobado" : "Reprobado", // O el texto que quieras poner
+              Especificacion: especificacion,
             }
           : insc
       )
@@ -39,7 +56,7 @@ const guardarNota = async (notaTexto: string) => {
           ? {
               ...insc,
               Nota,
-              Especificacion: Nota >= 33 ? "Aprobado" : "Reprobado",
+              Especificacion: especificacion,
             }
           : insc
       )
@@ -47,7 +64,6 @@ const guardarNota = async (notaTexto: string) => {
 
     console.log("Nota guardada exitosamente");
 
-    // Opcional: cerrar modal
     setModalCalificarAbierto(false);
   } catch (error) {
     console.error("Error al guardar nota:", error);
