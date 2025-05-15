@@ -152,7 +152,7 @@ export default function CalificarModal({
 
         <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
 
-        <p className="text-left mb-2"><strong>Nombre del Estudiante:</strong> {nombre}</p>
+        <p className="text-left mb-2"><strong>Nombre del Estudiante:</strong> {idIns}</p>
         <p className="text-left mb-2"><strong>Documento:</strong> {documento}</p>
         
         <div className="mb-4">
