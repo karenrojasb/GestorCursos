@@ -1,12 +1,7 @@
-const [idEmp, setIdEmp] = useState<number | null>(null); // <- corregido de 'Number' a 'number'
-
-
-
-useEffect(() => {
-  const storedId = localStorage.getItem("id_emp");
-  const parsedId = storedId ? Number(storedId) : null;
-  setIdEmp(parsedId);
-}, []);
-
-
-
+DTO recibido: {
+  idCurso: 450,
+  idInscrito: 1000034366,
+  idRegistro: 1000034366,
+  Nota: 33
+}
+DTO recibido: { idInscrito: 1000034366, Nota: 33, idRegistro: 1 }
