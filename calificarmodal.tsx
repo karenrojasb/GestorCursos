@@ -4,7 +4,7 @@ const guardarNota = async (notaTexto: string) => {
   const idCur = inscritoSeleccionado.idCur;
   const idInscrito = Number(inscritoSeleccionado.doc);
   const Nota = Number(notaTexto);
-  const idRegistro = 1;
+  const idRegistro = 1; // o lo que necesites
 
   try {
     const response = await fetch("http://localhost:8090/api/Notas", {
@@ -20,35 +20,29 @@ const guardarNota = async (notaTexto: string) => {
 
     if (!response.ok) throw new Error("Error al guardar la nota");
 
-    // Actualiza localmente la nota y la especificación para ese inscrito
+    // Si el backend devuelve la nota actualizada, úsala. 
+    // Aquí asumo que devuelve el objeto guardado o al menos la nota.
+    const data = await response.json();
+
+    // Actualizamos el estado local con la nota nueva
     setInscripciones((prevInscripciones) =>
-      prevInscripciones.map((insc) =>
-        insc.docInscr === idInscrito && insc.idCur === idCur
-          ? {
-              ...insc,
-              Nota,
-              Especificacion: Nota >= 33 ? "Aprobado" : "Reprobado", // O el texto que quieras poner
-            }
-          : insc
-      )
+      prevInscripciones.map((insc) => {
+        if (insc.id === inscritoSeleccionado.id) {
+          // Actualiza nota y especificacion, o el campo que uses para mostrar la nota
+          return {
+            ...insc,
+            Nota: data.Nota || Nota,
+            Especificacion: `Nota: ${data.Nota || Nota}`, // o el texto que corresponda
+          };
+        }
+        return insc;
+      })
     );
 
-    setInscripcionesFiltradas((prevInscripciones) =>
-      prevInscripciones.map((insc) =>
-        insc.docInscr === idInscrito && insc.idCur === idCur
-          ? {
-              ...insc,
-              Nota,
-              Especificacion: Nota >= 33 ? "Aprobado" : "Reprobado",
-            }
-          : insc
-      )
-    );
+    setModalCalificarAbierto(false);
+    setInscritoSeleccionado(null);
 
     console.log("Nota guardada exitosamente");
-
-    // Opcional: cerrar modal
-    setModalCalificarAbierto(false);
   } catch (error) {
     console.error("Error al guardar nota:", error);
   }
