@@ -32,7 +32,7 @@ export default function CalificarModal({
   const [notaExistenteId, setNotaExistenteId] = useState<number | null>(null);
 
   useEffect(() => {
-    const storedId = localStorage.getItem("idEmp");
+    const storedId = localStorage.getItem("id_emp");
     setIdEmp(storedId);
   }, []);
 
