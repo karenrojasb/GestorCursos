@@ -18,7 +18,7 @@ interface Inscripcion {
   NombreCurso: string;
   id: number;
   idCur: number;
-  docInscr: string;
+  docInscr: number;
   nombre: string;
   Est: string;
   fecreg: string;
@@ -80,7 +80,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
         cursoNombre.toLowerCase().includes(texto) ||
         fechaRegistro.includes(texto) ||
         nombreInscrito.includes(texto) ||
-        docInscrito.includes(texto)
+        docInscrito
       );
     });
 
@@ -290,7 +290,7 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
                 key={insc.id}
                 className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-150'} hover:bg-gray-200 transition-all duration-200`}
               >
-                <td className="px-4 py-2 text-black">{insc.idCur}</td>
+                <td className="px-4 py-2 text-black">{insc.nombre}</td>
                 <td className="px-4 py-2 text-black">{insc.docInscr}</td>
                 <td className="px-4 py-2 text-black">{new Date(insc.fecreg).toLocaleDateString()}</td>
                 <td className="px-4 py-2">
