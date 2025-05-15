@@ -6,8 +6,8 @@ const guardarNota = async (notaTexto: string) => {
   const Nota = Number(notaTexto);
   const idRegistro = 1; // o lo que necesites
 
-  // Función para convertir el número de nota a texto
-  const obtenerTextoNota = (nota: number) => {
+  // Función para obtener la descripción según la nota
+  const getEspecificacion = (nota: number) => {
     switch (nota) {
       case 32:
         return "No aprobado";
@@ -18,7 +18,7 @@ const guardarNota = async (notaTexto: string) => {
       case 35:
         return "Abandono";
       default:
-        return `Nota: ${nota}`; // Si no coincide con ninguno, muestra el número
+        return `Nota: ${nota}`;
     }
   };
 
@@ -38,17 +38,16 @@ const guardarNota = async (notaTexto: string) => {
 
     const data = await response.json();
 
-    // Obtenemos la nota actualizada, si no hay usamos la que enviamos
-    const notaFinal = data.Nota || Nota;
+    const notaGuardada = data.Nota || Nota;
+    const especificacion = getEspecificacion(notaGuardada);
 
-    // Actualizamos el estado local con la nota nueva y su texto
     setInscripciones((prevInscripciones) =>
       prevInscripciones.map((insc) => {
         if (insc.id === inscritoSeleccionado.id) {
           return {
             ...insc,
-            Nota: notaFinal,
-            Especificacion: obtenerTextoNota(notaFinal),
+            Nota: notaGuardada,
+            Especificacion: especificacion,
           };
         }
         return insc;
