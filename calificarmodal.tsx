@@ -1,2 +1,11 @@
-INSERT INTO gescur.auditoriaNotas (IdCurso, IdInscrito, Nota, IdRegistro, FechaRegistro)
-VALUES (101, 2025, 33, 1, GETDATE());
+USE gescur;
+GO
+
+CREATE TABLE auditoriaNotas (
+  Id INT IDENTITY(1,1) PRIMARY KEY,
+  IdCurso INT NOT NULL,
+  IdInscrito INT NOT NULL,
+  Nota INT NOT NULL,
+  IdRegistro INT NOT NULL,
+  FechaRegistro DATETIME NOT NULL DEFAULT GETDATE()
+);
