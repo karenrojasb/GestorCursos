@@ -1,11 +1,3 @@
-USE gescur;
-GO
-
-CREATE TABLE auditoriaNotas (
-  Id INT IDENTITY(1,1) PRIMARY KEY,
-  IdCurso INT NOT NULL,
-  IdInscrito INT NOT NULL,
-  Nota INT NOT NULL,
-  IdRegistro INT NOT NULL,
-  FechaRegistro DATETIME NOT NULL DEFAULT GETDATE()
-);
+ALTER TABLE gescur.Cursos
+ADD inicioInscr DATETIME NULL,
+    finInscr DATETIME NULL;
