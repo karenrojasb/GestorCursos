@@ -1,47 +1,51 @@
-const handleGuardar = async () => {
-  if (notaSeleccionada === null || isNaN(notaSeleccionada)) {
-    alert("Por favor selecciona una nota válida");
-    return;
-  }
+// pages/api/auth/[...nextauth].ts
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 
-  if (!idEmp) {
-    alert("Error: ID de empleado no encontrado.");
-    return;
-  }
-
-  setGuardando(true);
-
-  try {
-    const url = notaExistenteId
-      ? `http://localhost:8090/api/notas/${notaExistenteId}` // PUT
-      : "http://localhost:8090/api/notas"; // POST
-
-    const method = notaExistenteId ? "PUT" : "POST";
-
-    const response = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
+const handler = NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: "Credenciales",
+      credentials: {
+        username: { label: "Usuario", type: "text" },
+        password: { label: "Contraseña", type: "password" },
       },
-      body: JSON.stringify({
-        idCurso: idCur,
-        idInscrito: documento,
-        idRegistro: idEmp,
-        Nota: notaSeleccionada,
-        FechaRegistro: new Date(),
-      }),
-    });
+      async authorize(credentials) {
+        // Aquí puedes llamar a tu backend NestJS para validar al usuario
+        const res = await fetch("http://localhost:8090/api/usuarios/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: credentials?.username,
+            password: credentials?.password,
+          }),
+        });
 
-    if (!response.ok) {
-      throw new Error(`Error al ${notaExistenteId ? "actualizar" : "crear"} la nota.`);
-    }
+        const user = await res.json();
 
-    onGuardar(String(notaSeleccionada));
-    onClose();
-  } catch (error) {
-    console.error("Error al guardar nota:", error);
-    alert("Hubo un error al guardar la nota.");
-  } finally {
-    setGuardando(false);
-  }
-};
+        if (res.ok && user) {
+          return user;
+        }
+        return null;
+      },
+    }),
+  ],
+  pages: {
+    signIn: "/login", // puedes personalizar tu página de login
+  },
+  session: {
+    strategy: "jwt",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) token.user = user;
+      return token;
+    },
+    async session({ session, token }) {
+      session.user = token.user;
+      return session;
+    },
+  },
+});
+
+export { handler as GET, handler as POST };
