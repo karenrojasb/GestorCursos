@@ -1,3 +1,29 @@
+  @Put(':id')
+  async updateNote(@Param('id') id:string, @Body() UpdateNotaDto: UpdateNotaDto){
+    const updateNote = await this.notasService.UpdateNote(Number(id), UpdateNotaDto)
+    if (!updateNote){
+      throw new NotFoundException(`The id#${id} not found`);
+    }
+    return updateNote;
+  } 
+
+ async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
+      console.log ('id received:', id);
+      console.log ('data received:', data);
+
+      try {
+        const UpdateNote = await this.prisma.notas.update({
+          where: {id},
+          data,
+        });
+        console.log ('update note:', UpdateNote);
+        return UpdateNote;
+      }
+      catch (error){
+        console.error ('error when updating note:', error);
+        throw new error('the note was not updated');
+      }
+    }
 
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
