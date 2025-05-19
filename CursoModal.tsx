@@ -1,3 +1,12 @@
+const cursosFiltrados = cursosActivos.filter(
+  (curso: Curso) =>
+    curso.FinInscr &&
+    !isNaN(Date.parse(curso.FinInscr)) &&
+    new Date(curso.FinInscr) >= new Date()
+);
+
+
+
 const fetchCursos = async (idEmp: number) => {
   try {
     const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
