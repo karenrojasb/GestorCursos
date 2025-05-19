@@ -4,7 +4,6 @@ async getNotasId(idInscrito: number | string) {
     throw new Error('El ID del inscrito debe ser un número válido');
   }
 
-  // Primero obtenemos las notas de este inscrito
   const notas = await this.prisma.notas.findMany({
     where: {
       idInscrito: idInscritoInt,
@@ -71,23 +70,14 @@ async getNotasId(idInscrito: number | string) {
       const profesorId = curso?.Profesor?.toString() || '0';
       const segundoProId = curso?.SegundoPro?.toString() || '0';
 
-      const [profesor] = await this.prisma.$queryRaw<
-        { nombre: string }[]
-      >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
+      const [profesor] = await this.prisma.$queryRaw<{ nombre: string }[]>`
+        SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
 
-      const [segundoPro] = await this.prisma.$queryRaw<
-        { nombre: string }[]
-      >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
+      const [segundoPro] = await this.prisma.$queryRaw<{ nombre: string }[]>`
+        SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
 
-      // Aquí se hace la consulta a la tabla Listas para obtener la Especificacion
-      const lista = await this.prisma.listas.findFirst({
-        where: {
-          id: nota.Nota, // Suponiendo que Nota se relaciona con Listas.id
-        },
-        select: {
-          Especificacion: true,
-        },
-      });
+      const [lista] = await this.prisma.$queryRaw<{ Especificacion: string }[]>`
+        SELECT Especificacion FROM gescur.Listas WHERE id = ${nota.Nota}`;
 
       return {
         ...nota,
@@ -112,7 +102,7 @@ async getNotasId(idInscrito: number | string) {
         SegundoPro: curso?.SegundoPro || null,
         ProfesorNombre: profesor?.nombre ?? null,
         SegundoProNombre: segundoPro?.nombre ?? null,
-        Especificacion: lista?.Especificacion || null,
+        Especificacion: lista?.Especificacion ?? null,
       };
     }),
   );
