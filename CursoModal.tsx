@@ -1,148 +1,174 @@
-import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+    <form onSubmit={handleSubmit} className="space-y-4 seleccion-personalizada">
+          {Object.keys(curso)
+          .filter((key) => !["LunesIni", "LunesFin", "MartesIni", "MartesFin", "MiercolesIni", "MiercolesFin", "JuevesIni", "JuevesFin", "ViernesIni", "ViernesFin", "SabadoIni", "SabadoFin", "DomingoIni", "DomingoFin"]. includes(key))
+          .map((key) => (
+            <div key={key} className="mb-3">
+              <label className="block font-semibold text-gray-700">
+                {etiquetas[key as keyof typeof etiquetas] || key}</label>
+              { key === "Inicio" || key === "Fin" ? (
+                <input 
+                type="date"
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+                />
+              ) : key === "Periodo" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesPeriodos.map((opcion, index) => (
+                    <option key={index} value={opcion.periodo}>
+                      {opcion.periodo}
+                    </option>
+                  ))}
+                </select>
+           
+          ) : key === "Profesor" || key === "SegundoPro" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg   focus:ring-2 focus:ring-[#990000]">
+                  <option value="" >Selecciona una opción</option>
+                  {profesores.map((profesor) => (
+                    <option key={profesor.id_emp} value={profesor.id_emp}>
+                      {profesor.nombre}
+                    </option>
+                  ))}
+                </select>
 
-interface CalificarModalProps {
-  nombre: string;
-  documento: string;
-  idCur: number;
+              ) : key === "Unidad" ? (
+                <select
+                name={key}
+                value={curso[key as keyof typeof curso]}
+                onChange={handleChange}
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {unidad.map((unidad) => (
+                    <option key={unidad.codigo} value={unidad.codigo}>
+                      {unidad.nombre}
+                    </option>
+                  ))}
+                </select>
 
-  onClose: () => void;
-  onGuardar: (nota: string) => void;
-}
 
-interface OpcionLista {
-  id: number;
-  Especificacion: string;
+              ) : key === "Publico" ? (
+                <select name="Publico" 
+                value={curso.Publico} 
+                onChange={handleChange} 
+                className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesPublico.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Linea" ? (
+                <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesLinea.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "Modalidad" ? (
+                <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesModalidad.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
+                 ) : key === "IdTipoCurso" ? (
+                  <select name="IdTipoCurso" value={curso.IdTipoCurso} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                    <option value="">Selecciona una opción</option>
+                    {opcionesTipoCurso.map((opcion) => (
+                      <option key={opcion.id} value={opcion.id}>
+                        {opcion.Especificacion}
+                      </option>
+                    ))}
+                    
+                    </select>  
+              ) : key === "Estado" ? (
+                <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                  <option value="">Selecciona una opción</option>
+                  {opcionesEstado.map((opcion) => (
+                    <option key={opcion.id} value={opcion.id}>
+                      {opcion.Especificacion}
+                    </option>
+                  ))}
+                </select>
 
-}
-
-export default function CalificarModal({
-  nombre,
-  documento,
-  idCur,
-  onClose,
-  onGuardar,
-}: CalificarModalProps) {
-  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
-  const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
-  const [guardando, setGuardando] = useState(false);
-
-  useEffect(() => {
-    const fetchDatos = async () => {
-      try {
-        // Obtener lista de notas
-        const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-        if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
-        const dataOpciones = await respOpciones.json();
-        setOpciones(dataOpciones);
-  
-        // Obtener nota actual del inscrito
-        const respNota = await fetch(`http://localhost:8090/api/notas`);
-        if (respNota.ok) {
-          const dataNota = await respNota.json();
-          if (dataNota?.Nota) {
-            setNotaSeleccionada(dataNota.Nota); // Mostrar la nota existente
-          }
-        }
-      } catch (error) {
-        console.error("Error cargando datos:", error);
-      }
-    };
-  
-    fetchDatos();
-  }, [idCur, documento]);
-  
-  
-
-  const handleGuardar = async () => {
-    if (notaSeleccionada === null) {
-      alert("Por favor selecciona una nota");
-      return;
-    }
-
-    setGuardando(true);
-
-    try {
-      const response = await fetch("http://localhost:8090/api/Notas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          idCur,
-          idInscrito: documento,
-          Nota: notaSeleccionada,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Error al guardar la nota");
-
-      onGuardar(String(notaSeleccionada));
-      onClose();
-    } catch (error) {
-      console.error("Error al guardar nota:", error);
-      alert("Hubo un error al guardar la nota.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-md w-[400px] relative">
-      <button
-            onClick={onClose}
-            className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-          >
-            <XMarkIcon className="h-6 w-6" />
+        
+             
+                    ) : key === "InicioInscr" || key === "FinInscr" ? (
+                      <input
+                        type="date"
+                        name={key}
+                        value={curso[key as keyof typeof curso]}
+                        onChange={handleChange}
+                        className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+                      />
+                      
+                  
+              ) : (
+                <input 
+                  type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad",  "IdTipoCurso", "SegundoPro"].includes(key) ? "number" : "text"} 
+                  name={key}
+                  value={curso[key as keyof typeof curso]}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+                />
+              )} 
+            </div>
+          ))}
+          <h3 className="text-lg font-semibold mt-4">Horarios</h3>
+<table className="w-full border-collapse border border-gray-300 text-center">
+  <thead>
+    <tr className="bg-gray-200">
+      <th className="border border-gray-300 px-2 py-1">Día</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
+    </tr>
+  </thead>
+  <tbody>
+    {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+      <tr key={dia}>
+        <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Ini`}
+            value={curso[`${dia}Ini` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Fin`}
+            value={curso[`${dia}Fin` as keyof typeof curso] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+      </tr>
+      
+    ))}
+  </tbody>
+</table>
+          
+          
+          {/* BOTÓN GUARDAR */}
+          <button type="submit" className="mt-4 w-full bg-[#990000] text-white py-2 rounded-lg hover:scale-105 transition">
+            Guardar
           </button>
-        <h2 className="text-2xl font-semibold text-[#990000] mb-4 text-center">Calificar</h2>
-
-
-        <p className="text-center mb-2">
-          <strong>Id Curso:</strong> {idCur}
-        </p>
-        <p className="text-center mb-2">
-          <strong>Nombre:</strong> {nombre}
-        </p>
-        <p className="text-center mb-4">
-          <strong>Documento:</strong> {documento}
-        </p>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Selecciona una calificación:
-          </label>
-          <select
-  className="w-full border rounded px-3 py-2"
-  value={notaSeleccionada ?? ""}
-  onChange={(e) => setNotaSeleccionada(Number(e.target.value))}
->
-  <option value="">-- Selecciona --</option>
-  {opciones.map((op) => (
-    <option key={op.id} value={op.id}>
-      {op.Especificacion}
-    </option>
-  ))}
-</select>
-        </div>
-
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={handleGuardar}
-            disabled={guardando}
-            className="bg-[#990000] text-white px-4 py-2 rounded hover:bg-red-700 transition hover:scale-110 active:scale-95 "
-          >
-            {guardando ? "Guardando..." : "Guardar"}
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition hover:scale-110 active:scale-95 "
-          >
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+        </form>
