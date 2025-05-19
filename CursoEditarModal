@@ -4,7 +4,13 @@ async getNotasId(idInscrito: number | string) {
     throw new Error('El ID del inscrito debe ser un número válido');
   }
 
- 
+  // Primero obtenemos las notas de este inscrito
+  const notas = await this.prisma.notas.findMany({
+    where: {
+      idInscrito: idInscritoInt,
+    },
+  });
+
   const notasConCurso = await Promise.all(
     notas.map(async (nota) => {
       if (!nota.idCurso) {
@@ -31,7 +37,7 @@ async getNotasId(idInscrito: number | string) {
           SegundoPro: null,
           ProfesorNombre: null,
           SegundoProNombre: null,
-          
+          Especificacion: null,
         };
       }
 
@@ -59,7 +65,6 @@ async getNotasId(idInscrito: number | string) {
           Profesor: true,
           SegundoPro: true,
           Proexterno: true,
-          
         },
       });
 
@@ -73,6 +78,16 @@ async getNotasId(idInscrito: number | string) {
       const [segundoPro] = await this.prisma.$queryRaw<
         { nombre: string }[]
       >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
+
+      // Aquí se hace la consulta a la tabla Listas para obtener la Especificacion
+      const lista = await this.prisma.listas.findFirst({
+        where: {
+          id: nota.Nota, // Suponiendo que Nota se relaciona con Listas.id
+        },
+        select: {
+          Especificacion: true,
+        },
+      });
 
       return {
         ...nota,
@@ -97,7 +112,7 @@ async getNotasId(idInscrito: number | string) {
         SegundoPro: curso?.SegundoPro || null,
         ProfesorNombre: profesor?.nombre ?? null,
         SegundoProNombre: segundoPro?.nombre ?? null,
-        Especificacion: nota.Listas?.Especificacion || null,
+        Especificacion: lista?.Especificacion || null,
       };
     }),
   );
