@@ -1,4 +1,4 @@
-async getAprovado(idInscrito: number | string) {
+async getNotas(idInscrito: number | string) {
   const idInscritoInt = Number(idInscrito);
   if (isNaN(idInscritoInt)) {
     throw new Error('El ID del inscrito debe ser un número válido');
@@ -7,7 +7,6 @@ async getAprovado(idInscrito: number | string) {
   const notas = await this.prisma.notas.findMany({
     where: {
       idInscrito: idInscritoInt,
-      Nota: 33,
     },
     include: {
       Listas: {
@@ -49,7 +48,6 @@ async getAprovado(idInscrito: number | string) {
 
       const curso = await this.prisma.cursos.findFirst({
         where: {
-          
           id: nota.idCurso,
         },
         select: {
