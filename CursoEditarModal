@@ -279,7 +279,26 @@ export default function CursoModal({ onClose, onSave }: CursoModalProps) {
                     </option>
                   ))}
                   
-                  </select>                           
+                  </select>  
+                     ) : key === "InicioInscr" ? (
+                      <select name="InicioInscr" value={curso.InicioInscr} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                        <option value="">Selecciona una opción</option>
+                        {opcionesEstado.map((opcion) => (
+                          <option key={opcion.id} value={opcion.id}>
+                            {opcion.Especificacion}
+                          </option>
+                        ))}
+                      </select>   
+                      
+                    ) : key === "FinInscr" ? (
+                      <select name="FinInscr" value={curso.FinInscr} onChange={handleChange} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000]">
+                        <option value="">Selecciona una opción</option>
+                        {opcionesEstado.map((opcion) => (
+                          <option key={opcion.id} value={opcion.id}>
+                            {opcion.Especificacion}
+                          </option>
+                        ))}
+                      </select>
               ) : (
                 <input 
                   type={["Valor", "Horas", "CupoMax", "Estado", "Modalidad",  "IdTipoCurso", "SegundoPro"].includes(key) ? "number" : "text"} 
