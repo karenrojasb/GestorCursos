@@ -1,65 +1,69 @@
- {
-        "id": 394,
-        "idCurso": 455,
-        "idInscrito": 1032402874,
-        "Nota": 35,
-        "idRegistro": 1000034366,
-        "FechaRegistro": "2025-05-19T00:00:00.000Z",
-        "Listas": {
-            "Especificacion": "Abandonó"
-        },
-        "NombreCurso": "Todos Prub",
-        "Lugar": "bloque",
-        "Inicio": "2025-05-01",
-        "Fin": "2025-05-10",
-        "LunesIni": "20:19",
-        "LunesFin": "22:19",
-        "MartesIni": null,
-        "MartesFin": null,
-        "MiercolesIni": null,
-        "MiercolesFin": null,
-        "JuevesIni": null,
-        "JuevesFin": null,
-        "ViernesIni": null,
-        "ViernesFin": null,
-        "SabadoIni": null,
-        "SabadoFin": null,
-        "ProExterno": null,
-        "Profesor": 1007781939,
-        "SegundoPro": 1000034366,
-        "ProfesorNombre": "VARGAS RAMIREZ ZULY VALENTINA",
-        "SegundoProNombre": "RODRIGUEZ REY WENDY SOFIA"
-    },
-    {
-        "id": 395,
-        "idCurso": 461,
-        "idInscrito": 1032402874,
-        "Nota": 32,
-        "idRegistro": 1000034366,
-        "FechaRegistro": "2025-05-19T00:00:00.000Z",
-        "Listas": {
-            "Especificacion": "No Aprobado"
-        },
-        "NombreCurso": "EJEMPLO 3 TODOS (segundo pro)",
-        "Lugar": "Microsoft Teams",
-        "Inicio": "2025-05-10",
-        "Fin": "2025-05-10",
-        "LunesIni": "21:20",
-        "LunesFin": "02:20",
-        "MartesIni": null,
-        "MartesFin": null,
-        "MiercolesIni": null,
-        "MiercolesFin": null,
-        "JuevesIni": null,
-        "JuevesFin": null,
-        "ViernesIni": null,
-        "ViernesFin": null,
-        "SabadoIni": null,
-        "SabadoFin": null,
-        "ProExterno": null,
-        "Profesor": 1000185025,
-        "SegundoPro": 1000034366,
-        "ProfesorNombre": "OSORIO CANTOR SARA CAMILA",
-        "SegundoProNombre": "RODRIGUEZ REY WENDY SOFIA"
-    }
-]
+const notas = await this.prisma.notas.findMany({
+  where: {
+    idInscrito: idInscritoInt,
+  },
+  include: {
+    Listas: true, // Se incluye para acceder a la Especificacion
+  },
+});
+
+const notasConCurso = await Promise.all(
+  notas.map(async (nota) => {
+    const curso = await this.prisma.cursos.findFirst({
+      where: { id: nota.idCurso },
+      select: {
+        NombreCurso: true,
+        Lugar: true,
+        Inicio: true,
+        Fin: true,
+        LunesIni: true,
+        LunesFin: true,
+        MartesIni: true,
+        MartesFin: true,
+        MiercolesIni: true,
+        MiercolesFin: true,
+        JuevesIni: true,
+        JuevesFin: true,
+        ViernesIni: true,
+        ViernesFin: true,
+        SabadoIni: true,
+        SabadoFin: true,
+        Profesor: true,
+        SegundoPro: true,
+        Proexterno: true,
+      },
+    });
+
+    const [profesor] = await this.prisma.$queryRaw<{ nombre: string }[]>`
+      SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${curso?.Profesor} AS VARCHAR)`;
+
+    const [segundoPro] = await this.prisma.$queryRaw<{ nombre: string }[]>`
+      SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${curso?.SegundoPro} AS VARCHAR)`;
+
+    return {
+      ...nota,
+      NombreCurso: curso?.NombreCurso ?? null,
+      Lugar: curso?.Lugar ?? null,
+      Inicio: curso?.Inicio ?? null,
+      Fin: curso?.Fin ?? null,
+      LunesIni: curso?.LunesIni ?? null,
+      LunesFin: curso?.LunesFin ?? null,
+      MartesIni: curso?.MartesIni ?? null,
+      MartesFin: curso?.MartesFin ?? null,
+      MiercolesIni: curso?.MiercolesIni ?? null,
+      MiercolesFin: curso?.MiercolesFin ?? null,
+      JuevesIni: curso?.JuevesIni ?? null,
+      JuevesFin: curso?.JuevesFin ?? null,
+      ViernesIni: curso?.ViernesIni ?? null,
+      ViernesFin: curso?.ViernesFin ?? null,
+      SabadoIni: curso?.SabadoIni ?? null,
+      SabadoFin: curso?.SabadoFin ?? null,
+      ProExterno: curso?.Proexterno ?? null,
+      Profesor: curso?.Profesor ?? null,
+      SegundoPro: curso?.SegundoPro ?? null,
+      ProfesorNombre: profesor?.nombre ?? null,
+      SegundoProNombre: segundoPro?.nombre ?? null,
+      Especificacion: nota.Listas?.Especificacion ?? null, // 💡 Aquí está aplanada
+    };
+  })
+);
