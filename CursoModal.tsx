@@ -1,51 +1,138 @@
-        <form onSubmit={handleSubmit} className="space-y-4 seleccion-personalizada">
+    <form onSubmit={handleSubmit} className="space-y-4">
+         
+          <label className="block font-semibold text-gray-700">
+            Nombre:
+            <input
+  type="text"
+  name="NombreCurso"
+  value={formData.NombreCurso || ""}
+  onChange={handleChange}
+  required
+   className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+/>
+          </label>
 
-{/* Nombre del curso */}
-<div>
-  <label>Nombre Curso</label>
-  <input type="text" name="NombreCurso" value={curso.NombreCurso} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-</div>
+          <label className="block font-semibold text-gray-700">
+            Valor:
+            <input
+  type="number"
+  name="Valor"
+  value={formData.Valor ?? 0}
+  onChange={handleChange}
+  required
+   className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+/>
+          </label>
 
-{/* Valor | Público | Periodo */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-  <div>
-    <label>Valor</label>
-    <input type="number" name="Valor" value={curso.Valor} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
-  <div>
-    <label>Público</label>
-    <select name="Publico" value={curso.Publico} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {opcionesPublico.map((opcion) => (
-        <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
-      ))}
-    </select>
-  </div>
-  <div>
-    <label>Periodo</label>
-    <select name="Periodo" value={curso.Periodo} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {opcionesPeriodos.map((opcion, idx) => (
-        <option key={idx} value={opcion.periodo}>{opcion.periodo}</option>
-      ))}
-    </select>
-  </div>
-</div>
+          <label className="block font-semibold text-gray-700">
+  Público:
+  <select
+    name="Publico"
+    value={formData.Publico}
+     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Publico: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesPublico.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
 
-{/* Inicio curso | Fin curso */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label>Inicio curso</label>
-    <input type="date" name="Inicio" value={curso.Inicio} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
-  <div>
-    <label>Fin curso</label>
-    <input type="date" name="Fin" value={curso.Fin} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
-</div>
+<label className="block font-semibold text-gray-700">
+  Periodo:
+  <select
+    name="Periodo"
+    value={formData.Periodo}
+     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Periodo: String(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesPeriodos.map((opcion, index) => (
+      <option key={index} value={opcion.periodo}>
+        {opcion.periodo}
+      </option>
+    ))}
+  </select>
+</label>
 
-{/* Horario */}
-<div>
+         
+<label className="block font-semibold text-gray-700">
+  Fecha de inicio Curso:
+  <input
+    type="date"
+    name="Inicio"
+    value={formData.Inicio ? formData.Inicio.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
+
+<label className="block font-semibold text-gray-700">
+  Fecha fin Curso:
+  <input
+    type="date"
+    name="Fin"
+    value={formData.Fin ? formData.Fin.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
+
+
+          <label className="block font-semibold text-gray-700">
+            Horas:
+            <input
+  type="number"
+  name="Horas"
+  value={formData.Horas ?? 0}
+  onChange={handleChange}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  required
+/>
+          </label >
+
+          <label className="block font-semibold text-gray-700">
+  Fecha de Inicio Inscripciones:
+  <input
+    type="date"
+    name="InicioInscr"
+    value={formData.InicioInscr ? formData.InicioInscr.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
+
+<label className="block font-semibold text-gray-700">
+  Fecha de Cierre Inscripciones:
+  <input
+    type="date"
+    name="FinInscr"
+    value={formData.FinInscr ? formData.FinInscr.split("T")[0] : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={handleChange}
+    required
+  />
+</label>
+
+          <h3 className="text-lg font-semibold mt-4">Horarios</h3>
 <table className="w-full border-collapse border border-gray-300 text-center">
   <thead>
     <tr className="bg-gray-200">
@@ -62,7 +149,7 @@
           <input
             type="time"
             name={`${dia}Ini`}
-            value={curso[`${dia}Ini` as keyof typeof curso] || ""}
+            value={formData[`${dia}Ini` as keyof typeof formData] || ""}
             onChange={handleChange}
             className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
           />
@@ -71,139 +158,251 @@
           <input
             type="time"
             name={`${dia}Fin`}
-            value={curso[`${dia}Fin` as keyof typeof curso] || ""}
+            value={formData[`${dia}Fin` as keyof typeof formData] || ""}
             onChange={handleChange}
             className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
           />
         </td>
       </tr>
-      
     ))}
   </tbody>
 </table>
-</div>
 
-{/* Horas | Cupo máximo */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label>Horas</label>
-    <input type="number" name="Horas" value={curso.Horas} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
-  <div>
-    <label>Cupo máximo</label>
-    <input type="number" name="CupoMax" value={curso.CupoMax} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
-</div>
 
-{/* Lugar */}
-<div>
-  <label>Lugar</label>
-  <input type="text" name="Lugar" value={curso.Lugar} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-</div>
+          <label  className="block font-semibold text-gray-700">
+            Cupo Máximo:
+            <input
+  type="number"
+  name="CupoMax"
+  value={formData.CupoMax ?? 0}
+  onChange={handleChange}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  required
+/>
+          </label>
 
-{/* Línea | Estado */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label>Línea</label>
-    <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {opcionesLinea.map((opcion) => (
-        <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
+          <label  className="block font-semibold text-gray-700">
+            Lugar:
+            <input
+  type="text"
+  name="Lugar"
+  value={formData.Lugar || ""}
+  onChange={handleChange}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  required
+/>
+          </label>
+
+          <label  className="block font-semibold text-gray-700">
+  Línea
+  <select
+    name="Linea"
+    value={formData.Linea}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Linea: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesLinea.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
+
+<label  className="block font-semibold text-gray-700">
+  Estado:
+  <select
+    name="Estado"
+    value={formData.Estado}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Estado: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesEstado.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
+
+<label  className="block font-semibold text-gray-700">
+  Modalidad:
+  <select
+    name="Modalidad"
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    value={formData.Modalidad ?? ""}
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Modalidad: Number(e.target.value),
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesModalidad.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
+
+<label className="block font-semibold text-gray-700">
+  Unidad:
+  <select
+    name="Unidad"
+    value={formData.Unidad}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Unidad: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {unidad.map((unidad) => (
+                    <option key={unidad.codigo} value={unidad.codigo}>
+                      {unidad.nombre}
+                    </option>
+                  ))}
+  </select>
+</label>  
+
+
+<label className="block font-semibold text-gray-700">
+ Profesor:
+  <select
+    name="Profesor"
+    value={formData.Profesor}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        Profesor: Number(e.target.value),
+      }))
+    }
+  >
+    <option value={formData.Profesor}>
+      {formData.Profesor
+        ? profesores.find((p) => Number(p.id_emp) === Number(formData.Profesor))?.nombre || "Seleccione una opción"
+        : "Seleccione una opción"}
+    </option>
+    
+    {profesores
+      .filter((p) => Number(p.id_emp) !== Number(formData.Profesor)) // evitar duplicado
+      .map((profesor) => (
+        <option key={profesor.id_emp} value={profesor.id_emp}>
+          {profesor.nombre}
+        </option>
       ))}
-    </select>
-  </div>
-  <div>
-    <label>Estado</label>
-    <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {opcionesEstado.map((opcion) => (
-        <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
+  </select>
+</label>
+           
+       
+<label className="block font-semibold text-gray-700">
+  Segundo Profesor:
+  <select
+    name="SegundoPro"
+    value={formData.SegundoPro !== undefined ? formData.SegundoPro : ""}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        SegundoPro: Number(e.target.value),
+      }))
+    }
+  >
+    <option value={formData.SegundoPro}>
+      {formData.SegundoPro
+        ? profesores.find((p) => Number(p.id_emp) === Number(formData.SegundoPro))?.nombre || "Seleccione una opción"
+        : "Seleccione una opción"}
+    </option>
+    
+    {profesores
+      .filter((p) => Number(p.id_emp) !== Number(formData.SegundoPro)) // evitar duplicado
+      .map((profesor) => (
+        <option key={profesor.id_emp} value={profesor.id_emp}>
+          {profesor.nombre}
+        </option>
       ))}
-    </select>
-  </div>
-</div>
+  </select>
+</label>
 
-{/* Modalidad | Unidad */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label>Modalidad</label>
-    <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {opcionesModalidad.map((opcion) => (
-        <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
-      ))}
-    </select>
-  </div>
-  <div>
-    <label>Unidad</label>
-    <select name="Unidad" value={curso.Unidad} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {unidad.map((u) => (
-        <option key={u.codigo} value={u.codigo}>{u.nombre}</option>
-      ))}
-    </select>
-  </div>
-</div>
 
-{/* Profesor | Segundo Profesor */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label>Profesor</label>
-    <select name="Profesor" value={curso.Profesor} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {profesores.map((p) => (
-        <option key={p.id_emp} value={p.id_emp}>{p.nombre}</option>
-      ))}
-    </select>
-  </div>
-  <div>
-    <label>Segundo Profesor</label>
-    <select name="SegundoPro" value={curso.SegundoPro} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {profesores.map((p) => (
-        <option key={p.id_emp} value={p.id_emp}>{p.nombre}</option>
-      ))}
-    </select>
-  </div>
-</div>
+          <label className="block font-semibold text-gray-700">
+            Profesor Externo:
+            <input
+  type="text"
+  name="Proexterno"
+  value={formData.Proexterno ?? ""}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  onChange={handleChange}
+  
+/>
+          </label>   
 
-{/* Profesor Externo */}
-<div>
-  <label>Profesor Externo</label>
-  <input type="text" name="Proexterno" value={curso.Proexterno} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-</div>
+          <label className="block font-semibold text-gray-700">
+  Tipo de Curso:
+  <select
+    name="IdTipoCurso"
+    value={formData.IdTipoCurso}
+    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        IdTipoCurso: Number(e.target.value), 
+      }))
+    }
+    required
+  >
+    <option value="">Seleccione una opción</option>
+    {opcionesTipoCurso.map((opcion) => (
+      <option key={opcion.id} value={opcion.id}>
+        {opcion.Especificacion}
+      </option>
+    ))}
+  </select>
+</label>
 
-{/* Inicio Inscripciones | Fin Inscripciones */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label>Inicio Inscripciones</label>
-    <input type="date" name="InicioInscr" value={curso.InicioInscr} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
-  <div>
-    <label>Fin Inscripciones</label>
-    <input type="date" name="FinInscr" value={curso.FinInscr} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
-</div>
+          <label className="block font-semibold text-gray-700">
+            Descripción:
+            <input
+  type="text"
+  name="Descripcion"
+  value={formData.Descripcion ?? 0}
+  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+  onChange={handleChange}
+  required
+/>
+          </label>  
 
-{/* Tipo de curso | Descripción */}
-<div className="grid grid-cols-1  gap-4">
-  <div>
-    <label>Tipo de curso</label>
-    <select name="IdTipoCurso" value={curso.IdTipoCurso} onChange={handleChange} className="w-full border p-2 rounded-lg">
-      <option value="">Selecciona una opción</option>
-      {opcionesTipoCurso.map((opcion) => (
-        <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
-      ))}
-    </select>
-  </div>
-  <div>
-    <label>Descripción</label>
-    <input type="text" name="Descripcion" value={curso.Descripcion} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
-</div>
-
-{/* Botón Guardar */}
-<div className="text-center mt-6">
-  <button type="submit" className="bg-[#990000] text-white px-6 py-2 rounded-lg hover:bg-red-800 transition-colors">Guardar Curso</button>
-</div>
-</form>
+          <div className="flex modal-actions justify-center gap-4 ">
+            <button type="submit"
+             className="mt-6 h-14 w-64  bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg hover:scale-105 transition">
+              Actualizar
+              </button>
+            <button 
+            type="button" 
+            onClick={onClose}
+            className="mt-6 h-14 w-64 bg-[#990000] hover:bg-red-700 text-white py-2 rounded-lg hover:scale-105 transition">
+              Cancelar
+            </button>
+          </div>
+        </form>
