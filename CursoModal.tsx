@@ -1,18 +1,71 @@
-[Nest] 19920  - 20/05/2025, 4:25:43 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
-Invalid `prisma.$queryRaw()` invocation:
+[async getCourses() {
+  return this.prisma.$queryRawUnsafe(`
+    SELECT 
+      c.id,
+      c.NombreCurso,
+      c.Valor,
+      lp.Especificacion AS Publico,
+      c.Periodo,
+      c.Inicio,
+      c.Fin,
+      c.InicioInscr,
+      c.FinInscr,
+      c.Horas,
+      c.CupoMax,
+      c.Lugar,
+      c.LunesIni,
+      c.LunesFin,
+      c.MartesIni,
+      c.MartesFin,
+      c.MiercolesIni,
+      c.MiercolesFin,
+      c.JuevesIni,
+      c.JuevesFin,
+      c.ViernesIni,
+      c.ViernesFin,
+      c.SabadoIni,
+      c.SabadoFin,
+      c.DomingoIni,
+      c.DomingoFin,
+      c.Linea,
+      l.Especificacion AS Linea,
+      c.Estado,
+      est.Especificacion AS Estado,
+      c.Modalidad,
+      m.Especificacion AS Modalidad,
+      u.nombre AS Unidad,
+      c.Profesor,
+      c.SegundoPro,
+      sp.nombre AS SegundoPro,
+      c.Proexterno,
+      c.Descripcion,
+      c.IdTipoCurso,
+      tc.Especificacion AS IdTipoCurso,
+      e.nombre AS NombreProfesor,
 
+      -- Subconsulta: traer inscritos en formato JSON
+      (
+        SELECT 
+          n.id,
+          n.IdInscrito,
+          n.Nota,
+          n.idRegistro,
+          n.FechaRegistro,
+          i.fecreg
+        FROM gescur.Notas n
+        LEFT JOIN gescur.Inscripciones i ON n.IdInscrito = i.docInscr
+        WHERE n.IdCurso = c.id
+        FOR JSON PATH
+      ) AS inscritos
 
-Raw query failed. Code: `195`. Message: `'json_agg' is not a recognized built-in function name.`     
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.8.2',
-  meta: {
-    code: '195',
-    message: "'json_agg' is not a recognized built-in function name."
-  }
+    FROM gescur.cursos c
+    LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+    LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+    LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+    LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+    LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
+    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp
+    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+    LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+  `);
 }
