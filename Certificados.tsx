@@ -1,195 +1,131 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { CheckCircleIcon, XCircleIcon, XMarkIcon, MagnifyingGlassIcon, UserIcon } from "@heroicons/react/24/solid";
-
-
-interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  LunesIni: string;
-  LunesFin: string;
-  MartesIni: string;
-  MartesFin: string;
-  MiercolesIni: string;
-  MiercolesFin: string;
-  JuevesIni: string;
-  JuevesFin: string;
-  ViernesIni: string;
-  ViernesFin: string;
-  SabadoIni: string;
-  SabadoFin: string;
-  DomingoIni: string;
-  DomingoFin: string;
-  CupoMax: number;
-  Linea: number;
-  Lugar: string;
-  Modalidad: number;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
-  NombreProfesor?: string;
-  InicioInscr: string;
-  FinInscr: string;
-
-}
+import React, { useState, useEffect } from "react";
+import {
+  XMarkIcon,
+  MagnifyingGlassIcon,
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusCircleIcon,
+  DocumentPlusIcon,
+  PencilIcon,
+} from "@heroicons/react/24/solid";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import CalificarModalProps from "./calificarmodal";
+import { MagnifyingGlassPlusIcon, PlusIcon } from "@heroicons/react/20/solid";
 
 interface Inscripcion {
+  NombreCurso: string;
   id: number;
   idCur: number;
   docInscr: number;
-  est: boolean;
+  nombre: string;
+  Est: string;
   fecreg: string;
+  Nota: number;
+  Especificacion: string;
+  Inicio: string;
+  Fin: string;
+  Profesor: number;
+  idNotas: number;
 }
 
+interface InscripcionesModalProps {
+  onClose: () => void;
+}
 
-
-export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [inscribiendo, setInscribiendo] = useState(false);
-  const [idEmp, setIdEmp] = useState<number | null>(null);
+const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
-  const [mostrarAnimacion, setMostrarAnimacion] = useState(false);
-  const [mensajeAnimacion, setMensajeAnimacion] = useState("");
+  const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
+  const [busqueda, setBusqueda] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [esInscripcion, setEsInscripcion] = useState(true);
+  const [expandedCursos, setExpandedCursos] = useState<{ [key: number]: boolean }>({});
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [modalCalificarAbierto, setModalCalificarAbierto] = useState(false);
+  const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:number, idCur: number, Especificacion: string, id: number, idNotas: number} | null>(null);
 
   useEffect(() => {
-    const storedIdEmp = localStorage.getItem("id_emp");
-    if (storedIdEmp) {
-      setIdEmp(Number(storedIdEmp));
-      fetchCursos(Number(storedIdEmp)); 
-    }
-  }, []);
-
-  const fetchCursos = async (idEmp: number) => {
-    try {
-      const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      
-      const data = await response.json();
-      
-      
-      const cursosActivos = Array.isArray(data) ? data : data.cursos || [];
-  
-      // FILTRAR CURSOS ACTIVOS
-      const hoy = new Date();
-      const cursosFiltrados = cursosActivos.filter(
-        (curso: Curso) => !curso.Fin || new Date(curso.Fin) >= hoy
-      );
-  
-      setCursos(cursosFiltrados);
-      setCursosFiltrados(cursosFiltrados);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Error al obtener los cursos:", error);
-      setIsLoading(false);
-    }
-  };
-
-  const formatearHorario = (curso: Curso) => {
-    const dias = [
-      { dia: "Lunes", ini: curso.LunesIni, fin: curso.LunesFin },
-      { dia: "Martes", ini: curso.MartesIni, fin: curso.MartesFin },
-      { dia: "Miércoles", ini: curso.MiercolesIni, fin: curso.MiercolesFin },
-      { dia: "Jueves", ini: curso.JuevesIni, fin: curso.JuevesFin },
-      { dia: "Viernes", ini: curso.ViernesIni, fin: curso.ViernesFin },
-      { dia: "Sábado", ini: curso.SabadoIni, fin: curso.SabadoFin },
-      { dia: "Domingo", ini: curso.DomingoIni, fin: curso.DomingoFin },
-    ];
-  
-    return dias
-      .filter(d => d.ini && d.fin)
-     ; 
-  };
-
-  useEffect(() => {
-    if (!idEmp) return;
     const fetchInscripciones = async () => {
       try {
-        const response = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
-        if (!response.ok) throw new Error("Error al obtener inscripciones");
-        const data = await response.json();
-        setInscripciones(data.filter((ins: Inscripcion) => ins.est === true));
+        const idProfesor = localStorage.getItem("id_emp");
+        if (!idProfesor) return;
+
+        const response = await fetch(`http://localhost:8090/api/inscripciones/cursos/${idProfesor}`);
+        const data: Inscripcion[] = await response.json();
+
+        setInscripciones(data);
+        setInscripcionesFiltradas(data);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error al obtener inscripciones:", error);
+        setIsLoading(false);
       }
     };
-    fetchInscripciones();
-  }, [idEmp]);
 
+    fetchInscripciones();
+  }, []);
 
   const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const texto = e.target.value.toLowerCase();
     setBusqueda(texto);
-    setCursosFiltrados(cursos.filter((curso) => curso.NombreCurso.toLowerCase().includes(texto)));
+
+    const filtrados = inscripciones.filter((inscripcion) => {
+      const cursoNombre = inscripcion.NombreCurso || "";
+      const fechaRegistro = new Date(inscripcion.fecreg).toLocaleDateString();
+      const idCurso = String(inscripcion.idCur );
+      const nombreInscrito = inscripcion.nombre.toLowerCase();
+      const docInscrito = inscripcion.docInscr;
+
+      return (
+        idCurso.includes(texto) ||
+        cursoNombre.toLowerCase().includes(texto) ||
+        fechaRegistro.includes(texto) ||
+        nombreInscrito.includes(texto) ||
+        docInscrito
+      );
+    });
+
+    setInscripcionesFiltradas(filtrados);
   };
 
+  const groupedInscripciones = inscripcionesFiltradas.reduce((acc, inscripcion) => {
+    const cursoId = inscripcion.idCur ;
+    if (!acc[cursoId]) acc[cursoId] = [];
+    acc[cursoId].push(inscripcion);
+    return acc;
+  }, {} as { [key: number]: Inscripcion[] });
 
+  const toggleCurso = (cursoId: number) => {
+    setExpandedCursos((prev) => ({
+      ...prev,
+      [cursoId]: !prev[cursoId],
+    }));
+  };
 
- 
-const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripcionId?: number) => {
-  setInscribiendo(true);
-  if (!idEmp) return;
+  const handleDownloadExcelByCurso = (cursoId: number) => {
+    const datosCurso = inscripcionesFiltradas.filter(
+      (inscripcion) => inscripcion.idCur === cursoId
+    );
 
-  try {
-    if (estaInscrito && inscripcionId) {
-      // Cancelar inscripción
-      await fetch(`http://localhost:8090/api/inscripciones/${inscripcionId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ est: false }),
-      });
-      setEsInscripcion(false);
-      setMensajeAnimacion("Se ha desinscrito satisfactoriamente");
-    } else {
-      // Nueva inscripción (aquí va el código mejorado)
-      const res = await fetch("http://localhost:8090/api/inscripciones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idCur,
-          docInscr: idEmp,
-          est: true,
-          fecreg: new Date().toISOString().split("T")[0],
-        }),
-      });
+    const data = datosCurso.map((inscripcion) => ({
+      "ID Curso": inscripcion.idCur,
+      "Nombre del Curso": inscripcion.NombreCurso || "Desconocido",
+      Documento: inscripcion.docInscr,
+      Nombre: inscripcion.nombre,
+      Estado: inscripcion.Est,
+      "Fecha Registro": new Date(inscripcion.fecreg).toLocaleDateString(),
+    }));
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Error al inscribirse: ${res.status} - ${errorText}`);
-      }
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inscripciones");
 
-      setEsInscripcion(true);
-      setMensajeAnimacion("Se ha inscrito satisfactoriamente");
-    }
-
-    const updatedResponse = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
-    const updatedData = await updatedResponse.json();
-    setInscripciones(updatedData.filter((ins: Inscripcion) => ins.est === true));
-
-    setMostrarAnimacion(true);
-    setTimeout(() => setMostrarAnimacion(false), 2500);
-  } catch (error) {
-    console.error("No se pudo completar la acción:", error);
-    alert(`Error al inscribirse: ${error}`);
-  }
-
-  setInscribiendo(false);
-};
-
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, `Inscripciones_Curso_${cursoId}.xlsx`);
+  };
 
   const handleMouseEnter = () => {
     setIsSearchActive(true);
@@ -201,145 +137,263 @@ const handleInscripcion = async (idCur: number, estaInscrito: boolean, inscripci
     }
   };
 
+  const abrirModalCalificar = async (nombre: string, doc: number, idCur: number, Especificacion: string, id: number, idNotas: number) => {
+    setInscritoSeleccionado({ nombre, doc, idCur, Especificacion, id, idNotas });
+    setModalCalificarAbierto(true);
+  
+    try {
+      const response = await fetch(`http://localhost:8090/api/Notas/${doc}`);
+      if (!response.ok) throw new Error("Error al obtener notas");
+  
+      // Fusiona las nuevas notas con las anteriores, reemplazando las del mismo idInscrito
+     
+    } catch (error) {
+      console.error("Error al obtener notas del inscrito:", error);
+    }
+  };
+  
 
+  const guardarNota = async (notaTexto: string) => {
+    if (!inscritoSeleccionado) return;
+  
+    const idCur = inscritoSeleccionado.idCur;
+    const idInscrito = Number(inscritoSeleccionado.doc);
+    const Nota = Number(notaTexto);
+    const idRegistro = 1;
+  
+    // Obtener texto según el valor de la nota
+    const obtenerEspecificacion = (nota: number): string => {
+      switch (nota) {
+        case 32:
+          return "No aprobado";
+        case 33:
+          return "Aprobado";
+        case 34:
+          return "Nunca asistió";
+        case 35:
+          return "Abandono";
+        default:
+          return `Nota: ${nota}`;
+      }
+    };
+  
+    try {
+      const response = await fetch("http://localhost:8090/api/Notas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idCur,
+          idInscrito,
+          Nota,
+          idRegistro,
+        }),
+      });
+  
+      if (!response.ok) throw new Error("Error al guardar la nota");
+  
+      const especificacion = obtenerEspecificacion(Nota);
+  
+      setInscripciones((prevInscripciones) =>
+        prevInscripciones.map((insc) =>
+          insc.docInscr === idInscrito && insc.idCur === idCur
+            ? {
+                ...insc,
+                Nota,
+                Especificacion: especificacion,
+              }
+            : insc
+        )
+      );
+  
+      setInscripcionesFiltradas((prevInscripciones) =>
+        prevInscripciones.map((insc) =>
+          insc.docInscr === idInscrito && insc.idCur === idCur
+            ? {
+                ...insc,
+                Nota,
+                Especificacion: especificacion,
+              }
+            : insc
+        )
+      );
+  
+      console.log("Nota guardada exitosamente");
+  
+      setModalCalificarAbierto(false);
+    } catch (error) {
+      console.error("Error al guardar nota:", error);
+    }
+  };
+  
 
   return (
-    <div className="p-10 rounded-xl shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white rounded-lg p-6 shadow-md max-w-6xl w-full h-[90vh] overflow-hidden flex flex-col">
+    <div className="p-6 rounded-lg shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative flex flex-col gap-4 w-full max-w-5xl bg-white py-8 px-10 rounded-lg shadow-md max-h-[98vh] overflow-y-auto">
+        {/* BOTÓN CERRAR */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
 
-       
-     
+        <h2 className="text-3xl font-bold text-[#990000] text-center seleccion-personalizada">Lista de Inscritos</h2>
 
-        {/* ANIMACIÓN DE CHECK O X */}
-        {mostrarAnimacion && (
-          <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="animate-check-spin scale-125">
-              {esInscripcion ? (
-                <CheckCircleIcon className="h-32 w-32 text-green-500" />
-              ) : (
-                <CheckCircleIcon className="h-32 w-32 text-green-500" />
-              )}
-            </div>
-            <p className="text-white text-2xl font-bold mt-2 animate-fade-in">{mensajeAnimacion}</p>
+        {/* BUSCADOR */}
+        {/* BARRA DE BÚSQUEDA ANIMADA */}
+               <div className="relative flex items-center"
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}>
+                   <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+                     <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />
+                   </button>
+                   <input
+                     type="text"
+                     placeholder="Busque el nombre del curso"
+                     value={busqueda}
+                     onChange={handleBuscar}
+                     className={`px-4 w-9/12 ml-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+                       ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
+                   /> 
+                   </div>
+
+        {/* LISTADO DE CURSOS */}
+        {isLoading ? (
+          <div className="flex justify-center my-4">
+            <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+           
+{Object.entries(groupedInscripciones).map(([cursoId, inscripciones]) => {
+  const cursoAbierto = expandedCursos[Number(cursoId)] || false;
+  const cursoNombre = inscripciones[0]?.NombreCurso || `Curso ${cursoId}`;
+  const fechaInicio = inscripciones[0]?.Inicio
+    ? new Date(inscripciones[0].Inicio).toLocaleDateString()
+    : "Sin fecha";
+  const fechaFin = inscripciones[0]?.Fin
+    ? new Date(inscripciones[0].Fin).toLocaleDateString()
+    : "Sin fecha";
+
+  return (
+    
+
+
+ <div key={cursoId} className="border border-gray-300 rounded shadow-md ">
+      <div className="flex justify-between items-center bg-gray-100 px-4 py-3">
+        <div>
+          <h3 className="text-lg font-bold text-[#990000] seleccion-personalizada">{cursoNombre}</h3>
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Inicio:</span> {fechaInicio} &nbsp; | &nbsp;
+            <span className="font-medium">Fin:</span> {fechaFin}
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => handleDownloadExcelByCurso(Number(cursoId))}
+            className="flex items-center  hover:scale-110 active:scale-95 bg-green-600 text-white px-3 py-1.5 rounded-md hover:bg-green-700 transition"
+          >
+            <ArrowDownTrayIcon className="h-5 w-5 mr-1" />
+            Descargar
+          </button>
+          <button
+            onClick={() => toggleCurso(Number(cursoId))}
+            className="flex items-center bg-[#990000] text-white px-3 py-1.5 rounded-md hover:bg-[#7a0000] transition hover:scale-110 active:scale-95"
+          >
+            {cursoAbierto ? (
+              <>
+                <ChevronUpIcon className="h-5 w-5 mr-1" />
+                Ver menos
+              </>
+            ) : (
+              <>
+                <ChevronDownIcon className="h-5 w-5 mr-1" />
+                Ver más
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+  {cursoAbierto && (
+    <div className="px-6 py-4 border border-gray-200 bg-white animate-fade-in rounded-b-lg">
+      <h3 className="text-lg font-semibold text-[#990000] mb-4 ">Inscritos</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto text-sm  border border-gray-300">
+          <thead className="bg-[#990000] text-white">
+            <tr>
+              <th className="px-4 py-2 text-left">Nombre</th>
+              <th className="px-4 py-2 text-left">Documento</th>
+              <th className="px-4 py-2 text-left">Fecha Inscripción</th>
+              <th className="px-4 py-2 text-left">Nota</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inscripciones.map((insc, index) => (
+              <tr
+                key={insc.id}
+                className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-150'} hover:bg-gray-200 transition-all duration-200`}
+              >
+                <td className="px-4 py-2 text-black">{insc.nombre}</td>
+                <td className="px-4 py-2 text-black">{insc.docInscr}</td>
+                <td className="px-4 py-2 text-black">{new Date(insc.fecreg).toLocaleDateString()}</td>
+                <td className="px-4 py-2">
+                <span className="text-black">{insc.Especificacion || 'Sin Nota'}</span>
+                  <div className="flex items-center gap-2">
+                    
+                   
+
+                  <button
+      onClick={() => abrirModalCalificar(insc.nombre, insc.docInscr, insc.idCur, insc.Especificacion, insc.id, insc.idNotas )}
+      className={`flex items-center px-3 py-1.5 rounded-md text-white transition hover:scale-110 active:scale-95
+        ${insc.Nota ? 'bg-blue-600 hover:bg-blue-800' : 'bg-[#990000] hover:bg-[#7a0000]'}`}
+    >
+      {insc.Nota ? (
+        <>
+          <PencilIcon className="h-4 w-4 mr-1" />
+          Editar
+        </>
+      ) : (
+        <>
+          <DocumentPlusIcon className="h-4 w-4 mr-1" />
+          Calificar
+        </>
+      )}
+    </button>
+
+
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+</div>
+
+
+
+              );
+            })}
           </div>
         )}
-
-         {/* BARRA DE BÚSQUEDA Y BOTÓN DE CIERRE */}
-         
-        <div className="flex justify-between items-center mb-4">
-        <div className="relative flex items-center"
-           onMouseEnter={handleMouseEnter}
-           onMouseLeave={handleMouseLeave}>
-            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
-              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] " />
-            </button>
-            <input
-              type="text"
-              placeholder="Busque el nombre del curso"
-              value={busqueda}
-              onChange={handleBuscar}
-              className={`px-4 py-2 border w-9/12 ml-4 rounded-full transition-all duration-500 ease-in-out 
-                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />   
-
-     </div>
-             <button
-            onClick={onClose}
-            className=" text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button> 
-          
-        </div>
-        
-        <h2 className="text-2xl justify-center text-center font-bold text-[#990000] seleccion-personalizada">
-  Oferta de Cursos
-</h2>  
-
-        {/* TABLA DE CURSOS */}
-        <div className="flex-1 overflow-y-auto mt-2">
-          {isLoading ? (
-            <div className="flex justify-center py-4">
-              <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
-            </div>
-          ) : cursosFiltrados.length > 0 ? (
-            <table className="w-full border-collapse border border-gray-500 ">
-              <thead className="bg-[#990000] text-white">
-                <tr >
-                  <th className="border p-2">Nombre</th>
-                  <th className="border p-2">Profesor</th>
-                  <th className="border p-2">Horario</th>
-                  <th className="border p-2">Lugar</th>
-                  <th className="border p-2">Inicio Curso</th>
-                  <th className="border p-2">Fin Curso</th>  
-                  <th className="border p-2">Inicio Inscripción</th>
-                  <th className="border p-2">Fin Inscripción</th>           
-                  <th className="border p-2">Inscribir</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {cursosFiltrados.map((curso, index) => {
-                 const inscripcion = inscripciones.find(ins => ins.idCur === curso.id && ins.docInscr === idEmp);
-                  return (
-                    <tr key={curso.id} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} text-center transition`}>
-
-                      <td className="border p-2 font-semibold text-left">{curso.NombreCurso}</td>
-                 
-<td className="border px-2 py-1 text-left text-xs space-y-3">
-  {[curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
-    .filter((prof) => prof !== null && prof !== undefined && String(prof).trim() !== "")
-    .map((profesor, index) => (
-      <div key={index} className="flex items-center gap-1">
-        <UserIcon className="h-4 w-4 text-[#990000] flex-shrink-0" />
-        <span>{profesor}</span>
       </div>
-    ))}
 
-  {[curso.NombreProfesor, curso.SegundoPro, curso.Proexterno]
-    .every((prof) => !prof || String(prof).trim() === "") && (
-      <span className="text-gray-400 italic">Sin profesor asignado</span>
-  )}
-</td>
+      {modalCalificarAbierto && inscritoSeleccionado && (
+  <CalificarModalProps
+            nombre={inscritoSeleccionado.nombre}
+            documento={inscritoSeleccionado.doc}
+            idCur={inscritoSeleccionado.idCur}
+            Especificacion={inscritoSeleccionado.Especificacion}
+            idIns={inscritoSeleccionado.idNotas}
+            onClose={() => setModalCalificarAbierto(false)}
+            onGuardar={guardarNota}   />
+)}
 
-                      <td className="border px-5 py-2">{formatearHorario(curso).map((h, index) => (
-                        <div key={index}>
-                           <strong>{h.dia}</strong> {h.ini} - {h.fin}
-                               </div>
-                                 ))}</td>
-                      <td className="border p-2">{curso.Lugar}</td>
-                      <td className="border p-2">{curso.Inicio || "N/A"}</td>
-                      <td className="border p-2">{curso.Fin || "N/A"}</td>
-                      <td className="border p-2">{curso.InicioInscr || "N/A"}</td>
-                      <td className="border p-2">{curso.FinInscr || "N/A"}</td>
-                  
-
-                     
-                      
-<td className="border p-2 text-center">
-  <button
-    onClick={() => handleInscripcion(curso.id, !!inscripcion, inscripcion?.id)}
-    className={`${
-      inscripcion
-        ? "bg-[#990000] hover:bg-red-700 text-sm w-36 text-white"
-        : "bg-green-600 hover:bg-green-700 text-sm w-36 text-white"
-    } p py-2 rounded  transition-colors duration-300`}
-  >
-    {inscripcion ? "Cancelar Inscripción" : "Inscribirse"}
-  </button>
-</td>
-
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-center py-4">No hay cursos disponibles.</p>
-                 
-          
-          )}
-        </div>
-      </div>
-      </div>
+    </div>
   );
-}
+};
+
+export default InscripcionesModal;
