@@ -1,30 +1,21 @@
-// OBTENER CURSOS CON INSCRITOS Y SUS NOTAS
 async getCursosConInscritos() {
   try {
     const resultado = await this.prisma.$queryRaw`
       SELECT 
         n.id,
         n.IdCurso,
+        c.NombreCurso,             -- 🔹 Nombre del curso
         n.IdInscrito,
         n.Nota,
         n.idRegistro,
         n."Fecha registro"
       FROM gescur."Notas" n
+      LEFT JOIN gescur.cursos c ON n.IdCurso = c.id
     `;
 
     return resultado;
   } catch (error) {
     console.error("Error al obtener cursos con inscritos:", error.message);
     throw new Error("No se pudo obtener la lista de cursos con inscritos.");
-  }
-}
-
-
-
-
-
-  @Get('con-inscritos')
-  async obtenerCursosConInscritos() {
-    return await this.cursosService.getCursosConInscritos();
   }
 }
