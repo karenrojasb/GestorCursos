@@ -1,23 +1,14 @@
-  try {
-    const url = notaExistenteId
-      ? `http://localhost:8090/api/notas/${notaExistenteId}` // PUT
-      : "http://localhost:8090/api/notas"; // POST
+interface OpcionLista {
+  id: number;
+  Especificacion: string;
+}
 
-    const method = notaExistenteId ? "PUT" : "POST";
+ const [opciones, setOpciones] = useState<OpcionLista[]>([]);
 
-    const response = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        idCurso: idCur,
-        idInscrito: documento,
-        idRegistro: idEmp,
-        Nota: notaSeleccionada,
-        FechaRegistro: new Date(),
-      }),
-    });
+const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+      if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
+      const dataOpciones = await respOpciones.json();
+      setOpciones(dataOpciones);
 
 
 
