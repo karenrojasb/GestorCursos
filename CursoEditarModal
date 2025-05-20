@@ -1,29 +1,54 @@
-const fetchOpciones = async () => {
-  try {
-    const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-    if (!respOpciones.ok) throw new Error("Error al obtener lista de especificaciones");
-    const dataOpciones = await respOpciones.json();
-    console.log("Opciones recibidas:", dataOpciones); // 👈 esto
-    setOpciones(dataOpciones);
-  } catch (error) {
-    console.error("Error al obtener opciones:", error);
-  }
-};
+Error: In HTML, <td> cannot be a child of <td>.
+This will cause a hydration error.
 
+  ...
+    <html lang="es">
+      <body className="bg-gray-10...">
+        <header>
+        <main className={"flex fle..."}>
+          <motion.h1>
+          <MainButtons publico={1} esAdmin={false} esProfesor={true} onSelect={function onSelect}>
+            <div className="flex flex-...">
+              <div>
+              <InscripcionesModal onClose={function onClose}>
+                <div className="p-6 rounde...">
+                  <div className="relative f...">
+                    <button>
+                    <h2>
+                    <div>
+                    <div className="space-y-4">
+                      <div>
+                      <div className={"border b..."}>
+                        <div>
+                        <div className="px-6 py-4 ...">
+                          <h3>
+                          <div className="overflow-x...">
+                            <table className="min-w-full...">
+                              <thead>
+                              <tbody>
+                                <tr className="border-b b...">
+                                  <td>
+                                  <td>
+                                  <td>
+>                                 <td className="px-4 py-2">
+>                                   <td className="px-4 py-2">
+                                ...
+                      ...
+          ...
+        ...
 
-
-
-<td className="px-4 py-2">
-  <select
-    className="border rounded px-2 py-1 text-sm bg-white"
-    value={insc.Especificacion || ""}
-    disabled
-  >
-    <option value="">-- Selecciona --</option>
-    {opciones.map((opcion) => (
-      <option key={opcion.id} value={opcion.Especificacion}>
-        {opcion.Especificacion}
-      </option>
-    ))}
-  </select>
-</td>
+    at createUnhandledError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
+    at handleClientError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
+    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
+    at validateDOMNesting (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:1804:212)
+    at completeWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7273:25)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
+    at completeUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8020:23)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7957:28)
+    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
+    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7565:211)
+    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8402:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8326:245)
+    at processRootScheduleInMicrotask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8343:9)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8413:126
