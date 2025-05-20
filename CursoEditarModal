@@ -1,7 +1,23 @@
-? `http://localhost:8090/api/notas/${notaExistenteId}` // PUT
+  try {
+    const url = notaExistenteId
+      ? `http://localhost:8090/api/notas/${notaExistenteId}` // PUT
       : "http://localhost:8090/api/notas"; // POST
 
+    const method = notaExistenteId ? "PUT" : "POST";
 
+    const response = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idCurso: idCur,
+        idInscrito: documento,
+        idRegistro: idEmp,
+        Nota: notaSeleccionada,
+        FechaRegistro: new Date(),
+      }),
+    });
 
 
 
