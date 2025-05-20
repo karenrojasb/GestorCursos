@@ -1,4 +1,4 @@
-[async getCourses() {
+async getCourses() {
   return this.prisma.$queryRawUnsafe(`
     SELECT 
       c.id,
