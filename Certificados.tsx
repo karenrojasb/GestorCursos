@@ -34,6 +34,12 @@ interface InscripcionesModalProps {
   onClose: () => void;
 }
 
+
+interface OpcionLista {
+  id: number;
+  Especificacion: string;
+}
+
 const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscripcion[]>([]);
@@ -43,6 +49,11 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [modalCalificarAbierto, setModalCalificarAbierto] = useState(false);
   const [inscritoSeleccionado, setInscritoSeleccionado] = useState<{nombre: string, doc:number, idCur: number, Especificacion: string, id: number, idNotas: number} | null>(null);
+  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
+   const [notaSeleccionada, setNotaSeleccionada] = useState<number | null>(null);
+ 
+   const [guardando, setGuardando] = useState(false);
+   const [notaExistenteId, setNotaExistenteId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchInscripciones = async () => {
@@ -137,94 +148,88 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
     }
   };
 
-  const abrirModalCalificar = async (nombre: string, doc: number, idCur: number, Especificacion: string, id: number, idNotas: number) => {
-    setInscritoSeleccionado({ nombre, doc, idCur, Especificacion, id, idNotas });
-    setModalCalificarAbierto(true);
   
+  useEffect(() => {
+  const fetchDatos = async () => {
     try {
-      const response = await fetch(`http://localhost:8090/api/Notas/${doc}`);
-      if (!response.ok) throw new Error("Error al obtener notas");
-  
-      // Fusiona las nuevas notas con las anteriores, reemplazando las del mismo idInscrito
-     
-    } catch (error) {
-      console.error("Error al obtener notas del inscrito:", error);
-    }
-  };
-  
+      const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+      if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
+      const dataOpciones = await respOpciones.json();
+      setOpciones(dataOpciones);
 
-  const guardarNota = async (notaTexto: string) => {
-    if (!inscritoSeleccionado) return;
-  
-    const idCur = inscritoSeleccionado.idCur;
-    const idInscrito = Number(inscritoSeleccionado.doc);
-    const Nota = Number(notaTexto);
-    const idRegistro = 1;
-  
-    // Obtener texto según el valor de la nota
-    const obtenerEspecificacion = (nota: number): string => {
-      switch (nota) {
-        case 32:
-          return "No aprobado";
-        case 33:
-          return "Aprobado";
-        case 34:
-          return "Nunca asistió";
-        case 35:
-          return "Abandono";
-        default:
-          return `Nota: ${nota}`;
+      const respNota = await fetch(`http://localhost:8090/api/notas/curso-inscrito?idCurso=${idCur}&idInscrito=${documento}`);
+      if (respNota.ok) {
+        const dataNota = await respNota.json();
+        if (dataNota && dataNota.Nota !== undefined) {
+          setNotaSeleccionada(Number(dataNota.Nota));
+          setNotaExistenteId(dataNota.id);
+          console.log("Nota cargada:", dataNota.Nota);
+        }
       }
-    };
-  
-    try {
-      const response = await fetch("http://localhost:8090/api/Notas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idCur,
-          idInscrito,
-          Nota,
-          idRegistro,
-        }),
-      });
-  
-      if (!response.ok) throw new Error("Error al guardar la nota");
-  
-      const especificacion = obtenerEspecificacion(Nota);
-  
-      setInscripciones((prevInscripciones) =>
-        prevInscripciones.map((insc) =>
-          insc.docInscr === idInscrito && insc.idCur === idCur
-            ? {
-                ...insc,
-                Nota,
-                Especificacion: especificacion,
-              }
-            : insc
-        )
-      );
-  
-      setInscripcionesFiltradas((prevInscripciones) =>
-        prevInscripciones.map((insc) =>
-          insc.docInscr === idInscrito && insc.idCur === idCur
-            ? {
-                ...insc,
-                Nota,
-                Especificacion: especificacion,
-              }
-            : insc
-        )
-      );
-  
-      console.log("Nota guardada exitosamente");
-  
-      setModalCalificarAbierto(false);
     } catch (error) {
-      console.error("Error al guardar nota:", error);
+      console.error("Error cargando datos:", error);
     }
   };
-  
+
+  if (idCur && documento) {
+    fetchDatos();
+  }
+}, [idCur, documento]);
+
+
+
+
+const handleGuardar = async () => {
+  if (notaSeleccionada === null || isNaN(notaSeleccionada)) {
+    alert("Por favor selecciona una nota válida");
+    return;
+  }
+
+  if (!idEmp) {
+    alert("Error: ID de empleado no encontrado.");
+    return;
+  }
+
+  setGuardando(true);
+
+  try {
+    const url = notaExistenteId
+      ? `http://localhost:8090/api/notas/${notaExistenteId}` // PUT
+      : "http://localhost:8090/api/notas"; // POST
+
+    const method = notaExistenteId ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idCurso: idCur,
+        idInscrito: documento,
+        idRegistro: idEmp,
+        Nota: notaSeleccionada,
+        FechaRegistro: new Date(),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al ${notaExistenteId ? "actualizar" : "crear"} la nota.`);
+    }
+
+    onGuardar(String(notaSeleccionada));
+    onClose();
+  } catch (error) {
+    console.error("Error al guardar nota:", error);
+    alert("Hubo un error al guardar la nota.");
+  } finally {
+    setGuardando(false);
+  }
+};
+
+
+  const especificacionNota = opciones.find(op => op.id === notaSeleccionada)?.Especificacion;
+
 
   return (
     <div className="p-6 rounded-lg shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -366,16 +371,6 @@ const InscripcionesModal: React.FC<InscripcionesModalProps> = ({ onClose }) => {
         )}
       </div>
 
-      {modalCalificarAbierto && inscritoSeleccionado && (
-  <CalificarModalProps
-            nombre={inscritoSeleccionado.nombre}
-            documento={inscritoSeleccionado.doc}
-            idCur={inscritoSeleccionado.idCur}
-            Especificacion={inscritoSeleccionado.Especificacion}
-            idIns={inscritoSeleccionado.idNotas}
-            onClose={() => setModalCalificarAbierto(false)}
-            onGuardar={guardarNota}   />
-)}
 
     </div>
   );
