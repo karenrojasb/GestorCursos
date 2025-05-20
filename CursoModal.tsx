@@ -1,31 +1,21 @@
-const cursosFiltrados = cursosActivos.filter(
-  (curso: Curso) =>
-    curso.FinInscr &&
-    !isNaN(Date.parse(curso.FinInscr)) &&
-    new Date(curso.FinInscr) >= new Date()
-);
-
-
-
-const fetchCursos = async (idEmp: number) => {
-  try {
-    const response = await fetch(`http://localhost:8090/api/cursos/usuario/${idEmp}`);
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    
-    const data = await response.json();
-    const cursosActivos = Array.isArray(data) ? data : data.cursos || [];
-
-    const hoy = new Date();
-
-    const cursosFiltrados = cursosActivos.filter(
-      (curso: Curso) => !curso.FinInscr || new Date(curso.FinInscr) >= hoy
-    );
-
-    setCursos(cursosFiltrados);
-    setCursosFiltrados(cursosFiltrados);
+ const fetchCursos = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:8090/api/cursos");
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      const data = await response.json();
+      setCursos(data);
+      setCursosFiltrados(data);
+    } catch (error) {
+      console.error("Error al obtener los cursos:", error);
+    }
     setIsLoading(false);
-  } catch (error) {
-    console.error("Error al obtener los cursos:", error);
-    setIsLoading(false);
-  }
-};
+  };
+
+  useEffect(() => {
+    fetchCursos();
+  }, []);
+
+  const handleUpdate = () => {
+    fetchCursos();
+  };
