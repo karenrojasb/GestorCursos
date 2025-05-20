@@ -1,4 +1,4 @@
-// OBTENER CURSOS CON INSCRITOS
+// OBTENER CURSOS CON INSCRITOS (sin JSON_AGG)
 async getCourses() {
   return this.prisma.$queryRaw`
   SELECT 
@@ -44,15 +44,11 @@ async getCourses() {
     tc.Especificacion AS IdTipoCurso,
     e.nombre AS NombreProfesor,
 
-    -- Inscritos como JSON
-    (
-      SELECT json_agg(ins)
-      FROM (
-        SELECT i.id, i.docInscr, i.est, i.fecreg
-        FROM gescur.Inscripciones i
-        WHERE i.idCur = c.id
-      ) ins
-    ) AS Inscritos
+    -- Datos de los inscritos
+    i.id AS InscripcionId,
+    i.docInscr,
+    i.est AS EstadoInscripcion,
+    i.fecreg AS FechaRegistro
 
   FROM gescur.cursos c
   LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
@@ -62,6 +58,9 @@ async getCourses() {
   LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
   LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
   LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-  LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo;
+  LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+
+  -- Join a Inscripciones
+  LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id;
   `
 }
