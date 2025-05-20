@@ -1,14 +1,9 @@
-    <td className="px-4 py-2">
-  <select
-    className="border rounded px-2 py-1 text-sm bg-white"
-    value={insc.Especificacion || ""}
-    disabled
-  >
-    <option value="">-- Selecciona --</option>
-    {opciones.map((opcion) => (
-      <option key={opcion.id} value={opcion.Especificacion}>
-        {opcion.Especificacion}
-      </option>
-    ))}
-  </select>
-</td>
+const handleChangeEspecificacion = (idNotas: number, nuevaEspecificacion: string) => {
+  setInscripciones((prev) =>
+    prev.map((inscripcion) =>
+      inscripcion.idNotas === idNotas
+        ? { ...inscripcion, Especificacion: nuevaEspecificacion }
+        : inscripcion
+    )
+  );
+};
