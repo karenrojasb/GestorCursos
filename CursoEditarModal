@@ -1,177 +1,79 @@
-<form onSubmit={handleSubmit} className="space-y-4 seleccion-personalizada">
+ useEffect(() => {
+  const fetchDatos = async () => {
+    try {
+      const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+      if (!respOpciones.ok) throw new Error("Error al obtener lista de notas");
+      const dataOpciones = await respOpciones.json();
+      setOpciones(dataOpciones);
 
-  {/* Nombre del curso */}
-  <div>
-    <label>Nombre Curso</label>
-    <input type="text" name="NombreCurso" value={curso.NombreCurso} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
+      const respNota = await fetch(`http://localhost:8090/api/notas/curso-inscrito?idCurso=${idCur}&idInscrito=${documento}`);
+      if (respNota.ok) {
+        const dataNota = await respNota.json();
+        if (dataNota && dataNota.Nota !== undefined) {
+          setNotaSeleccionada(Number(dataNota.Nota));
+          setNotaExistenteId(dataNota.id);
+          console.log("Nota cargada:", dataNota.Nota);
+        }
+      }
+    } catch (error) {
+      console.error("Error cargando datos:", error);
+    }
+  };
 
-  {/* Valor | Público | Periodo */}
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div>
-      <label>Valor</label>
-      <input type="number" name="Valor" value={curso.Valor} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-    </div>
-    <div>
-      <label>Público</label>
-      <select name="Publico" value={curso.Publico} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {opcionesPublico.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label>Periodo</label>
-      <select name="Periodo" value={curso.Periodo} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {opcionesPeriodos.map((opcion, idx) => (
-          <option key={idx} value={opcion.periodo}>{opcion.periodo}</option>
-        ))}
-      </select>
-    </div>
-  </div>
+  if (idCur && documento) {
+    fetchDatos();
+  }
+}, [idCur, documento]);
 
-  {/* Inicio curso | Fin curso */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label>Inicio curso</label>
-      <input type="date" name="Inicio" value={curso.Inicio} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-    </div>
-    <div>
-      <label>Fin curso</label>
-      <input type="date" name="Fin" value={curso.Fin} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-    </div>
-  </div>
 
-  {/* Horario */}
-  <div>
-    <label>Horario</label>
-    <input type="text" name="Horarios" value={curso.Horarios || ''} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
 
-  {/* Horas | Cupo máximo */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label>Horas</label>
-      <input type="number" name="Horas" value={curso.Horas} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-    </div>
-    <div>
-      <label>Cupo máximo</label>
-      <input type="number" name="CupoMax" value={curso.CupoMax} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-    </div>
-  </div>
 
-  {/* Lugar */}
-  <div>
-    <label>Lugar</label>
-    <input type="text" name="Lugar" value={curso.Lugar} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
+const handleGuardar = async () => {
+  if (notaSeleccionada === null || isNaN(notaSeleccionada)) {
+    alert("Por favor selecciona una nota válida");
+    return;
+  }
 
-  {/* Línea | Estado */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label>Línea</label>
-      <select name="Linea" value={curso.Linea} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {opcionesLinea.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label>Estado</label>
-      <select name="Estado" value={curso.Estado} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {opcionesEstado.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
-        ))}
-      </select>
-    </div>
-  </div>
+  if (!idEmp) {
+    alert("Error: ID de empleado no encontrado.");
+    return;
+  }
 
-  {/* Modalidad | Unidad */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label>Modalidad</label>
-      <select name="Modalidad" value={curso.Modalidad} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {opcionesModalidad.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label>Unidad</label>
-      <select name="Unidad" value={curso.Unidad} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {unidad.map((u) => (
-          <option key={u.codigo} value={u.codigo}>{u.nombre}</option>
-        ))}
-      </select>
-    </div>
-  </div>
+  setGuardando(true);
 
-  {/* Profesor | Segundo Profesor */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label>Profesor</label>
-      <select name="Profesor" value={curso.Profesor} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {profesores.map((p) => (
-          <option key={p.id_emp} value={p.id_emp}>{p.nombre}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label>Segundo Profesor</label>
-      <select name="SegundoPro" value={curso.SegundoPro} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {profesores.map((p) => (
-          <option key={p.id_emp} value={p.id_emp}>{p.nombre}</option>
-        ))}
-      </select>
-    </div>
-  </div>
+  try {
+    const url = notaExistenteId
+      ? `http://localhost:8090/api/notas/${notaExistenteId}` // PUT
+      : "http://localhost:8090/api/notas"; // POST
 
-  {/* Profesor Externo */}
-  <div>
-    <label>Profesor Externo</label>
-    <input type="text" name="Proexterno" value={curso.Proexterno} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-  </div>
+    const method = notaExistenteId ? "PUT" : "POST";
 
-  {/* Inicio Inscripciones | Fin Inscripciones */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label>Inicio Inscripciones</label>
-      <input type="date" name="InicioInscr" value={curso.InicioInscr} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-    </div>
-    <div>
-      <label>Fin Inscripciones</label>
-      <input type="date" name="FinInscr" value={curso.FinInscr} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-    </div>
-  </div>
+    const response = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idCurso: idCur,
+        idInscrito: documento,
+        idRegistro: idEmp,
+        Nota: notaSeleccionada,
+        FechaRegistro: new Date(),
+      }),
+    });
 
-  {/* Tipo de curso | Descripción */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label>Tipo de curso</label>
-      <select name="IdTipoCurso" value={curso.IdTipoCurso} onChange={handleChange} className="w-full border p-2 rounded-lg">
-        <option value="">Selecciona una opción</option>
-        {opcionesTipoCurso.map((opcion) => (
-          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label>Descripción</label>
-      <input type="text" name="Descripcion" value={curso.Descripcion} onChange={handleChange} className="w-full border p-2 rounded-lg" />
-    </div>
-  </div>
+    if (!response.ok) {
+      throw new Error(`Error al ${notaExistenteId ? "actualizar" : "crear"} la nota.`);
+    }
 
-  {/* Botón Guardar */}
-  <div className="text-center mt-6">
-    <button type="submit" className="bg-[#990000] text-white px-6 py-2 rounded-lg hover:bg-red-800 transition-colors">Guardar Curso</button>
-  </div>
+    onGuardar(String(notaSeleccionada));
+    onClose();
+  } catch (error) {
+    console.error("Error al guardar nota:", error);
+    alert("Hubo un error al guardar la nota.");
+  } finally {
+    setGuardando(false);
+  }
+};
 
-</form>
+ const especificacionNota = opciones.find(op => op.id === notaSeleccionada)?.Especificacion;
