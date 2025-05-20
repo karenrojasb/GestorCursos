@@ -1,6 +1,6 @@
-//  OBTENER CURSOS
-  async getCourses() {
-    return this.prisma.$queryRaw`
+// OBTENER CURSOS CON NOTAS
+async getCourses() {
+  return this.prisma.$queryRaw`
     SELECT 
       c.id,
       c.NombreCurso,
@@ -42,7 +42,16 @@
       c.Descripcion,                       
       c.IdTipoCurso,
       tc.Especificacion AS IdTipoCurso,
-      e.nombre AS NombreProfesor
+      e.nombre AS NombreProfesor,
+
+      -- CAMPOS DE LA TABLA NOTAS
+      n.id AS NotaId,
+      n.IdCurso AS NotaIdCurso,
+      n.IdInscrito AS NotaIdInscrito,
+      n.Nota,
+      n.idRegistro AS NotaIdRegistro,
+      n.FechaRegistro AS NotaFechaRegistro
+
     FROM gescur.cursos c
     LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
     LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
@@ -52,7 +61,7 @@
     LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
     LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
     LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
-
+    LEFT JOIN gescur.Notas n ON n.IdCurso = c.id
     ;
-    `
+  `
 }
