@@ -43,13 +43,11 @@ interface Curso {
   InicioInscr: string;
   FinInscr: string;
 
+  Inscritos ?: string;
+
 }
 
-interface Inscritos {
-  idCur: number;
-  docInscr: number;
-  fecreg: string;
-}
+
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   
