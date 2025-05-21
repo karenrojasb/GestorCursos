@@ -188,7 +188,7 @@ const handleChangeEspecificacion = async (
 
     const nuevaNota = {
       idCurso: inscripcion.idCur,
-      idInscrito: inscripcion.id,
+      idInscrito: inscripcion.docInscr,
       idRegistro: idEmp,
       nota: Number(nuevaEspecificacion),
       FechaRegistro: new Date(),
