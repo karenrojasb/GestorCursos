@@ -8,12 +8,13 @@ const handleChangeEspecificacion = async (
   try {
     setGuardando(true);
 
-    if (!nuevaEspecificacion || isNaN(Number(nuevaEspecificacion))) {
+    // Validar si se seleccionó una especificación
+    if (!nuevaEspecificacion) {
       alert("Selecciona una especificación válida.");
       return;
     }
 
-    // Leer id_emp del localStorage aquí
+    // Leer id_emp del localStorage
     const idEmpString = localStorage.getItem("id_emp");
     if (!idEmpString) {
       alert("No se encontró el id_emp en localStorage");
@@ -22,21 +23,29 @@ const handleChangeEspecificacion = async (
     }
     const idEmp = Number(idEmpString);
 
-   const valorNota = opciones.find(op => op.id === Number(nuevaEspecificacion))?.Especificacion;
+    // Mapeo de especificaciones a notas
+    const especificacionANota: Record<string, number> = {
+      "No Aprovado": 32,
+      "Aprovado": 33,
+      "Nunca asistió": 34,
+      "Abandono": 35,
+    };
 
-if (!valorNota || isNaN(Number(valorNota))) {
-  alert("La especificación seleccionada no contiene una nota válida.");
-  setGuardando(false);
-  return;
-}
+    const notaNumerica = especificacionANota[nuevaEspecificacion];
 
-const nuevaNota = {
-  idCurso: inscripcion.idCur,
-  idInscrito: inscripcion.docInscr,
-  idRegistro: idEmp,
-  nota: Number(valorNota),
-  FechaRegistro: new Date(),
-};
+    if (!notaNumerica) {
+      alert("La especificación seleccionada no es válida.");
+      setGuardando(false);
+      return;
+    }
+
+    const nuevaNota = {
+      idCurso: inscripcion.idCur,
+      idInscrito: inscripcion.docInscr,
+      idRegistro: idEmp,
+      nota: notaNumerica,
+      FechaRegistro: new Date(),
+    };
 
     const response = await fetch("http://localhost:8090/api/notas", {
       method: "POST",
