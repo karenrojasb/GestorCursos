@@ -37,7 +37,7 @@
                   ? new Date(nota.FechaRegistro).toLocaleDateString()
                   : "—"}
               </td>
-              <td className="px-3 py-1 border">{nota.NotaEspecifiacion ?? "-"}</td>
+              <td className="px-3 py-1 border">{nota.NotaEspecificacion ?? "-"}</td>
             </tr>
           );
         })}
