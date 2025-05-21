@@ -55,8 +55,11 @@ async getCourses() {
               SELECT 
                 n.Nota,
                 n.idRegistro,
-                n.FechaRegistro
+                n.FechaRegistro,
+                n.NotaRevive,
+                lr.Especificacion AS NotaReviveEspecificacion
               FROM gescur.Notas n
+              LEFT JOIN gescur.Listas lr ON lr.id = n.NotaRevive AND lr.Tipo = 9
               WHERE n.IdCurso = i.idCur AND n.IdInscrito = i.docInscr
               FOR JSON PATH
             )
