@@ -25,11 +25,11 @@ async createNote(CreateNotaDto: CreateNotaDto) {
           },
         });
 
-        // Insertar auditoría después de actualizar
-        await this.prisma.$executeRawUnsafe(
-          `INSERT INTO gescur.AuditoriasNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro)
-           VALUES (${notaActualizada.idCurso}, ${notaActualizada.idInscrito}, ${notaActualizada.Nota}, ${notaActualizada.idRegistro}, '${notaActualizada.FechaRegistro.toISOString()}')`
-        );
+        // Insertar en AuditoriasNotas
+        await this.prisma.$executeRawUnsafe(`
+          INSERT INTO gescur.AuditoriasNotas (idNota, idCurso, idInscrito, Nota, idRegistro, FechaRegistro, accion)
+          VALUES (${notaActualizada.id}, ${notaActualizada.idCurso}, ${notaActualizada.idInscrito}, ${notaActualizada.Nota}, ${notaActualizada.idRegistro}, GETDATE(), 'ACTUALIZAR')
+        `);
 
         return notaActualizada;
       } else {
@@ -46,40 +46,16 @@ async createNote(CreateNotaDto: CreateNotaDto) {
         },
       });
 
-      // Insertar auditoría después de crear
-      await this.prisma.$executeRawUnsafe(
-        `INSERT INTO gescur.AuditoriasNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro)
-         VALUES (${newNote.idCurso}, ${newNote.idInscrito}, ${newNote.Nota}, ${newNote.idRegistro}, '${newNote.FechaRegistro.toISOString()}')`
-      );
+      // Insertar en AuditoriasNotas
+      await this.prisma.$executeRawUnsafe(`
+        INSERT INTO gescur.AuditoriasNotas (idNota, idCurso, idInscrito, Nota, idRegistro, FechaRegistro, accion)
+        VALUES (${newNote.id}, ${newNote.idCurso}, ${newNote.idInscrito}, ${newNote.Nota}, ${newNote.idRegistro}, GETDATE(), 'CREAR')
+      `);
 
       return newNote;
     }
   } catch (error) {
     console.error('Error al crear la nota:', error);
     throw new Error(`No se pudo crear la nota: ${error.message}`);
-  }
-}
-
-async UpdateNote(id: number, data: Prisma.NotasUpdateInput) {
-  console.log('id recibido:', id);
-  console.log('data recibido:', data);
-
-  try {
-    const updatedNote = await this.prisma.notas.update({
-      where: { id },
-      data,
-    });
-    console.log('nota actualizada:', updatedNote);
-
-    // Insertar auditoría después de actualizar
-    await this.prisma.$executeRawUnsafe(
-      `INSERT INTO gescur.AuditoriasNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro)
-       VALUES (${updatedNote.idCurso}, ${updatedNote.idInscrito}, ${updatedNote.Nota}, ${updatedNote.idRegistro}, '${updatedNote.FechaRegistro.toISOString()}')`
-    );
-
-    return updatedNote;
-  } catch (error) {
-    console.error('error al actualizar nota:', error);
-    throw new Error('La nota no fue actualizada');
   }
 }
