@@ -1,5 +1,5 @@
- async getCourses() {
-    return this.prisma.$queryRaw`
+async getCourses() {
+  return this.prisma.$queryRawUnsafe(`
     SELECT 
       c.id,
       c.NombreCurso,
@@ -41,7 +41,21 @@
       c.Descripcion,                       
       c.IdTipoCurso,
       tc.Especificacion AS IdTipoCurso,
-      e.nombre AS NombreProfesor
+      e.nombre AS NombreProfesor,
+
+      -- Subconsulta JSON para traer los inscritos de cada curso
+      (
+        SELECT 
+          i.id,
+          i.idCur,
+          i.docInscr,
+          i.est,
+          i.fecreg
+        FROM gescur.Inscripciones i
+        WHERE i.idCur = c.id
+        FOR JSON PATH
+      ) AS Inscritos
+
     FROM gescur.cursos c
     LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
     LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
@@ -51,7 +65,5 @@
     LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
     LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
     LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
-
-    ;
-    `
+  `);
 }
