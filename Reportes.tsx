@@ -1,33 +1,60 @@
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-const exportarCursoAExcel = (curso: Curso) => {
-  if (!curso.Inscritos || curso.Inscritos === "[]") {
-    alert("Este curso no tiene inscritos para exportar.");
-    return;
-  }
+function exportarCursoAExcel(curso: Curso) {
+  const inscritos: Inscrito[] = curso.Inscritos ? JSON.parse(curso.Inscritos) : [];
 
-  const inscritos: Inscrito[] = JSON.parse(curso.Inscritos);
+  // 🧾 Hoja 1: Datos del curso
+  const datosCurso = [
+    {
+      ID: curso.id,
+      Nombre: curso.NombreCurso,
+      Valor: curso.Valor,
+      Público: curso.Publico,
+      Periodo: curso.Periodo,
+      CupoMax: curso.CupoMax,
+      Inicio: curso.Inicio,
+      Fin: curso.Fin,
+      Horas: curso.Horas,
+      Lugar: curso.Lugar,
+      Estado: curso.Estado,
+      Modalidad: curso.Modalidad,
+      Unidad: curso.Unidad,
+      Profesor: curso.NombreProfesor,
+      SegundoProfesor: curso.SegundoPro,
+      ProfesorExterno: curso.Proexterno,
+      TipoCurso: curso.IdTipoCurso,
+      InicioInscripción: curso.InicioInscr,
+      FinInscripción: curso.FinInscr,
+      Descripción: curso.Descripcion,
+    },
+  ];
+  const hojaCurso = XLSX.utils.json_to_sheet(datosCurso);
 
-  const data = inscritos.map((inscrito) => {
-    const nota = inscrito.Notas?.[0] || {};
+  // 🧾 Hoja 2: Inscritos
+  const datosInscritos = inscritos.map((inscrito) => {
+    const nota = inscrito.Notas?.[0] ?? {};
     return {
-      "ID Inscrito": inscrito.id,
-      "Documento": inscrito.docInscr,
-      "Estado": inscrito.est ? "Activo" : "Inactivo",
-      "Fecha de Inscripción": new Date(inscrito.fecreg).toLocaleDateString(),
-      "ID Calificador": nota.idRegistro ?? "—",
-      "Fecha de Calificación": nota.FechaRegistro ? new Date(nota.FechaRegistro).toLocaleDateString() : "—",
-      "Nota": nota.Nota ?? "-"
+      ID: inscrito.id,
+      Documento: inscrito.docInscr,
+      Estado: inscrito.est ? "Activo" : "Inactivo",
+      FechaInscripción: new Date(inscrito.fecreg).toLocaleDateString(),
+      Calificador: nota.idRegistro ?? "—",
+      FechaCalificación: nota.FechaRegistro
+        ? new Date(nota.FechaRegistro).toLocaleDateString()
+        : "—",
+      Nota: nota.Nota ?? "-",
     };
   });
 
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Inscritos");
+  const hojaInscritos = XLSX.utils.json_to_sheet(datosInscritos);
 
-  const nombreArchivo = `Curso_${curso.NombreCurso.replace(/\s+/g, "_")}.xlsx`;
-  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-  const dataBlob = new Blob([excelBuffer], { type: "application/octet-stream" });
-  saveAs(dataBlob, nombreArchivo);
-};
+  // 📄 Libro y descarga
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hojaCurso, "Datos del Curso");
+  XLSX.utils.book_append_sheet(libro, hojaInscritos, "Inscritos");
+
+  const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+  saveAs(blob, `Curso_${curso.NombreCurso.replace(/\s+/g, "_")}.xlsx`);
+}
