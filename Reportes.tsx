@@ -1,4 +1,4 @@
-//  OBTENER CURSOS
+// OBTENER CURSOS
 async getCourses() {
   return this.prisma.$queryRawUnsafe(`
     SELECT 
@@ -51,7 +51,16 @@ async getCourses() {
           i.idCur,
           i.docInscr,
           i.est,
-          i.fecreg
+          i.fecreg,
+          (
+            SELECT 
+              n.Nota,
+              n.idRegistro,
+              n.FechaRegistro
+            FROM gescur.Notas n
+            WHERE n.IdCurso = i.idCur AND n.IdInscrito = i.id
+            FOR JSON PATH
+          ) AS Notas
         FROM gescur.Inscripciones i
         WHERE i.idCur = c.id AND i.est = 1
         FOR JSON PATH
