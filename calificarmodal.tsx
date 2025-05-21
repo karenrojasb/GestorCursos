@@ -1,4 +1,3 @@
-
 async getCourses() {
   return this.prisma.$queryRawUnsafe(`
     SELECT 
@@ -58,9 +57,11 @@ async getCourses() {
                 n.Nota,
                 n.idRegistro,
                 n.FechaRegistro,
-                li.Especificacion AS NotaEspecificacion
+                li.Especificacion AS NotaEspecificacion,
+                emp.nombre AS NombreRegistro
               FROM gescur.Notas n
               LEFT JOIN gescur.Listas li ON li.id = n.Nota AND li.Tipo = 9
+              LEFT JOIN gescur.emp_nomina emp ON CAST(emp.id_emp AS VARCHAR) = LTRIM(RTRIM(n.idRegistro))
               WHERE n.IdCurso = i.idCur AND n.IdInscrito = i.docInscr
               FOR JSON PATH
             )
