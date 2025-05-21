@@ -1,44 +1,83 @@
-[Nest] 20972  - 21/05/2025, 3:13:22 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
-Invalid `prisma.$queryRawUnsafe()` invocation:
+async getCourses() {
+  return this.prisma.$queryRawUnsafe(`
+    SELECT 
+      c.id,
+      c.NombreCurso,
+      c.Valor,
+      lp.Especificacion AS Publico,
+      c.Periodo,
+      c.Inicio,
+      c.Fin,
+      c.InicioInscr,
+      c.FinInscr,
+      c.Horas,
+      c.CupoMax,
+      c.Lugar,                          
+      c.LunesIni,                          
+      c.LunesFin,                         
+      c.MartesIni,                       
+      c.MartesFin,                        
+      c.MiercolesIni,                      
+      c.MiercolesFin,                      
+      c.JuevesIni,                         
+      c.JuevesFin,                         
+      c.ViernesIni,                        
+      c.ViernesFin,                        
+      c.SabadoIni,                         
+      c.SabadoFin,                         
+      c.DomingoIni,                        
+      c.DomingoFin,                        
+      c.Linea AS LineaId,
+      l.Especificacion AS LineaNombre,    
+      c.Estado AS EstadoId,
+      est.Especificacion AS EstadoNombre, 
+      c.Modalidad AS ModalidadId,
+      m.Especificacion AS ModalidadNombre,
+      u.nombre AS Unidad,                            
+      c.Profesor,                          
+      c.SegundoPro,
+      sp.nombre AS SegundoProNombre,                        
+      c.Proexterno,                       
+      c.Descripcion,                       
+      c.IdTipoCurso,
+      tc.Especificacion AS TipoCursoNombre,
+      e.nombre AS NombreProfesor,
 
-
-Raw query failed. Code: `248`. Message: `The conversion of the varchar value '88040561930 ' overflowed an int column.`
-    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
-    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
-    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
-    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  code: 'P2010',
-  clientVersion: '6.8.2',
-  meta: {
-    code: '248',
-    message: "The conversion of the varchar value '88040561930 ' overflowed an int column."
-  }
-}
-(
-  SELECT 
-    i.id,
-    i.idCur,
-    i.docInscr,
-    i.est,
-    i.fecreg,
-    en.nombre AS NombreInscrito,  -- Nombre del inscrito
-    JSON_QUERY(
       (
         SELECT 
-          n.Nota,
-          n.idRegistro,
-          n.FechaRegistro,
-          li.Especificacion AS NotaEspecificacion
-        FROM gescur.Notas n
-        LEFT JOIN gescur.Listas li ON li.id = n.Nota AND li.Tipo = 9
-        WHERE n.IdCurso = i.idCur AND n.IdInscrito = i.docInscr
+          i.id,
+          i.idCur,
+          i.docInscr,
+          i.est,
+          i.fecreg,
+          en.nombre AS NombreInscrito,
+          JSON_QUERY(
+            (
+              SELECT 
+                n.Nota,
+                n.idRegistro,
+                n.FechaRegistro,
+                li.Especificacion AS NotaEspecificacion
+              FROM gescur.Notas n
+              LEFT JOIN gescur.Listas li ON li.id = n.Nota AND li.Tipo = 9
+              WHERE n.IdCurso = i.idCur AND n.IdInscrito = i.docInscr
+              FOR JSON PATH
+            )
+          ) AS Notas
+        FROM gescur.Inscripciones i
+        LEFT JOIN gescur.emp_nomina en ON CAST(en.id_emp AS VARCHAR) = LTRIM(RTRIM(i.docInscr))
+        WHERE i.idCur = c.id AND i.est = 1
         FOR JSON PATH
-      )
-    ) AS Notas
-  FROM gescur.Inscripciones i
-  LEFT JOIN gescur.emp_nomina en ON en.id_emp = i.docInscr  -- Join con emp_nomina
-  WHERE i.idCur = c.id AND i.est = 1
-  FOR JSON PATH
-) AS Inscritos
+      ) AS Inscritos
+
+    FROM gescur.cursos c
+    LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+    LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+    LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+    LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+    LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
+    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
+    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+    LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+  `);
+}
