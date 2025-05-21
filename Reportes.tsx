@@ -1,70 +1,41 @@
-//  OBTENER CURSOS
-async getCourses() {
-  return this.prisma.$queryRawUnsafe(`
-    SELECT 
-      c.id,
-      c.NombreCurso,
-      c.Valor,
-      lp.Especificacion AS Publico,
-      c.Periodo,
-      c.Inicio,
-      c.Fin,
-      c.InicioInscr,
-      c.FinInscr,
-      c.Horas,
-      c.CupoMax,
-      c.Lugar,                          
-      c.LunesIni,                          
-      c.LunesFin,                         
-      c.MartesIni,                       
-      c.MartesFin,                        
-      c.MiercolesIni,                      
-      c.MiercolesFin,                      
-      c.JuevesIni,                         
-      c.JuevesFin,                         
-      c.ViernesIni,                        
-      c.ViernesFin,                        
-      c.SabadoIni,                         
-      c.SabadoFin,                         
-      c.DomingoIni,                        
-      c.DomingoFin,                        
-      c.Linea,
-      l.Especificacion AS Linea,    
-      c.Estado,
-      est.Especificacion AS Estado, 
-      c.Modalidad,
-      m.Especificacion AS Modalidad,
-      u.nombre AS Unidad,                            
-      c.Profesor,                          
-      c.SegundoPro,
-      sp.nombre AS SegundoPro,                        
-      c.Proexterno,                       
-      c.Descripcion,                       
-      c.IdTipoCurso,
-      tc.Especificacion AS IdTipoCurso,
-      e.nombre AS NombreProfesor,
+{expandedCursoId === curso.id && (
+  <div className="relative bg-gray-100 p-4 mt-4 flex justify-center overflow-x-auto min-w-[1000px]">
+    {/* Aquí va la tabla de detalles del curso */}
+    <table>
+      {/* ...tus filas y columnas del curso */}
+    </table>
 
-      -- Subconsulta JSON para traer los inscritos de cada curso
-      (
-        SELECT 
-          i.id,
-          i.idCur,
-          i.docInscr,
-          i.est,
-          i.fecreg
-        FROM gescur.Inscripciones i
-        WHERE i.idCur = c.id
-        FOR JSON PATH
-      ) AS Inscritos
-
-    FROM gescur.cursos c
-    LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
-    LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
-    LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
-    LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
-    LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
-    LEFT JOIN gescur.emp_nomina e ON c.Profesor = e.id_emp    
-    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
-    LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
-  `);
-}
+    {/* Ahora tabla de inscritos */}
+    {curso.Inscritos && curso.Inscritos !== "[]" && (
+      <div className="mt-8 w-full">
+        <table className="min-w-full text-[0.8rem] table-fixed border border-gray-300 bg-white shadow-md rounded-lg">
+          <thead>
+            <tr className="bg-[#990000] text-white">
+              <th colSpan={5} className="text-center py-2 text-base font-semibold border-b">
+                Inscritos en este curso
+              </th>
+            </tr>
+            <tr className="bg-gray-100 text-[#990000] font-medium">
+              <th className="px-3 py-1 border">ID</th>
+              <th className="px-3 py-1 border">ID Curso</th>
+              <th className="px-3 py-1 border">Documento</th>
+              <th className="px-3 py-1 border">Estado</th>
+              <th className="px-3 py-1 border">Fecha Registro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {JSON.parse(curso.Inscritos).map((inscrito: any) => (
+              <tr key={inscrito.id} className="text-gray-700 text-center">
+                <td className="px-3 py-1 border">{inscrito.id}</td>
+                <td className="px-3 py-1 border">{inscrito.idCur}</td>
+                <td className="px-3 py-1 border">{inscrito.docInscr}</td>
+                <td className="px-3 py-1 border">{inscrito.est}</td>
+                <td className="px-3 py-1 border">{new Date(inscrito.fecreg).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+)}
