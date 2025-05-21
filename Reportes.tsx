@@ -53,7 +53,7 @@ async getCourses() {
           i.est,
           i.fecreg
         FROM gescur.Inscripciones i
-        WHERE i.idCur = c.id
+        WHERE i.idCur = c.id AND i.est = 1
         FOR JSON PATH
       ) AS Inscritos
 
