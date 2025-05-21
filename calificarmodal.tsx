@@ -1,3 +1,21 @@
+[Nest] 20972  - 21/05/2025, 3:13:22 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `248`. Message: `The conversion of the varchar value '88040561930 ' overflowed an int column.`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2010',
+  clientVersion: '6.8.2',
+  meta: {
+    code: '248',
+    message: "The conversion of the varchar value '88040561930 ' overflowed an int column."
+  }
+}
 (
   SELECT 
     i.id,
