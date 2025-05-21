@@ -1,3 +1,6 @@
+http://localhost:8090/api/notas
+
+
 import React, { useState, useEffect } from "react";
 import {
   XMarkIcon,
