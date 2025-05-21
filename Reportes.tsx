@@ -21,10 +21,10 @@
           const nota = inscrito.Notas?.[0]?.Nota ?? "—";
           return (
             <tr key={inscrito.id} className="text-gray-700 text-center">
-              <td className="px-3 py-1 border">{inscrito.id}</td>
-              <td className="px-3 py-1 border">{inscrito.idCur}</td>
               <td className="px-3 py-1 border">{inscrito.docInscr}</td>
-              <td className="px-3 py-1 border">{inscrito.est ? "Activo" : "Inactivo"}</td>
+              <td className="px-3 py-1 border">{inscrito.idCur}</td>
+              <td className="px-3 py-1 border">{nota.Nota}</td>
+              <td className="px-3 py-1 border">{nota.idRegistro}</td>
               <td className="px-3 py-1 border">
                 {new Date(inscrito.fecreg).toLocaleDateString()}
               </td>
