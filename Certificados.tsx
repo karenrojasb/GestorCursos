@@ -25,10 +25,10 @@ async createNote(CreateNotaDto: CreateNotaDto) {
           },
         });
 
-        // Insertar en AuditoriasNotas
+        // Insertar en AuditoriasNotas (sin idNota)
         await this.prisma.$executeRawUnsafe(`
-          INSERT INTO gescur.AuditoriasNotas (idNota, idCurso, idInscrito, Nota, idRegistro, FechaRegistro, accion)
-          VALUES (${notaActualizada.id}, ${notaActualizada.idCurso}, ${notaActualizada.idInscrito}, ${notaActualizada.Nota}, ${notaActualizada.idRegistro}, GETDATE(), 'ACTUALIZAR')
+          INSERT INTO gescur.AuditoriasNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro, accion)
+          VALUES (${notaActualizada.idCurso}, ${notaActualizada.idInscrito}, ${notaActualizada.Nota}, ${notaActualizada.idRegistro}, GETDATE(), 'ACTUALIZAR')
         `);
 
         return notaActualizada;
@@ -46,10 +46,10 @@ async createNote(CreateNotaDto: CreateNotaDto) {
         },
       });
 
-      // Insertar en AuditoriasNotas
+      // Insertar en AuditoriasNotas (sin idNota)
       await this.prisma.$executeRawUnsafe(`
-        INSERT INTO gescur.AuditoriasNotas (idNota, idCurso, idInscrito, Nota, idRegistro, FechaRegistro, accion)
-        VALUES (${newNote.id}, ${newNote.idCurso}, ${newNote.idInscrito}, ${newNote.Nota}, ${newNote.idRegistro}, GETDATE(), 'CREAR')
+        INSERT INTO gescur.AuditoriasNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro, accion)
+        VALUES (${newNote.idCurso}, ${newNote.idInscrito}, ${newNote.Nota}, ${newNote.idRegistro}, GETDATE(), 'CREAR')
       `);
 
       return newNote;
