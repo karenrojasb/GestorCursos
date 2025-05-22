@@ -1,22 +1,3 @@
-TypeError: opciones.map is not a function
-    at http://localhost:3000/_next/static/chunks/app_4281b6._.js:3064:94
-    at Array.map (<anonymous>)
-    at http://localhost:3000/_next/static/chunks/app_4281b6._.js:2990:103
-    at Array.map (<anonymous>)
-    at CatalogoModal (http://localhost:3000/_next/static/chunks/app_4281b6._.js:2250:80)
-    at react-stack-bottom-frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:13403:24)
-    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2977:24)
-    at updateFunctionComponent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:4732:21)
-    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:5364:24)
-    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
-    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7955:97)
-    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
-    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
-    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7589:56)
-    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8402:9)
-    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8326:245)
-    at processRootScheduleInMicrotask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8343:9)
-    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8413:126
 "use client";
 import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
@@ -106,8 +87,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [cursoEditar, setCursoEditar ] = useState <Curso | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState(false);
-  const [inscripciones, setInscripciones] = useState<Inscrito[]>([]);
-  const [inscripcionesFiltradas, setInscripcionesFiltradas] = useState<Inscrito[]>([]);
+ 
   const [opciones, setOpciones] = useState<{ id: number; Especificacion: string }[]>([]);
   const [guardando, setGuardando] = useState(false);
 
@@ -231,8 +211,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   idInscripcion: number,
   idEspecificacion: number
 ) => {
-  const inscripcion = inscripciones.find((i) => i.id === idInscripcion);
-  if (!inscripcion) return;
+  const Cursos = cursos.find((i) => i.id === idInscripcion);
+  if (!Cursos) return;
 
   try {
     setGuardando(true);
@@ -258,8 +238,8 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
     // Datos para crear o actualizar nota
     const notaData = {
-      idCurso: inscripcion.idCur,
-      idInscrito: inscripcion.docInscr,
+      idCurso: cursos.id,
+      idInscrito: cursos.docInscr,
       idRegistro: idEmp,
       Nota: notaNumerica,
       FechaRegistro: new Date(),
@@ -267,7 +247,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
     let response;
 
-    if (inscripcion.idNotas) {
+    if (cursos.idNotas) {
       // Si existe idNotas, actualizamos con PUT
       response = await fetch(`http://localhost:8090/api/notas/${inscripcion.idNotas}`, {
         method: "PUT",
@@ -292,7 +272,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       const nuevoIdNota = respuestaJson.id; 
       
       // Actualizar idNotas junto con Especificacion
-      setInscripciones((prev) =>
+      setCursos((prev) =>
         prev.map((i) =>
           i.id === idInscripcion
             ? { ...i, Especificacion: descripcion, idNotas: nuevoIdNota }
@@ -300,7 +280,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         )
       );
 
-      setInscripcionesFiltradas((prev) =>
+      setCursosFiltrados((prev) =>
         prev.map((i) =>
           i.id === idInscripcion
             ? { ...i, Especificacion: descripcion, idNotas: nuevoIdNota }
@@ -309,7 +289,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       );
     } else {
       // Solo actualizar especificación si fue PUT
-      setInscripciones((prev) =>
+      setCursos((prev) =>
         prev.map((i) =>
           i.id === idInscripcion
             ? { ...i, Especificacion: descripcion }
@@ -317,7 +297,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
         )
       );
 
-      setInscripcionesFiltradas((prev) =>
+      setCursosFiltrados((prev) =>
         prev.map((i) =>
           i.id === idInscripcion
             ? { ...i, Especificacion: descripcion }
