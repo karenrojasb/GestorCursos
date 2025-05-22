@@ -1,6 +1,3 @@
-http://localhost:8090/api/notas
-
-
 "use client";
 import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
@@ -71,6 +68,10 @@ interface Curso {
 
 }
 
+interface OpcionLista {
+  id: number;
+  Especificacion: string;
+}
 
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
@@ -85,7 +86,9 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [cursoEditar, setCursoEditar ] = useState <Curso | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState(false);
-  const [especificaciones, setEspecificaciones] = useState<{ id: number; Especificacion: string }[]>([]);
+    const [opciones, setOpciones] = useState<OpcionLista[]>([]);
+       const [guardando, setGuardando] = useState(false);
+    
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
@@ -99,7 +102,20 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     } catch (error) {
       console.error("Error al obtener los cursos:", error);
     }
+
+     const fetchOpciones = async () => {
+  try {
+    const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+    if (!respOpciones.ok) throw new Error("Error al obtener lista de especificaciones");
+    const dataOpciones = await respOpciones.json();
+    console.log("Opciones recibidas:", dataOpciones); 
+    setOpciones(dataOpciones);
+  } catch (error) {
+    console.error("Error al obtener opciones:", error);
+  }
+};
     setIsLoading(false);
+    fetchOpciones();
   };
 
   useEffect(() => {
@@ -202,19 +218,112 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     }
   };
 
+const handleChangeEspecificacion = async (
+  idInscripcion: number,
+  idEspecificacion: number
+) => {
+  const Curso = cursos.find((i) => i.id === idInscripcion);
+  if (!Curso) return;
 
-  useEffect(() => {
-  const fetchEspecificaciones = async () => {
-    try {
-      const res = await fetch("http://localhost:8090/api/listas/Especificaciones");
-      const data = await res.json();
-      setEspecificaciones(data);
-    } catch (error) {
-      console.error("Error al obtener las especificaciones:", error);
+  try {
+    setGuardando(true);
+
+    const especificacionObj = opciones.find((op) => op.id === idEspecificacion);
+    if (!especificacionObj) {
+      alert("Especificación no encontrada.");
+      setGuardando(false);
+      return;
     }
-  };
-  fetchEspecificaciones();
-}, []);
+
+    const descripcion = especificacionObj.Especificacion;
+
+    const idEmpString = localStorage.getItem("id_emp");
+    if (!idEmpString) {
+      alert("No se encontró el id_emp en localStorage");
+      setGuardando(false);
+      return;
+    }
+    const idEmp = Number(idEmpString);
+
+    const notaNumerica = idEspecificacion;
+
+    // Datos para crear o actualizar nota
+    const notaData = {
+      idCurso: cursos.id,
+      idInscrito: cursos.docInscr,
+      idRegistro: idEmp,
+      Nota: notaNumerica,
+      FechaRegistro: new Date(),
+    };
+
+    let response;
+
+    if (cursos.idNotas) {
+      // Si existe idNotas, actualizamos con PUT
+      response = await fetch(`http://localhost:8090/api/notas/${inscripcion.idNotas}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notaData),
+      });
+    } else {
+      // Si no existe, creamos con POST
+      response = await fetch("http://localhost:8090/api/notas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notaData),
+      });
+    }
+
+    if (!response.ok) throw new Error("Error al guardar la nota");
+
+    // Si hiciste POST, posiblemente quieras actualizar idNotas con el id nuevo
+    if (!cursos.idNotas) {
+      const respuestaJson = await response.json();
+      // Asumo que devuelve el objeto nota creado con su id
+      const nuevoIdNota = respuestaJson.id; 
+      
+      // Actualizar idNotas junto con Especificacion
+      setCursos((prev) =>
+        prev.map((i) =>
+          i.id === idInscripcion
+            ? { ...i, Especificacion: descripcion, idNotas: nuevoIdNota }
+            : i
+        )
+      );
+
+      setCursosFiltrados((prev) =>
+        prev.map((i) =>
+          i.id === idInscripcion
+            ? { ...i, Especificacion: descripcion, idNotas: nuevoIdNota }
+            : i
+        )
+      );
+    } else {
+      // Solo actualizar especificación si fue PUT
+      setCursos((prev) =>
+        prev.map((i) =>
+          i.id === idInscripcion
+            ? { ...i, Especificacion: descripcion }
+            : i
+        )
+      );
+
+      setCursosFiltrados((prev) =>
+        prev.map((i) =>
+          i.id === idInscripcion
+            ? { ...i, Especificacion: descripcion }
+            : i
+        )
+      );
+    }
+  } catch (error) {
+    console.error("Error al guardar nota:", error);
+    alert("Hubo un error al guardar la nota.");
+  } finally {
+    setGuardando(false);
+  }
+};
+ 
 
 
 
@@ -534,18 +643,19 @@ const datosInscritos = (inscritos ?? []).map((inscrito) => {
                   ? new Date(nota.FechaRegistro).toLocaleDateString()
                   : "—"}
               </td>
-             <select
-  value={nota?.Nota ?? ""}
-  onChange={(e) => {
-    // Aquí puedes manejar el cambio de nota si deseas guardarlo
-    const nuevaNota = parseInt(e.target.value);
-    nota.Nota = nuevaNota; // o setNotas(prev => ...)
-  }}
-  className="border rounded px-2 py-1"
+         <select
+  className="border rounded px-2 py-1 text-sm bg-white"
+  value={
+    
+    opciones.find(op => op.Especificacion === insc.Especificacion)?.id || ""
+  }
+  onChange={(e) => handleChangeEspecificacion(insc.id, Number(e.target.value))}
 >
-  <option value="">Seleccione</option>
-  {especificaciones.map((esp) => (
-    <option key={esp.id} value={esp.id}>{esp.Especificacion}</option>
+  <option value="">-- Selecciona --</option>
+  {opciones.map((opcion) => (
+    <option key={opcion.id} value={opcion.id}>
+      {opcion.Especificacion}
+    </option>
   ))}
 </select>
             </tr>
