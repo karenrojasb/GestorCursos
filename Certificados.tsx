@@ -106,9 +106,6 @@ const handleChangeEspecificacion = async (
 
 
 
-
-
-a este codigo 
 "use client";
 import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
@@ -441,14 +438,14 @@ const datosInscritos = inscritos.map((inscrito) => {
                   <div className="flex space-x-2">
                     <button 
                     onClick={() => handleVerMas(curso.id)} 
-                    className="bg-[#990000] hover:bg-red-700 text-white px-4 py-2 rounded transition-transform hover:scale-110 active:scale-95">
+                    className="bg-[#990000] hover:bg-red-700 text-white px-2 py-1 rounded transition-transform hover:scale-110 active:scale-95">
                       {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
                     </button>
                    
                     {/* BOTÓN PARA EDITAR */}
                     <button 
                    onClick={() => handleEditarCurso(curso)}
-                    className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
+                    className="bg-[#990000] hover:bg-red-700 text-white p-1 rounded transition-transform hover:scale-110 active:scale-95"
                     title="Editar">
                       <PencilSquareIcon className="h-5 w-5" />
                     </button>
@@ -458,7 +455,7 @@ const datosInscritos = inscritos.map((inscrito) => {
                      
                      <button 
                      onClick={() => handleDeleteCourse(curso.id)} 
-                     className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
+                     className="bg-[#990000] hover:bg-red-700 text-white p-1 rounded transition-transform hover:scale-110 active:scale-95"
                      title="Eliminar">                    
                        <TrashIcon className="h-5 w-5"/>
                      </button>
