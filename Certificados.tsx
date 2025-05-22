@@ -16,6 +16,7 @@ interface Nota {
 }
 
 interface Inscrito {
+  NombreInscrito: string;
   FechaRegistro: any;
   idRegistro: string;
   id: number;
@@ -352,8 +353,9 @@ const notaData = {
       Fin: curso.Fin,
       Horas: curso.Horas,
       Lugar: curso.Lugar,
-      Estado: curso.Estado,
-      Modalidad: curso.Modalidad,
+      Estado: curso.EstadoNombre,
+      Linea: curso.LineaNombre,
+      Modalidad: curso.ModalidadNombre,
       Unidad: curso.Unidad,
       Profesor: curso.NombreProfesor,
       SegundoProfesor: curso.SegundoPro,
@@ -376,16 +378,16 @@ const datosInscritos = (inscritos ?? []).map((inscrito) => {
     opciones.find(op => op.id === nota?.Nota)?.Especificacion || "";
 
   return {
-    ID: inscrito.id,
-    Documento: inscrito.docInscr,
-    Nombre: nota?.NombreInscrito ?? "",
-    Estado: inscrito.est ? "Activo" : "Inactivo",
-    FechaInscripción: new Date(inscrito.fecreg).toLocaleDateString(),
-    Nota: nota?.Nota ?? "",
-    Especificación: especificacion,
-    idRegistro: nota?.idRegistro ?? "",
-    NombreRegistro: nota?.NombreRegistro ?? "",
-    FechaRegistro: nota?.FechaRegistro
+    
+    Documento_Inscrito: inscrito.docInscr,
+    Nombre_Inscrito: inscrito.NombreInscrito ?? "",
+    
+    Fecha_Inscripción: new Date(inscrito.fecreg).toLocaleDateString(),
+    
+    Nota: especificacion,
+    Documento_del_Calificador: nota?.idRegistro ?? "",
+    Calificador: nota?.NombreRegistro ?? "",
+    Fecha_Calificación: nota?.FechaRegistro
       ? new Date(nota.FechaRegistro).toLocaleDateString()
       : "",
   };
