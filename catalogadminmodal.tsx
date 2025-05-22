@@ -1,9 +1,31 @@
 "use client";
-import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import CursoEditarModal from "../components/CursoEditarModal"
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 
+interface Nota {
+  Nota: number;
+  idRegistro: number;
+  FechaRegistro: string;
+  NotaEspecificacion: string;
+  NombreInscrito: string;
+  NombreRegistro: string; 
+}
+
+interface Inscrito {
+  NombreInscrito: string;
+  FechaRegistro: any;
+  idRegistro: string;
+  id: number;
+  idCur: number;
+  docInscr: number;
+  est: boolean;
+  fecreg: string;
+  Notas?: Nota[];
+}
 
 interface Curso {
   id: number;
@@ -17,8 +39,11 @@ interface Curso {
   CupoMax: number;
   Lugar: string;
   Linea: number;
-  Estado: number;
+  LineaNombre: number;
+  Estado: string;
+  EstadoNombre: string;
   Modalidad: number;
+  ModalidadNombre: string;
   Unidad: number;
   Profesor: number;
   SegundoPro: string;
@@ -40,7 +65,18 @@ interface Curso {
   SabadoFin: string;
   DomingoIni: string;
   DomingoFin: string;
+  InicioInscr: string;
+  FinInscr: string;
+
+  Inscritos ?: string;
+
 }
+
+interface OpcionLista {
+  id: number;
+  Especificacion: string;
+}
+
 
 export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   
@@ -53,6 +89,10 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [cursoEditar, setCursoEditar ] = useState <Curso | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMensaje, setErrorMensaje] = useState(false);
+  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
+  const [guardando, setGuardando] = useState(false);
+    
 
   // OBTENER CURSO DE BACKEND
   const fetchCursos = async () => {
@@ -66,7 +106,20 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
     } catch (error) {
       console.error("Error al obtener los cursos:", error);
     }
+
+     const fetchOpciones = async () => {
+  try {
+    const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
+    if (!respOpciones.ok) throw new Error("Error al obtener lista de especificaciones");
+    const dataOpciones = await respOpciones.json();
+    console.log("Opciones recibidas:", dataOpciones); 
+    setOpciones(dataOpciones);
+  } catch (error) {
+    console.error("Error al obtener opciones:", error);
+  }
+};
     setIsLoading(false);
+    fetchOpciones();
   };
 
   useEffect(() => {
@@ -89,6 +142,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
       { dia: "Viernes", ini: curso.ViernesIni, fin: curso.ViernesFin },
       { dia: "Sábado", ini: curso.SabadoIni, fin: curso.SabadoFin },
       { dia: "Domingo", ini: curso.DomingoIni, fin: curso.DomingoFin },
+      
     ];
   
     return dias
@@ -116,6 +170,7 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
   // EXPANDIR DETALLES DEL CURSO
   const handleVerMas = (id: number) => {
     setExpandedCursoId(expandedCursoId === id ? null : id);
+    
   };
 
   // ELIMINAR CURSO
@@ -169,44 +224,249 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
 
 
 
+const handleChangeEspecificacion = async (
+  idInscrito: number,
+  idEspecificacion: number,
+  idNotaExistente?: number,
+  idCur?: number,
+  docInscr?: string
+) => {
+  try {
+    setGuardando(true);
+
+    const especificacionObj = opciones.find(op => op.id === idEspecificacion);
+    if (!especificacionObj) {
+      alert("Especificación no encontrada.");
+      return;
+    }
+
+    const descripcion = especificacionObj.Especificacion;
+    const idEmpString = localStorage.getItem("id_emp");
+    if (!idEmpString) {
+      alert("No se encontró el id_emp en localStorage");
+      return;
+    }
+
+    const idEmp = Number(idEmpString);
+    const notaNumerica = idEspecificacion;
+
+    const notaData = {
+      idInscrito: idInscrito,
+      idCurso: idCur,
+      docInscr: docInscr,
+      idRegistro: idEmp,
+      Nota: notaNumerica,
+      FechaRegistro: new Date(),
+    };
+
+    let response;
+    if (idNotaExistente) {
+      // PUT si existe la nota
+      response = await fetch(`http://localhost:8090/api/notas/${idNotaExistente}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notaData),
+      });
+    } else {
+      // POST si no existe la nota
+      response = await fetch("http://localhost:8090/api/notas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notaData),
+      });
+    }
+
+    if (!response.ok) throw new Error("Error al guardar la nota");
+
+    const nuevaNota = await response.json();
+
+    
+    setCursos((prevCursos) =>
+      prevCursos.map((curso) => {
+        if (curso.id !== idCur) return curso;
+
+        const inscritosActualizados = curso.Inscritos
+          ? JSON.parse(curso.Inscritos).map((inscrito: Inscrito) => {
+              if (inscrito.id === idInscrito) {
+                return {
+                  ...inscrito,
+                  Notas: [
+                    {
+                      ...nuevaNota,
+                      NotaEspecificacion: descripcion,
+                    },
+                  ],
+                };
+              }
+              return inscrito;
+            })
+          : [];
+
+        return {
+          ...curso,
+          Inscritos: JSON.stringify(inscritosActualizados),
+        };
+      })
+    );
+
+    // También actualizar cursosFiltrados si es necesario
+    setCursosFiltrados((prevCursos) =>
+      prevCursos.map((curso) => {
+        if (curso.id !== idCur) return curso;
+
+        const inscritosActualizados = curso.Inscritos
+          ? JSON.parse(curso.Inscritos).map((inscrito: Inscrito) => {
+              if (inscrito.id === idInscrito) {
+                return {
+                  ...inscrito,
+                  Notas: [
+                    {
+                      ...nuevaNota,
+                      NotaEspecificacion: descripcion,
+                    },
+                  ],
+                };
+              }
+              return inscrito;
+            })
+          : [];
+
+        return {
+          ...curso,
+          Inscritos: JSON.stringify(inscritosActualizados),
+        };
+      })
+    );
+  } catch (error) {
+    console.error("Error al guardar nota:", error);
+    alert("Hubo un error al guardar la nota.");
+  } finally {
+    setGuardando(false);
+  }
+};
+
+
+
+  function exportarCursoAExcel(curso: Curso) {
+  const inscritos: Inscrito[] = curso.Inscritos ? JSON.parse(curso.Inscritos) : [];
+
+  // 🧾 Hoja 1: Datos del curso
+  const datosCurso = [
+    {
+      ID: curso.id,
+      Nombre: curso.NombreCurso,
+      Valor: curso.Valor,
+      Público: curso.Publico,
+      Periodo: curso.Periodo,
+      CupoMax: curso.CupoMax,
+      Inicio: curso.Inicio,
+      Fin: curso.Fin,
+      Horas: curso.Horas,
+      Lugar: curso.Lugar,
+      Estado: curso.EstadoNombre,
+      Linea: curso.LineaNombre,
+      Modalidad: curso.ModalidadNombre,
+      Unidad: curso.Unidad,
+      Profesor: curso.NombreProfesor,
+      SegundoProfesor: curso.SegundoPro,
+      ProfesorExterno: curso.Proexterno,
+      TipoCurso: curso.IdTipoCurso,
+      InicioInscripción: curso.InicioInscr,
+      FinInscripción: curso.FinInscr,
+      Descripción: curso.Descripcion,
+    },
+  ];
+  const hojaCurso = XLSX.utils.json_to_sheet(datosCurso);
+
+
+const datosInscritos = (inscritos ?? []).map((inscrito) => {
+  const nota = inscrito.Notas?.[0];
+
+  // Encontrar especificación correspondiente si no está incluida
+  const especificacion =
+    nota?.NotaEspecificacion ||
+    opciones.find(op => op.id === nota?.Nota)?.Especificacion || "";
+
+  return {
+    
+    Documento_Inscrito: inscrito.docInscr,
+    Nombre_Inscrito: inscrito.NombreInscrito ?? "",
+    
+    Fecha_Inscripción: new Date(inscrito.fecreg).toLocaleDateString(),
+    
+    Nota: especificacion,
+    Documento_del_Calificador: nota?.idRegistro ?? "",
+    Calificador: nota?.NombreRegistro ?? "",
+    Fecha_Calificación: nota?.FechaRegistro
+      ? new Date(nota.FechaRegistro).toLocaleDateString()
+      : "",
+  };
+});
+
+
+  const hojaInscritos = XLSX.utils.json_to_sheet(datosInscritos);
+
+  // 📄 Libro y descarga
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hojaCurso, "Datos del Curso");
+  XLSX.utils.book_append_sheet(libro, hojaInscritos, "Inscritos");
+
+  const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+  saveAs(blob, `Reporte_Curso_${curso.NombreCurso.replace(/\s+/g, "_")}.xlsx`);
+}
+
+
+
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl h-[90vh] overflow-y-auto">
+    <div className="p-10 rounded-xl shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+     
+      {errorMensaje && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600  text-white px-6 py-3 rounded shadow-lg 
+        z-50 animate">
+
+        </div> 
+      )}
+     <div className="bg-white rounded-lg p-6 shadow-md max-w-6xl w-full h-[90vh] overflow-hidden flex flex-col">
         
-       {/* BOTÓN CERRAR */}
-              <button
-                onClick={onClose}
-                className="absolute top-2 right-2 text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
+  
 
         {/* BARRA DE BUSQUEDA */}
+        <div className="flex justify-between items-center mb-4">
         <div className="relative flex items-center"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}>
-            <button 
-            
-            onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
-              {isSearchActive ? <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" /> : <MagnifyingGlassIcon className="h-6 w-6 text-[#990000]" />}
+           onMouseEnter={handleMouseEnter}
+           onMouseLeave={handleMouseLeave}>
+            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
+              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] " />
             </button>
             <input
               type="text"
               placeholder="Busque el nombre del curso"
               value={busqueda}
               onChange={handleBuscar}
-              className={`px-4 py-2 border rounded-full transition-all duration-500 ease-in-out 
+              className={`px-4 py-2 border w-9/12 ml-4 rounded-full transition-all duration-500 ease-in-out 
                 ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />
-          </div>
+            />   
 
+     </div>
+             <button
+            onClick={onClose}
+            className=" text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button> 
+          
+        </div>
+     
 
          <div className="w-full flex justify-between text-[#990000] font-semibold px-4 py-2 rounded-t-lg">
-           <span className="w-1/3 text-left">Nombre del curso</span>
-           <span className="w-1/3 text-center">Inicio Curso</span>
-           <span className="w-1/3"></span>
+           <span className="w-1/5 text-left">Nombre del curso</span>
+           
+           <span className="w-96 text-right">Inicio Curso</span>
+           <span className="w-1/5"></span>
          </div>
+
 
         {/* SPINNER DE CARGA */}
         {isLoading && (
@@ -221,9 +481,11 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
            {cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso) => (
               <div key={curso.id} className="border-b py-2">
-                <div className="grid grid-cols-3 items-center">
+                <div className="grid grid-cols-4 items-center">
                   <span className="text-left">{curso.NombreCurso}</span>
+                   <span></span>
                   <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
+                 
 
                   {/* BOTONES */}
                  
@@ -245,11 +507,21 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                     
                     
                     {/* BOTÓN PARA ELIMINAR */}
+                     
                      <button 
                      onClick={() => handleDeleteCourse(curso.id)} 
                      className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
                      title="Eliminar">                    
                        <TrashIcon className="h-5 w-5"/>
+                     </button>
+
+                     <button 
+                     onClick={() => exportarCursoAExcel(curso)} 
+                     className="flex items-center hover:scale-110 active:scale-95 bg-green-600 text-white px-2 py-1 rounded-md hover:bg-green-700 transition"
+      
+                     title="Descargar">                    
+                
+            <ArrowDownTrayIcon className="font-semibold h-5 w-5"/>
                      </button>
                    </div>
 
@@ -258,85 +530,180 @@ export default function CatalogoModal({ onClose }: { onClose: () => void }) {
                    {expandedCursoId === curso.id && (
                   
                   
-                  <div className="relative bg-gray-100 p-6  flex mt-5 justify-center overflow-x-auto min-w-[680px]">
-  <table className="border-collapse w-auto text-sm shadow-lg rounded-lg overflow-hidden ">
-    <thead className="bg-[#990000] text-white font-semibold">
-      <tr>
-        <th className="border px-4 py-2">ID</th>
-        <th className="border px-4 py-2">Nombre del curso</th>
-        <th className="border px-4 py-2">Valor</th>
-        <th className="border px-4 py-2">Público</th>
-        <th className="border px-4 py-2">Periodo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr className="bg-gray-50 ">
-        <td className="border px-4 py-2">{curso.id}</td>
-        <td className="border px-4 py-2">{curso.NombreCurso}</td>
-        <td className="border px-4 py-2">{curso.Valor}</td>
-        <td className="border px-4 py-2">{curso.Publico}</td>
-        <td className="border px-4 py-2">{curso.Periodo}</td>
-      </tr>
+                  <div className=" bg-gray-100 p-4 mt-4 flex flex-col justify-center overflow-x-auto min-w-[1100px]">
+                     <div className="w-full flex justify-center">
+    <table className="min-w-full table-fixed text-[0.8rem] shadow-md rounded-lg border border-gray-300 bg-white">
+      <colgroup>
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+        <col className="w-[16.6%]" />
+      </colgroup>
+      <thead>
+        <tr className="bg-[#990000] text-white">
+          <th colSpan={6} className="text-center py-2 text-base font-semibold border-b border-gray-300">
+            Datos del Curso
+          </th>
+        </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">ID</th>
+          <th className="px-3 py-1 border">Nombre</th>
+          <th className="px-3 py-1 border">Valor</th>
+          <th className="px-3 py-1 border">Público</th>
+          <th className="px-3 py-1 border">Periodo</th>
+          <th className="px-3 py-1 border">Cupo Máx</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.id}</td>
+          <td className="px-3 py-1 border">{curso.NombreCurso}</td>
+          <td className="px-3 py-1 border">{curso.Valor || " - - "}</td>
+          <td className="px-3 py-1 border">{curso.Publico}</td>
+          <td className="px-3 py-1 border">{curso.Periodo}</td>
+          <td className="px-3 py-1 border">{curso.CupoMax}</td>
+        </tr>
 
-      <tr >
-        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Inicio</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Fecha de Fin</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Horas</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Horario</th> 
-        <th className="border px-4 py-2 bg-[#990000] text-white">Cupo Máximo</th>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Inicio</th>
+          <th className="px-3 py-1 border">Fin</th>
+          <th className="px-3 py-1 border">Horas</th>
+          <th className="px-3 py-1 border">Horario</th>
+          <th className="px-3 py-1 border">Lugar</th>
+          <th className="px-3 py-1 border">Línea</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.Inicio}</td>
+          <td className="px-3 py-1 border">{curso.Fin}</td>
+          <td className="px-3 py-1 border">{curso.Horas}</td>
+          <td className="px-3 py-1 border text-left">
+           
+{formatearHorario(curso).map((h) => (
+  <div key={`${curso.id}-${h.dia}`}>
+    <strong>{h.dia}</strong> {h.ini} - {h.fin}
+  </div>
+))}
 
-      </tr>
-      <tr className="bg-gray-50  ">
-        <td className="border px-4 py-2 ">{curso.Inicio}</td>
-        <td className="border px-4 py-2">{curso.Fin}</td>
-        <td className="border px-4 py-2">{curso.Horas}</td>
-        <td className="border px-4 py-2">{formatearHorario(curso).map((h, index) => (
-          <div key={index}>
-            <strong>{h.dia}</strong> {h.ini} - {h.fin}
-          </div>
-        ))}</td>
-        <td className="border px-4 py-2">{curso.CupoMax}</td>
-        
-      </tr>
+          </td>
+          <td className="px-3 py-1 border">{curso.Lugar}</td>
+          <td className="px-3 py-1 border">{curso.LineaNombre}</td>
+        </tr>
 
-      <tr>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Lugar</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Línea</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Estado</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Modalidad</th>
-      
-        <th className="border px-4 py-2 bg-[#990000] text-white">Profesor</th>
-      </tr>
-      <tr className="bg-gray-50 ">
-        <td className="border px-4 py-2">{curso.Lugar}</td>
-        <td className="border px-4 py-2">{curso.Linea}</td>
-        <td className="border px-4 py-2">{curso.Estado}</td>
-        <td className="border px-4 py-2">{curso.Modalidad}</td>
-        <td className="border px-4 py-2">{curso.NombreProfesor}</td>
-      </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Estado</th>
+          <th className="px-3 py-1 border">Modalidad</th>
+          <th className="px-3 py-1 border">Profesor</th>
+          <th className="px-3 py-1 border">Segundo Profesor</th>
+          <th className="px-3 py-1 border">Profesor Externo</th>
+          <th className="px-3 py-1 border">Unidad</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.EstadoNombre}</td>
+          <td className="px-3 py-1 border">{curso.ModalidadNombre}</td>
+          <td className="px-3 py-1 border">{curso.NombreProfesor}</td>
+          <td className="px-3 py-1 border">{curso.SegundoPro}</td>
+          <td className="px-3 py-1 border">{curso.Proexterno}</td>
+          <td className="px-3 py-1 border">{curso.Unidad}</td>
+        </tr>
 
-      <tr>
-         
-        <th className="border px-4 py-2 bg-[#990000] text-white">Segundo Profesor</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Profesor Externo</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Unidad</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white">Tipo de Curso</th>
-        <th className="border px-4 py-2 bg-[#990000] text-white" >Descripción</th>
-      </tr>
-      <tr className="bg-gray-50 ">
-      
-       <td className="border px-4 py-2">{curso.SegundoPro}</td>
-       <td className="border px-4 py-2">{curso.Proexterno}</td>
-       <td className="border px-4 py-2">{curso.Unidad}</td>
-        <td className="border px-4 py-2">{curso.IdTipoCurso}</td>
-        <td className="border px-4 py-2"   >{curso.Descripcion}</td>
-        
-      </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">Tipo</th>
+          <th className="px-3 py-1 border">Inicio Inscripciones</th>
+          <th className="px-3 py-1 border">Cierre Inscripciones</th>
+          <th className="px-3 py-1 border" colSpan={3}>Descripción</th>
+        </tr>
+        <tr className="text-gray-700 text-center">
+          <td className="px-3 py-1 border">{curso.IdTipoCurso}</td>
+          <td className="px-3 py-1 border">{curso.InicioInscr }</td>
+          <td className="px-3 py-1 border">{curso.FinInscr}</td>
+          <td className="px-3 py-1 border text-left" colSpan={3}>{curso.Descripcion}</td>
+        </tr>
       
     </tbody>
+
+          
+                    
   </table>
  
-</div>            
+ 
+</div> 
+ 
+
+{curso.Inscritos && curso.Inscritos !== "[]" && (
+  <div className="mt-2 w-full">
+    <table className="min-w-full text-[0.8rem] table-fixed border border-gray-300 bg-white shadow-md rounded-lg">
+      <thead>
+        <tr className="bg-[#990000] text-white">
+          <th colSpan={8} className="text-center py-2 text-base font-semibold border-b">
+            Inscritos en este curso
+          </th>
+        </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">ID Curso</th>
+          <th className="px-3 py-1 border">Documento</th>
+          <th className="px-3 py-1 border">Nombre del Inscrito</th>
+          <th className="px-3 py-1 border">Fecha de Inscripción</th>
+          <th className="px-3 py-1 border">Calificador</th>
+          
+          
+          <th className="px-3 py-1 border">Fecha de Calificación</th>
+          <th className="px-3 py-1 border">Nota</th>
+        </tr>
+      </thead>
+      <tbody>
+        {JSON.parse(curso.Inscritos).map((inscrito: any) => {
+          const nota = inscrito.Notas?.[0] || {};
+
+          return (
+            <tr key={inscrito.id} className="text-gray-700 text-center">
+              <td className="px-3 py-1 border">{inscrito.idCur}</td>
+              <td className="px-3 py-1 border">{inscrito.docInscr}</td>
+              <td className="px-3 py-1 border">{inscrito.NombreInscrito}</td>
+              <td className="px-3 py-1 border">{new Date(inscrito.fecreg).toLocaleDateString()}</td>
+                            <td className="px-3 py-1 border">{nota.NombreRegistro ?? "—"}</td>
+              
+              
+              
+
+              <td className="px-3 py-1 border">
+                {nota.FechaRegistro
+                  ? new Date(nota.FechaRegistro).toLocaleDateString()
+                  : "—"}
+              </td>
+   <td>
+<select
+  className="border rounded px-2 py-1 text-sm bg-white"
+    value={inscrito.Notas?.[0]?.Nota ?? ""}
+  onChange={(e) =>
+    handleChangeEspecificacion(
+      inscrito.docInscr,                   
+      Number(e.target.value),
+      nota?.id,                      
+      inscrito.idCur,                
+                  
+    )
+  }
+>
+  <option value="">-- Selecciona --</option>
+  {opciones.map((opcion) => (
+    <option key={opcion.id} value={opcion.id}>
+      {opcion.Especificacion}
+    </option>
+  ))}
+</select>
+</td>   
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+)}
+
+
+ </div>          
                      
               
                  )}
