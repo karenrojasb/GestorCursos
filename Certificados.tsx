@@ -1,20 +1,30 @@
-<select
-  className="border rounded px-2 py-1 text-sm bg-white"
-    value={inscrito.Notas?.[0]?.Nota ?? ""}
-  onChange={(e) =>
-    handleChangeEspecificacion(
-      inscrito.docInscr,                   
-      Number(e.target.value),
-      nota?.id,                      
-      inscrito.idCur,                
-                  
-    )
-  }
->
-  <option value="">-- Selecciona --</option>
-  {opciones.map((opcion) => (
-    <option key={opcion.id} value={opcion.id}>
-      {opcion.Especificacion}
-    </option>
-  ))}
-</select>
+setCursos((prevCursos) =>
+  prevCursos.map((curso) => {
+    if (!curso.Inscritos) return curso;
+
+    const inscritosParsed: Inscrito[] =
+      typeof curso.Inscritos === "string"
+        ? JSON.parse(curso.Inscritos)
+        : curso.Inscritos;
+
+    const nuevosInscritos = inscritosParsed.map((inscrito) => {
+      if (inscrito.id === idInscrito || inscrito.docInscr === idInscrito) {
+        return {
+          ...inscrito,
+          Notas: [
+            {
+              ...nuevaNota,
+              NotaEspecificacion: descripcion,
+            },
+          ],
+        };
+      }
+      return inscrito;
+    });
+
+    return {
+      ...curso,
+      Inscritos: nuevosInscritos,
+    };
+  })
+);
