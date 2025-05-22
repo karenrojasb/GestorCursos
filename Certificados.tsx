@@ -1,74 +1,57 @@
-const handleChangeEspecificacion = async (
-  idInscripcion: number,
-  idEspecificacion: number
-) => {
-  try {
-    setGuardando(true);
+{curso.Inscritos && curso.Inscritos !== "[]" && (
+  <div className="mt-2 w-full">
+    <table className="min-w-full text-[0.8rem] table-fixed border border-gray-300 bg-white shadow-md rounded-lg">
+      <thead>
+        <tr className="bg-[#990000] text-white">
+          <th colSpan={8} className="text-center py-2 text-base font-semibold border-b">
+            Inscritos en este curso
+          </th>
+        </tr>
+        <tr className="bg-gray-100 text-[#990000] font-medium">
+          <th className="px-3 py-1 border">ID</th>
+          <th className="px-3 py-1 border">ID Curso</th>
+          <th className="px-3 py-1 border">Documento</th>
+          <th className="px-3 py-1 border">Estado</th>
+          <th className="px-3 py-1 border">Fecha de Inscripción</th>
+          
+          <th className="px-3 py-1 border">Calificador</th>
+          <th className="px-3 py-1 border">Fecha de Calificación</th>
+          <th className="px-3 py-1 border">Nota</th>
+        </tr>
+      </thead>
+      <tbody>
+        {JSON.parse(curso.Inscritos).map((inscrito: any) => {
+          const nota = inscrito.Notas?.[0] || {};
 
-    const especificacionObj = opciones.find((op) => op.id === idEspecificacion);
-    if (!especificacionObj) {
-      alert("Especificación no encontrada.");
-      return;
-    }
+          return (
+            <tr key={inscrito.id} className="text-gray-700 text-center">
+              <td className="px-3 py-1 border">{inscrito.id}</td>
+              <td className="px-3 py-1 border">{inscrito.idCur}</td>
+              <td className="px-3 py-1 border">{inscrito.docInscr}</td>
+              <td className="px-3 py-1 border">{inscrito.est ? "Activo" : "Inactivo"}</td>
+              <td className="px-3 py-1 border">{new Date(inscrito.fecreg).toLocaleDateString()}</td>
+              
+              <td className="px-3 py-1 border">{nota.NombreRegistro ?? "—"}</td>
+              <td className="px-3 py-1 border">
+                {nota.FechaRegistro
+                  ? new Date(nota.FechaRegistro).toLocaleDateString()
+                  : "—"}
+              </td>
+             <select
+  value={inscrito.idNotas || ""}
+  onChange={(e) => handleChangeEspecificacion(inscrito.id, parseInt(e.target.value))}
+  className="border p-1 rounded"
+>
+  <option value="">Seleccionar</option>
+  {opciones.map(op => (
+    <option key={op.id} value={op.id}>{op.Especificacion}</option>
+  ))}
+</select>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+)}
 
-    const descripcion = especificacionObj.Especificacion;
-
-    const idEmpString = localStorage.getItem("id_emp");
-    if (!idEmpString) {
-      alert("No se encontró el id_emp en localStorage");
-      return;
-    }
-    const idEmp = Number(idEmpString);
-
-    // Buscar el curso y luego el inscrito dentro de él
-    const cursoActual = cursos.find((curso) =>
-      curso.Inscritos && JSON.parse(curso.Inscritos).some((inscrito: Inscrito) => inscrito.id === idInscripcion)
-    );
-    if (!cursoActual) {
-      alert("Curso no encontrado para el inscrito.");
-      return;
-    }
-
-    const inscritos: Inscrito[] = JSON.parse(cursoActual.Inscritos!);
-    const inscrito = inscritos.find((i) => i.id === idInscripcion);
-    if (!inscrito) {
-      alert("Inscrito no encontrado.");
-      return;
-    }
-
-    const nota = inscrito.Notas?.[0];
-    const notaData = {
-      idCurso: cursoActual.id,
-      idInscrito: inscrito.docInscr,
-      idRegistro: idEmp,
-      Nota: idEspecificacion,
-      FechaRegistro: new Date(),
-    };
-
-    let response;
-
-    if (nota?.idRegistro) {
-      response = await fetch(`http://localhost:8090/api/notas/${nota.idRegistro}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(notaData),
-      });
-    } else {
-      response = await fetch("http://localhost:8090/api/notas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(notaData),
-      });
-    }
-
-    if (!response.ok) throw new Error("Error al guardar la nota");
-
-    // Actualizar la lista de cursos
-    fetchCursos();
-  } catch (error) {
-    console.error("Error al guardar la nota:", error);
-    alert("Ocurrió un error al guardar la nota.");
-  } finally {
-    setGuardando(false);
-  }
-};
