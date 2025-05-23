@@ -1,3 +1,43 @@
+{
+  "id": 455,
+  "NombreCurso": "Todos Prub",
+  "Valor": null,
+  "Publico": 3,
+  "Periodo": "2025-2",
+  "Inicio": "2025-05-01",
+  "Fin": "2025-05-10",
+  "Horas": 5,
+  "CupoMax": 20,
+  "Lugar": "bloque",
+  "LunesIni": "20:19",
+  "LunesFin": "22:19",
+  "MartesIni": null,
+  "MartesFin": null,
+  "MiercolesIni": null,
+  "MiercolesFin": null,
+  "JuevesIni": null,
+  "JuevesFin": null,
+  "ViernesIni": null,
+  "ViernesFin": null,
+  "SabadoIni": null,
+  "SabadoFin": null,
+  "DomingoIni": null,
+  "DomingoFin": null,
+  "Linea": 5,
+  "Estado": 15,
+  "Modalidad": 12,
+  "Unidad": 1201000000,
+  "Profesor": 1007781939,
+  "SegundoPro": 1000034366,
+  "Proexterno": null,
+  "Descripcion": null,
+  "IdTipoCurso": 26,
+  "InicioInscr": null,
+  "FinInscr": null,
+  "NombreProfesor": "VARGAS RAMIREZ ZULY VALENTINA",
+  "NombreSegundoPro": "RODRIGUEZ REY WENDY SOFIA"
+}
+
 import { useEffect, useState } from "react";
 import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
