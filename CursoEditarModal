@@ -1,19 +1,18 @@
 <select
   className="border rounded px-2 py-1 text-sm bg-white"
-    value={inscrito.Notas?.[0]?.Nota ?? ""}
+  value={String(inscrito.Notas?.[0]?.Nota ?? "")} // convertimos a string para que coincida
   onChange={(e) =>
     handleChangeEspecificacion(
-      inscrito.docInscr,                   
-      Number(e.target.value),
-      nota?.id,                      
-      inscrito.idCur,                
-                  
+      inscrito.docInscr,
+      Number(e.target.value), // convertimos a número para el backend
+      nota?.id,
+      inscrito.idCur,
     )
   }
 >
   <option value="">-- Selecciona --</option>
   {opciones.map((opcion) => (
-    <option key={opcion.id} value={opcion.id}>
+    <option key={opcion.id} value={String(opcion.id)}>
       {opcion.Especificacion}
     </option>
   ))}
