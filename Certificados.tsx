@@ -25,9 +25,9 @@ const handleChangeEspecificacion = async (
     const notaNumerica = idEspecificacion;
 
     const notaData = {
-      idInscrito: idInscrito,
+      idInscrito,
       idCurso: idCur,
-      docInscr: docInscr,
+      docInscr,
       idRegistro: idEmp,
       Nota: notaNumerica,
       FechaRegistro: new Date(),
@@ -52,12 +52,11 @@ const handleChangeEspecificacion = async (
 
     const nuevaNota = await response.json();
 
+    // Función para actualizar la nota dentro de curso.Inscritos (string)
     const actualizarCursoConNota = (curso) => {
       if (curso.id !== idCur) return curso;
 
-      const inscritosArray = Array.isArray(curso.Inscritos)
-        ? curso.Inscritos
-        : JSON.parse(curso.Inscritos || '[]');
+      const inscritosArray = JSON.parse(curso.Inscritos || '[]');
 
       const inscritosActualizados = inscritosArray.map((inscrito: Inscrito) => {
         if (inscrito.id === idInscrito) {
@@ -76,7 +75,7 @@ const handleChangeEspecificacion = async (
 
       return {
         ...curso,
-        Inscritos: inscritosActualizados,
+        Inscritos: JSON.stringify(inscritosActualizados),
       };
     };
 
