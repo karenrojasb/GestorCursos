@@ -5,6 +5,11 @@ const handleChangeEspecificacion = async (
   idCur?: number,
   docInscr?: string
 ) => {
+  if (!idCur) {
+    alert("ID de curso inválido.");
+    return;
+  }
+
   try {
     setGuardando(true);
 
@@ -25,109 +30,64 @@ const handleChangeEspecificacion = async (
     const notaNumerica = idEspecificacion;
 
     const notaData = {
-      idInscrito: idInscrito,
+      idInscrito,
       idCurso: idCur,
-      docInscr: docInscr,
+      docInscr,
       idRegistro: idEmp,
       Nota: notaNumerica,
       FechaRegistro: new Date(),
     };
 
-    let response;
-    if (idNotaExistente) {
-      // PUT si existe la nota
-      response = await fetch(`http://localhost:8090/api/notas/${idNotaExistente}`, {
-        method: "PUT",
+    const response = await fetch(
+      idNotaExistente
+        ? `http://localhost:8090/api/notas/${idNotaExistente}`
+        : "http://localhost:8090/api/notas",
+      {
+        method: idNotaExistente ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notaData),
-      });
-    } else {
-      // POST si no existe la nota
-      response = await fetch("http://localhost:8090/api/notas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(notaData),
-      });
-    }
+      }
+    );
 
     if (!response.ok) throw new Error("Error al guardar la nota");
 
     const nuevaNota = await response.json();
 
-    
+    const actualizarInscritos = (inscritos: Inscrito[]) =>
+      inscritos.map((inscrito) =>
+        inscrito.id === idInscrito
+          ? {
+              ...inscrito,
+              Notas: [
+                {
+                  ...nuevaNota,
+                  NotaEspecificacion: descripcion,
+                },
+              ],
+            }
+          : inscrito
+      );
+
     setCursos((prevCursos) =>
-  prevCursos.map((curso) => {
-    if (curso.id !== idCur) return curso;
+      prevCursos.map((curso) =>
+        curso.id === idCur
+          ? {
+              ...curso,
+              Inscritos: actualizarInscritos(curso.Inscritos ?? []),
+            }
+          : curso
+      )
+    );
 
-    const inscritosActualizados = curso.Inscritos?.map((inscrito: Inscrito) => {
-      if (inscrito.id === idInscrito) {
-        return {
-          ...inscrito,
-          Notas: [
-            {
-              ...nuevaNota,
-              NotaEspecificacion: descripcion,
-            },
-          ],
-        };
-      }
-      return inscrito;
-    }) ?? [];
-
-    return {
-      ...curso,
-      Inscritos: inscritosActualizados,
-    };
-  })
-);
-
-setCursosFiltrados((prevCursos) =>
-  prevCursos.map((curso) => {
-    if (curso.id !== idCur) return curso;
-
-    const inscritosActualizados = curso.Inscritos?.map((inscrito: Inscrito) => {
-      if (inscrito.id === idInscrito) {
-        return {
-          ...inscrito,
-         Notas: [...(inscrito.Notas || []), { ...nuevaNota, NotaEspecificacion: descripcion }],
-        };
-      }
-      return inscrito;
-    }) ?? [];
-
-    return {
-      ...curso,
-      Inscritos: inscritosActualizados,
-    };
-  })
-);
-    // También actualizar cursosFiltrados si es necesario
     setCursosFiltrados((prevCursos) =>
-      prevCursos.map((curso) => {
-        if (curso.id !== idCur) return curso;
-
-        const inscritosActualizados = curso.Inscritos
-          ? JSON.parse(curso.Inscritos).map((inscrito: Inscrito) => {
-              if (inscrito.id === idInscrito) {
-                return {
-                  ...inscrito,
-                  Notas: [
-                    {
-                      ...nuevaNota,
-                      NotaEspecificacion: descripcion,
-                    },
-                  ],
-                };
-              }
-              return inscrito;
-            })
-          : [];
-
-        return {
-          ...curso,
-          Inscritos: JSON.stringify(inscritosActualizados),
-        };
-      })
+      prevCursos.map((curso) =>
+        curso.id === idCur
+          ? {
+              ...curso,
+              Inscritos: actualizarInscritos(curso.Inscritos ?? []),
+            }
+          : curso
+      )
     );
   } catch (error) {
     console.error("Error al guardar nota:", error);
