@@ -497,4 +497,503 @@ export default function CursoEditarModal({
 
     </div>
   );
+}import { useEffect, useState } from "react";
+import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { motion } from "framer-motion";
+
+interface Curso {
+  id: number;
+  NombreCurso?: string;
+  Valor?: number;
+  Publico?: number;
+  Periodo?: string;
+  Inicio?: string;
+  Fin?: string;
+  Horas?: number;
+  CupoMax?: number;
+  Lugar?: string;
+  Linea?: number;
+  Estado?: number;
+  Modalidad?: number;
+  Unidad?: number;
+  Profesor?: number;
+  SegundoPro?: number;
+  Proexterno?: string;
+  Descripcion: string;
+  IdTipoCurso: number;
+  LunesIni?: string;
+  LunesFin?: string;
+  MartesIni?: string;
+  MartesFin?: string;
+  MiercolesIni?: string;
+  MiercolesFin?: string;
+  JuevesIni?: string;
+  JuevesFin?: string;
+  ViernesIni?: string;
+  ViernesFin?: string;
+  SabadoIni?: string;
+  SabadoFin?: string;
+  DomingoIni?: string;
+  DomingoFin?: string;
+  
+  InicioInscr?: string;
+  FinInscr?: string; 
+  
+}
+
+interface CursoEditarModalProps {
+  courseId: number | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: () => void;
+}
+
+interface Opcion {
+  id: number;
+  Especificacion: string;
+  Tipo: number;
+}
+
+export default function CursoEditarModal({
+  courseId,
+  isOpen,
+  onClose,
+  onUpdate,
+}: CursoEditarModalProps) {
+  const [formData, setFormData] = useState<Curso>({
+    id: 0,
+    NombreCurso: "",
+    Valor: 0,
+    Publico: 0,
+    Periodo: "",
+    Inicio: "",
+    Fin: "",
+    Horas: 0,
+    CupoMax: 0,
+    Lugar: "",
+    Linea:0,
+    Estado: 0,
+    Modalidad:0,
+    Unidad: 0,
+    Profesor: 0,
+    SegundoPro:0,
+    Proexterno: "",
+    Descripcion: "",
+    IdTipoCurso:0,
+    InicioInscr: "",
+    FinInscr: "",
+    
+
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [opcionesPublico, setOpcionesPublico] = useState<Opcion[]>([]);
+  const [opcionesLinea, setOpcionesLinea] = useState<Opcion[]>([]);
+  const [opcionesModalidad, setOpcionesModalidad] = useState<Opcion[]>([]);
+  const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([]);
+  const [opcionesTipoCurso, setOpcionesTipoCurso] = useState<Opcion[]>([]);
+  const [unidad, setUnidad] = useState<{ codigo: number; nombre: string}[]>([])
+  const [opcionesPeriodos, setOpcionesPeriodos] = useState<{ periodo: string}[]>([]);
+  const [profesores, setProfesores] = useState<{ id_emp: number; nombre: string}[]>([])
+  const [showSuccess, setShowSuccess] = useState(false);
+  
+ 
+
+  // CARGAR DATOS DE CURSO
+  useEffect(() => {
+    if (!courseId || !isOpen) return; 
+
+    setLoading(true);
+    setError(null);
+
+    console.log("Cargando curso con ID:", courseId);
+
+    fetch(`http://localhost:8090/api/cursos/${courseId}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error al cargar el curso");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Datos del curso recibidos:", data);
+        if (data) {
+          setFormData(data);
+        } else {
+          throw new Error("Datos del curso vacíos");
+        }
+      })
+      .catch((err) => {
+        setError(err.message || "No se pudo cargar el curso");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [courseId, isOpen]);
+
+
+    useEffect(() => {
+      async function fetchOpciones() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/especificaciones");
+          if (!response.ok) throw new Error("Error al obtener las opciones");
+  
+          const data: Opcion[] = await response.json();
+  
+          setOpcionesPublico(data.filter((item) => item.Tipo === 1));
+          setOpcionesLinea(data.filter((item) => item.Tipo === 2));
+          setOpcionesModalidad(data.filter((item) => item.Tipo === 3));
+          setOpcionesEstado(data.filter((item) => item.Tipo === 4));
+          setOpcionesTipoCurso(data.filter((item) => item.Tipo === 8));
+        } catch (error) {
+          console.error("Error cargando las opciones:", error);
+        }
+      }
+  
+      fetchOpciones();
+    }, []);
+
+    useEffect(()  => {
+      async function fetcPeriodos() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/periodos")
+          if (!response.ok) throw new Error("Error al obtener los periodos");
+  
+          const data = await response.json();
+          setOpcionesPeriodos(data);
+          } catch(error){
+            console.error("Error cargando lista de periodos:", error);
+          }
+        }
+        fetcPeriodos(); 
+    }, []);
+  
+  
+    useEffect(()  => {
+      async function fetcUnidades() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/unidad")
+          if (!response.ok) throw new Error("Error al obtener las unidades");
+  
+          const data = await response.json();
+          setUnidad(data);
+          } catch(error){
+            console.error("Error cargando lista de unidades:", error);
+          }
+        }
+        fetcUnidades(); 
+    }, []);
+
+    useEffect(() => {
+      async function fetchProfesores() {
+        try {
+          const response = await fetch("http://localhost:8090/api/cursos/profesores");
+          if (!response.ok) throw new Error("Error al obtener los profesores");
+    
+          const data = await response.json();
+          const profesoresPublicos = data.filter((prof: any) => prof.publico === 1);
+          setProfesores(profesoresPublicos);
+          console.log("Profesores públicos:", profesoresPublicos);
+        } catch (error) {
+          console.error("Error cargando los profesores:", error);
+        }
+      }
+    
+      fetchProfesores();
+    }, []);
+
+
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData((prev) =>
+      prev
+        ? {
+            ...prev,
+            [e.target.name]: e.target.type === "number" ? Number(e.target.value) : e.target.value,
+          }
+        : prev
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData) return;
+  
+    try {
+      const res = await fetch(`http://localhost:8090/api/cursos/${courseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!res.ok) throw new Error("Error al actualizar el curso");
+  
+      setShowSuccess(true);
+      setTimeout(()=> {
+        setShowSuccess(false);
+        onUpdate();
+        onClose();
+      }, 2000)
+      
+    } catch (err) {
+      setError("No se pudo actualizar el curso");
+    }
+  };
+
+  if (!isOpen) return null; 
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p>{error}</p>;
+  if (!formData) return <p>No se encontró el curso</p>;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className=" relative bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl opacity-100 animate-fade-in max-h-[80vh] overflow-y-auto">
+      <motion.div
+        className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto"
+        initial={{ opacity: 0}}
+        animate={{ opacity: 1}}
+        exit={{ opacity: 0}}
+        transition={{ duration: 0.3}}
+        >
+      <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-[#990000] transition-transform duration-300 hover:rotate-90"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+        <h2 className="text-3xl font-bold text-[#990000] text-center mb-6 ">Editar Curso</h2>
+        {/* FORMULARIO DE EDITAR CURSO */}
+        <form onSubmit={handleSubmit} className="space-y-4 seleccion-personalizada">
+
+  {/* Nombre del curso */}
+  <div>
+    <label>Nombre Curso</label>
+    <input type="text" name="NombreCurso" value={formData.NombreCurso ?? ""} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+  </div>
+
+  {/* Valor | Público | Periodo */}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>
+      <label>Valor</label>
+      <input type="number" name="Valor" value={formData.Valor ?? ""} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+    </div>
+    <div>
+      <label>Público</label>
+      <select name="Publico" value={formData.Publico} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {opcionesPublico.map((opcion) => (
+          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label>Periodo</label>
+      <select name="Periodo" value={formData.Periodo} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {opcionesPeriodos.map((opcion, idx) => (
+          <option key={idx} value={opcion.periodo}>{opcion.periodo}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  {/* Inicio curso | Fin curso */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label>Inicio curso</label>
+      <input type="date" name="Inicio" value={formData.Inicio ?? ""} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+    </div>
+    <div>
+      <label>Fin curso</label>
+      <input type="date" name="Fin" value={formData.Fin ?? ""} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+    </div>
+  </div>
+
+  {/* Horario */}
+  <div>
+    <h3 className="text-lg font-semibold mt-4">Horarios</h3>
+<table className="w-full border-collapse border border-gray-300 text-center">
+  <thead>
+    <tr className="bg-gray-200">
+      <th className="border border-gray-300 px-2 py-1">Día</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Inicio</th>
+      <th className="border border-gray-300 px-2 py-1">Hora Fin</th>
+    </tr>
+  </thead>
+  <tbody>
+    {["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].map((dia) => (
+      <tr key={dia}>
+        <td className="border border-gray-300 px-2 py-1 font-semibold">{dia}</td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Ini`}
+            value={formData[`${dia}Ini` as keyof typeof formData] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+        <td className="border border-gray-300 px-2 py-1">
+          <input
+            type="time"
+            name={`${dia}Fin`}
+            value={formData[`${dia}Fin` as keyof typeof formData] || ""}
+            onChange={handleChange}
+            className="w-full border p-1 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+          />
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+  </div>
+
+  {/* Horas | Cupo máximo */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label>Horas</label>
+      <input type="number" name="Horas" value={formData.Horas ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+    </div>
+    <div>
+      <label>Cupo máximo</label>
+      <input type="number" name="CupoMax" value={formData.CupoMax ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+    </div>
+  </div>
+
+  {/* Lugar */}
+  <div>
+    <label>Lugar</label>
+    <input type="text" name="Lugar" value={formData.Lugar ?? ""} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+  </div>
+
+  {/* Línea | Estado */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label>Línea</label>
+      <select name="Linea" value={formData.Linea ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {opcionesLinea.map((opcion) => (
+          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label>Estado</label>
+      <select name="Estado" value={formData.Estado ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {opcionesEstado.map((opcion) => (
+          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  {/* Modalidad | Unidad */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label>Modalidad</label>
+      <select name="Modalidad" value={formData.Modalidad ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {opcionesModalidad.map((opcion) => (
+          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label>Unidad</label>
+      <select name="Unidad" value={formData.Unidad ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {unidad.map((u) => (
+          <option key={u.codigo} value={u.codigo}>{u.nombre}</option>
+        ))}
+      </select>
+    </div>
+    
+  </div>
+
+  {/* Profesor | Segundo Profesor */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label>Profesor</label>
+      <select name="Profesor" value={formData.Profesor ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {profesores.map((p) => (
+          <option key={p.id_emp} value={p.id_emp}>{p.nombre}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label>Segundo Profesor</label>
+      <select name="SegundoPro" value={formData.SegundoPro
+         ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {profesores.map((p) => (
+          <option key={p.id_emp} value={p.id_emp}>{p.nombre}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  {/* Profesor Externo */}
+  <div>
+    <label>Profesor Externo</label>
+    <input type="text" name="Proexterno" value={formData.Proexterno ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+  </div>
+
+  {/* Inicio Inscripciones | Fin Inscripciones */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label>Inicio Inscripciones</label>
+      <input type="date" name="InicioInscr" value={formData.InicioInscr ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+    </div>
+    <div>
+      <label>Fin Inscripciones</label>
+      <input type="date" name="FinInscr" value={formData.FinInscr ?? 0} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+    </div>
+  </div>
+
+  {/* Tipo de curso | Descripción */}
+  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+    <div>
+      <label>Tipo de curso</label>
+      <select name="IdTipoCurso" value={formData.IdTipoCurso ??  0} onChange={handleChange} className="w-full border p-2 rounded-lg">
+        <option value="">Selecciona una opción</option>
+        {opcionesTipoCurso.map((opcion) => (
+          <option key={opcion.id} value={opcion.id}>{opcion.Especificacion}</option>
+        ))}
+      </select>
+    </div>
+    
+  </div>
+  <div>
+      <label>Descripción</label>
+      <input type="text" name="Descripcion" value={formData.Descripcion ?? ""} onChange={handleChange} className="w-full border p-2 rounded-lg" />
+    </div>
+
+  {/* Botón Guardar */}
+  <div className="text-center mt-6">
+    <button type="submit" className="bg-[#990000] text-white px-6 py-2 rounded-lg hover:bg-red-800 transition-colors">Guardar Curso</button>
+  </div>
+
+</form>
+
+
+        </motion.div>
+      </div>
+
+      
+      
+
+      {showSuccess && (
+  <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-[9999]">
+    <div className="animate-check-spin scale-125">
+      <CheckCircleIcon className="h-32 w-32 text-green-500" />
+    </div>
+    <p className="text-white text-2xl font-bold mt-2 animate-fade-in">Curso actualizado</p>
+  </div>
+)}
+
+
+    </div>
+  );
 }
