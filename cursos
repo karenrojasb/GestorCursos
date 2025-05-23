@@ -11,7 +11,6 @@ const handleChangeEspecificacion = async (
     const especificacionObj = opciones.find(op => op.id === idEspecificacion);
     if (!especificacionObj) {
       alert("Especificación no encontrada.");
-      setGuardando(false);
       return;
     }
 
@@ -19,7 +18,6 @@ const handleChangeEspecificacion = async (
     const idEmpString = localStorage.getItem("id_emp");
     if (!idEmpString) {
       alert("No se encontró el id_emp en localStorage");
-      setGuardando(false);
       return;
     }
 
@@ -37,14 +35,14 @@ const handleChangeEspecificacion = async (
 
     let response;
     if (idNotaExistente) {
-      // PUT si existe la nota
+      // PUT si ya existe una nota
       response = await fetch(`http://localhost:8090/api/notas/${idNotaExistente}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notaData),
       });
     } else {
-      // POST si no existe la nota
+      // POST si es una nueva nota
       response = await fetch("http://localhost:8090/api/notas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,22 +54,19 @@ const handleChangeEspecificacion = async (
 
     const nuevaNota = await response.json();
 
+    // ✅ Actualiza cursos con Inscritos como array (NO string)
     setCursos((prevCursos) =>
       prevCursos.map((curso) => {
         if (curso.id !== idCur) return curso;
 
-        const inscritosArray: Inscrito[] = curso.Inscritos ? JSON.parse(curso.Inscritos) : [];
-
-        const inscritosActualizados = inscritosArray.map((inscrito) => {
+        const inscritosActualizados = (curso.Inscritos || []).map((inscrito) => {
           if (inscrito.id === idInscrito) {
             return {
               ...inscrito,
-              Notas: [
-                {
-                  ...nuevaNota,
-                  NotaEspecificacion: descripcion,
-                },
-              ],
+              Notas: [{
+                ...nuevaNota,
+                NotaEspecificacion: descripcion,
+              }],
             };
           }
           return inscrito;
@@ -79,27 +74,24 @@ const handleChangeEspecificacion = async (
 
         return {
           ...curso,
-          Inscritos: JSON.stringify(inscritosActualizados), 
+          Inscritos: inscritosActualizados, // 👈 Mantenlo como array
         };
       })
     );
 
+    // ✅ Igual con cursos filtrados
     setCursosFiltrados((prevCursos) =>
       prevCursos.map((curso) => {
         if (curso.id !== idCur) return curso;
 
-        const inscritosArray: Inscrito[] = curso.Inscritos ? JSON.parse(curso.Inscritos) : [];
-
-        const inscritosActualizados = inscritosArray.map((inscrito) => {
+        const inscritosActualizados = (curso.Inscritos || []).map((inscrito) => {
           if (inscrito.id === idInscrito) {
             return {
               ...inscrito,
-              Notas: [
-                {
-                  ...nuevaNota,
-                  NotaEspecificacion: descripcion,
-                },
-              ],
+              Notas: [{
+                ...nuevaNota,
+                NotaEspecificacion: descripcion,
+              }],
             };
           }
           return inscrito;
@@ -107,7 +99,7 @@ const handleChangeEspecificacion = async (
 
         return {
           ...curso,
-          Inscritos: JSON.stringify(inscritosActualizados), 
+          Inscritos: inscritosActualizados,
         };
       })
     );
@@ -121,16 +113,17 @@ const handleChangeEspecificacion = async (
 };
 
 
+
 <select
   className="border rounded px-2 py-1 text-sm bg-white"
-    value={inscrito.Notas?.[0]?.Nota ?? ""}
+  value={inscrito.Notas?.[0]?.Nota ?? ""}
   onChange={(e) =>
     handleChangeEspecificacion(
-      inscrito.docInscr,                   
-      Number(e.target.value),
-      nota?.id,                      
-      inscrito.idCur,                
-                  
+      inscrito.id,                   // idInscrito
+      Number(e.target.value),       // idEspecificacion
+      inscrito.Notas?.[0]?.id,      // idNotaExistente
+      inscrito.idCur,               // idCurso
+      inscrito.docInscr             // docInscr
     )
   }
 >
