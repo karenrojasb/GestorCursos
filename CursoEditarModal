@@ -1,63 +1,20 @@
-interface Inscrito {
-  id: number;
-  nombre: string;
-  nota: number;
-}
-
-interface Curso {
-  // ...otros campos
-  inscritos?: Inscrito[];
-}
-
-
-
-const fetchCursos = async () => {
-  setIsLoading(true);
-  try {
-    // 1. Obtener todos los cursos
-    const cursosResponse = await fetch("http://localhost:8090/api/cursos");
-    const cursosData = await cursosResponse.json();
-
-    // 2. Obtener inscritos por curso
-    const inscritosResponse = await fetch("http://localhost:8090/api/inscritos");
-    const inscritosData = await inscritosResponse.json(); // [{ idCurso: 1, inscritos: [...] }, ...]
-
-    // 3. Combinar inscritos con los cursos
-    const cursosConInscritos = cursosData.map((curso: Curso) => {
-      const inscritosCurso = inscritosData.find((i: any) => i.idCurso === curso.id)?.inscritos || [];
-      return { ...curso, inscritos: inscritosCurso };
-    });
-
-    setCursos(cursosConInscritos);
-    setCursosFiltrados(cursosConInscritos);
-  } catch (error) {
-    console.error("Error al obtener cursos e inscritos:", error);
-  } finally {
-    setIsLoading(false);
+<select
+  className="border rounded px-2 py-1 text-sm bg-white"
+    value={inscrito.Notas?.[0]?.Nota ?? ""}
+  onChange={(e) =>
+    handleChangeEspecificacion(
+      inscrito.docInscr,                   
+      Number(e.target.value),
+      nota?.id,                      
+      inscrito.idCur,                
+                  
+    )
   }
-};
-
-
-{curso.inscritos && curso.inscritos.length > 0 && (
-  <div className="mt-4">
-    <h3 className="text-[#990000] font-semibold text-sm mb-2">Inscritos ({curso.inscritos.length})</h3>
-    <table className="min-w-full table-auto text-sm border border-gray-300 bg-white rounded">
-      <thead className="bg-gray-100 text-[#990000]">
-        <tr>
-          <th className="px-3 py-2 border">ID</th>
-          <th className="px-3 py-2 border">Nombre</th>
-          <th className="px-3 py-2 border">Nota</th>
-        </tr>
-      </thead>
-      <tbody>
-        {curso.inscritos.map((inscrito) => (
-          <tr key={inscrito.id} className="text-center">
-            <td className="px-3 py-2 border">{inscrito.id}</td>
-            <td className="px-3 py-2 border">{inscrito.nombre}</td>
-            <td className="px-3 py-2 border">{inscrito.nota}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+>
+  <option value="">-- Selecciona --</option>
+  {opciones.map((opcion) => (
+    <option key={opcion.id} value={opcion.id}>
+      {opcion.Especificacion}
+    </option>
+  ))}
+</select>
