@@ -1,120 +1,54 @@
-const handleChangeEspecificacion = async (
-  idInscrito: number,
-  idEspecificacion: number,
-  idNotaExistente?: number,
-  idCur?: number,
-  docInscr?: string
-) => {
-  try {
-    setGuardando(true);
+setCursos((prevCursos) =>
+  prevCursos.map((curso) => {
+    if (curso.id !== idCur) return curso;
 
-    const especificacionObj = opciones.find(op => op.id === idEspecificacion);
-    if (!especificacionObj) {
-      alert("Especificación no encontrada.");
-      return;
-    }
+    const inscritosActualizados = curso.Inscritos?.map((inscrito: Inscrito) => {
+      if (inscrito.id === idInscrito) {
+        return {
+          ...inscrito,
+          Notas: [
+            {
+              ...nuevaNota,
+              NotaEspecificacion: descripcion,
+            },
+          ],
+        };
+      }
+      return inscrito;
+    }) ?? [];
 
-    const descripcion = especificacionObj.Especificacion;
-    const idEmpString = localStorage.getItem("id_emp");
-    if (!idEmpString) {
-      alert("No se encontró el id_emp en localStorage");
-      return;
-    }
-
-    const idEmp = Number(idEmpString);
-    const notaNumerica = idEspecificacion;
-
-    const notaData = {
-      idInscrito: idInscrito,
-      idCurso: idCur,
-      docInscr: docInscr,
-      idRegistro: idEmp,
-      Nota: notaNumerica,
-      FechaRegistro: new Date(),
+    return {
+      ...curso,
+      Inscritos: inscritosActualizados,
     };
+  })
+);
 
-    let response;
-    if (idNotaExistente) {
-      // PUT si existe la nota
-      response = await fetch(`http://localhost:8090/api/notas/${idNotaExistente}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(notaData),
-      });
-    } else {
-      // POST si no existe la nota
-      response = await fetch("http://localhost:8090/api/notas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(notaData),
-      });
-    }
+setCursosFiltrados((prevCursos) =>
+  prevCursos.map((curso) => {
+    if (curso.id !== idCur) return curso;
 
-    if (!response.ok) throw new Error("Error al guardar la nota");
-
-    const nuevaNota = await response.json();
-
-    
-    setCursos((prevCursos) =>
-      prevCursos.map((curso) => {
-        if (curso.id !== idCur) return curso;
-
-        const inscritosActualizados = curso.Inscritos
-          ? JSON.parse(curso.Inscritos).map((inscrito: Inscrito) => {
-              if (inscrito.id === idInscrito) {
-                return {
-                  ...inscrito,
-                  Notas: [
-                    {
-                      ...nuevaNota,
-                      NotaEspecificacion: descripcion,
-                    },
-                  ],
-                };
-              }
-              return inscrito;
-            })
-          : [];
-
+    const inscritosActualizados = curso.Inscritos?.map((inscrito: Inscrito) => {
+      if (inscrito.id === idInscrito) {
         return {
-          ...curso,
-          Inscritos: JSON.stringify(inscritosActualizados),
+          ...inscrito,
+          Notas: [
+            {
+              ...nuevaNota,
+              NotaEspecificacion: descripcion,
+            },
+          ],
         };
-      })
-    );
+      }
+      return inscrito;
+    }) ?? [];
 
-    // También actualizar cursosFiltrados si es necesario
-    setCursosFiltrados((prevCursos) =>
-      prevCursos.map((curso) => {
-        if (curso.id !== idCur) return curso;
+    return {
+      ...curso,
+      Inscritos: inscritosActualizados,
+    };
+  })
+);
 
-        const inscritosActualizados = curso.Inscritos
-          ? JSON.parse(curso.Inscritos).map((inscrito: Inscrito) => {
-              if (inscrito.id === idInscrito) {
-                return {
-                  ...inscrito,
-                  Notas: [
-                    {
-                      ...nuevaNota,
-                      NotaEspecificacion: descripcion,
-                    },
-                  ],
-                };
-              }
-              return inscrito;
-            })
-          : [];
 
-        return {
-          ...curso,
-          Inscritos: JSON.stringify(inscritosActualizados),
-        };
-      })
-    );
-  } catch (error) {
-    console.error("Error al guardar nota:", error);
-    alert("Hubo un error al guardar la nota.");
-  } finally {
-    setGuardando(false);
-  }
-};
+Notas: [...(inscrito.Notas || []), { ...nuevaNota, NotaEspecificacion: descripcion }],
