@@ -1,19 +1,30 @@
-<select
-  className="border rounded px-2 py-1 text-sm bg-white"
-  value={String(inscrito.Notas?.[0]?.Nota ?? "")} // convertimos a string para que coincida
-  onChange={(e) =>
-    handleChangeEspecificacion(
-      inscrito.docInscr,
-      Number(e.target.value), // convertimos a número para el backend
-      nota?.id,
-      inscrito.idCur,
-    )
-  }
->
-  <option value="">-- Selecciona --</option>
-  {opciones.map((opcion) => (
-    <option key={opcion.id} value={String(opcion.id)}>
-      {opcion.Especificacion}
-    </option>
-  ))}
-</select>
+import React, { useState } from "react";
+
+function Componente({ inscrito, opciones, nota, handleChangeEspecificacion }) {
+  // Estado local para controlar la nota seleccionada
+  const [notaSeleccionada, setNotaSeleccionada] = useState(
+    inscrito.Notas?.[0]?.Nota ?? ""
+  );
+
+  const onChange = (e) => {
+    const nuevoValor = Number(e.target.value);
+    setNotaSeleccionada(nuevoValor);
+    // Llamar a la función que hace el update backend o global
+    handleChangeEspecificacion(inscrito.docInscr, nuevoValor, nota?.id, inscrito.idCur);
+  };
+
+  return (
+    <select
+      className="border rounded px-2 py-1 text-sm bg-white"
+      value={String(notaSeleccionada)}
+      onChange={onChange}
+    >
+      <option value="">-- Selecciona --</option>
+      {opciones.map((opcion) => (
+        <option key={opcion.id} value={String(opcion.id)}>
+          {opcion.Especificacion}
+        </option>
+      ))}
+    </select>
+  );
+}
