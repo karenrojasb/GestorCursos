@@ -1,42 +1,113 @@
-  // OBTENER CURSO DE BACKEND
-  const fetchCursos = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("http://localhost:8090/api/cursos");
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      const data = await response.json();
-      setCursos(data);
-      setCursosFiltrados(data);
-    } catch (error) {
-      console.error("Error al obtener los cursos:", error);
+const handleChangeEspecificacion = async (
+  idInscripcion: number,
+  idEspecificacion: number
+) => {
+  const inscripcion = inscripciones.find((i) => i.id === idInscripcion);
+  if (!inscripcion) return;
+
+  try {
+    setGuardando(true);
+
+    const especificacionObj = opciones.find((op) => op.id === idEspecificacion);
+    if (!especificacionObj) {
+      alert("Especificación no encontrada.");
+      setGuardando(false);
+      return;
     }
 
-     const fetchOpciones = async () => {
-  try {
-    const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-    if (!respOpciones.ok) throw new Error("Error al obtener lista de especificaciones");
-    const dataOpciones = await respOpciones.json();
-    console.log("Opciones recibidas:", dataOpciones); 
-    setOpciones(dataOpciones);
+    const descripcion = especificacionObj.Especificacion;
+
+    const idEmpString = localStorage.getItem("id_emp");
+    if (!idEmpString) {
+      alert("No se encontró el id_emp en localStorage");
+      setGuardando(false);
+      return;
+    }
+    const idEmp = Number(idEmpString);
+
+    const notaNumerica = idEspecificacion;
+
+   
+    const notaData = {
+      idCurso: inscripcion.idCur,
+      idInscrito: inscripcion.docInscr,
+      idRegistro: idEmp,
+      Nota: notaNumerica,
+      FechaRegistro: new Date(),
+    };
+
+    let response;
+
+    if (inscripcion.idNotas) {
+   
+      response = await fetch(`http://localhost:8090/api/notas/${inscripcion.idNotas}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notaData),
+      });
+    } else {
+   
+      response = await fetch("http://localhost:8090/api/notas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notaData),
+      });
+    }
+
+    if (!response.ok) throw new Error("Error al guardar la nota");
+
+   
+    if (!inscripcion.idNotas) {
+      const respuestaJson = await response.json();
+   
+      const nuevoIdNota = respuestaJson.id; 
+      
+   
+      setInscripciones((prev) =>
+        prev.map((i) =>
+          i.id === idInscripcion
+            ? { ...i, Especificacion: descripcion, idNotas: nuevoIdNota }
+            : i
+        )
+      );
+
+      setInscripcionesFiltradas((prev) =>
+        prev.map((i) =>
+          i.id === idInscripcion
+            ? { ...i, Especificacion: descripcion, idNotas: nuevoIdNota }
+            : i
+        )
+      );
+    } else {
+   
+      setInscripciones((prev) =>
+        prev.map((i) =>
+          i.id === idInscripcion
+            ? { ...i, Especificacion: descripcion }
+            : i
+        )
+      );
+
+      setInscripcionesFiltradas((prev) =>
+        prev.map((i) =>
+          i.id === idInscripcion
+            ? { ...i, Especificacion: descripcion }
+            : i
+        )
+      );
+    }
   } catch (error) {
-    console.error("Error al obtener opciones:", error);
+    console.error("Error al guardar nota:", error);
+    alert("Hubo un error al guardar la nota.");
+  } finally {
+    setGuardando(false);
   }
 };
-    setIsLoading(false);
-    fetchOpciones();
-  };
-
-  useEffect(() => {
-    fetchCursos();
-  }, []);
-
-  const handleUpdate = () => {
-    fetchCursos();
-  };
 
 
-  
-  const handleChangeEspecificacion = async (
+
+
+const handleChangeEspecificacion = async (
   idInscrito: number,
   idEspecificacion: number,
   idNotaExistente?: number,
