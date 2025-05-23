@@ -5,23 +5,23 @@ import { motion } from "framer-motion";
 interface Curso {
   id: number;
   NombreCurso?: string;
-  Valor?: number;
-  Publico?: number;
+  Valor?: string;
+  Publico?: string;
   Periodo?: string;
   Inicio?: string;
   Fin?: string;
-  Horas?: number;
-  CupoMax?: number;
+  Horas?: string;
+  CupoMax?: string;
   Lugar?: string;
-  Linea?: number;
-  Estado?: number;
-  Modalidad?: number;
-  Unidad?: number;
-  Profesor?: number;
-  SegundoPro?: number;
+  Linea?: string;
+  Estado?: string;
+  Modalidad?: string;
+  Unidad?: string;
+  Profesor?: string;
+  SegundoPro?: string;
   Proexterno?: string;
   Descripcion: string;
-  IdTipoCurso: number;
+  IdTipoCurso: string;
   LunesIni?: string;
   LunesFin?: string;
   MartesIni?: string;
@@ -62,24 +62,24 @@ export default function CursoEditarModal({
 }: CursoEditarModalProps) {
   const [formData, setFormData] = useState<Curso>({
     id: 0,
-    NombreCurso: "",
-    Valor: 0,
-    Publico: 0,
+   NombreCurso: "",
+    Valor: "",
+    Publico: "",
     Periodo: "",
     Inicio: "",
     Fin: "",
-    Horas: 0,
-    CupoMax: 0,
+    Horas: "",
+    CupoMax: "",
     Lugar: "",
-    Linea:0,
-    Estado: 0,
-    Modalidad:0,
-    Unidad: 0,
-    Profesor: 0,
-    SegundoPro:0,
-    Proexterno: "",
-    Descripcion: "",
-    IdTipoCurso:0,
+    Linea: "",
+    Estado: "",
+    Modalidad: "",
+    Unidad: "",
+    Profesor: "",
+    SegundoPro: "",  
+    Proexterno: "",  
+    Descripcion: "", 
+    IdTipoCurso: "",
     InicioInscr: "",
     FinInscr: "",
 
