@@ -1,30 +1,21 @@
-async getRegistrationsByCourseId(idCur: number) {
-  return this.prisma.$queryRawUnsafe<
-    Array<{
-      id: number;
-      idCur: number;
-      docInscr: string;
-      est: boolean;
-      fecreg: Date;
-      notaId: number | null;
-      nota: number | null;
-      idRegistro: number | null;
-      fechaRegistro: Date | null;
-    }>
-  >(
-    `SELECT 
-      i.id, 
-      i.idCur, 
-      i.docInscr, 
-      i.est, 
-      i.fecreg,
-      n.id AS notaId,
-      n.Nota AS nota,
-      n.idRegistro,
-      n.FechaRegistro AS fechaRegistro
-    FROM gescur.Inscripciones i
-    LEFT JOIN gescur.Notas n
-      ON i.idCur = n.idCurso AND i.docInscr = n.idInscrito
-    WHERE i.est = 1 AND i.idCur = ${idCur}`
-  );
-}
+<tbody>
+  {inscripciones[curso.id]?.map((inscrito) => (
+    <tr key={inscrito.id} className="border-t">
+      <td className="p-2">{inscrito.docInscr}</td>
+      <td className="p-2">{new Date(inscrito.fecreg).toLocaleDateString()}</td>
+      <td className="p-2">
+        {inscrito.nota !== null ? (
+          <>
+            <span className="font-bold">Nota:</span> {inscrito.nota}
+            <br />
+            <small>ID Registro: {inscrito.idRegistro}</small>
+            <br />
+            <small>Fecha Registro: {new Date(inscrito.fechaRegistro).toLocaleDateString()}</small>
+          </>
+        ) : (
+          <span className="text-gray-500">Sin nota</span>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
