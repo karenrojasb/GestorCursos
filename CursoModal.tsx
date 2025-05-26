@@ -1,47 +1,23 @@
-const fetchCursos = async () => {
-  setIsLoading(true);
-  try {
-    const response = await fetch("http://localhost:8090/api/cursos");
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
-    setCursos(data);
+<div className="flex flex-col gap-1 w-52">
+  <span className="text-sm font-semibold text-gray-600">Año</span>
+  <select
+    value={yearSeleccionado ?? ""}
+    onChange={(e) => {
+      const valor = e.target.value;
+      const año = parseInt(valor);
+      setYearSeleccionado(año);
 
-    // Obtener el año actual
-    const añoActual = new Date().getFullYear();
-
-    // Filtrar cursos por el año actual (usando campo Fin)
-    const cursosDelAñoActual = data.filter((curso: Curso) =>
-      new Date(curso.Fin).getFullYear() === añoActual
-    );
-    setYearSeleccionado(añoActual);
-    setCursosFiltrados(cursosDelAñoActual);
-
-    // Extraer años únicos desde el campo Fin
-    const añosUnicos = Array.from(
-      new Set(data.map((curso: Curso) => new Date(curso.Fin).getFullYear()))
-    ) as number[];
-    añosUnicos.sort((a, b) => b - a);
-    setYear(añosUnicos);
-
-    // Seleccionar el año actual en el filtro (si usas uno)
-    setSelectedYear(añoActual); // <--- Asegúrate de tener este estado
-
-    // Obtener opciones de listas
-    const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-    if (!respOpciones.ok) throw new Error("Error al obtener lista de especificaciones");
-    const dataOpciones = await respOpciones.json();
-    setOpciones(dataOpciones);
-
-  } catch (error) {
-    console.error("Error al obtener los cursos o especificaciones:", error);
-  } finally {
-    setIsLoading(false);
-  }
-};
-useEffect(() => {
-  fetchCursos();
-}, []);
-
-const handleUpdate = () => {
-  fetchCursos();
-};
+      const cursosFiltradosPorAño = cursos.filter(
+        (curso) => new Date(curso.Fin).getFullYear() === año
+      );
+      setCursosFiltrados(cursosFiltradosPorAño);
+    }}
+    className="bg-white border border-gray-300 rounded-md px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+  >
+    {year.map((año) => (
+      <option key={año} value={año}>
+        {año}
+      </option>
+    ))}
+  </select>
+</div>
