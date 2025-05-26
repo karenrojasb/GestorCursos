@@ -27,9 +27,9 @@ async createNote(CreateNotaDto: CreateNotaDto) {
           },
         });
 
-        // Insertar en AuditoriasNotas después de actualizar
+        // Insertar en AuditoriaNotas después de actualizar
         await this.prisma.$executeRawUnsafe(`
-          INSERT INTO gescur.AuditoriasNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro, Accion)
+          INSERT INTO gescur.AuditoriaNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro, Accion)
           VALUES (${CreateNotaDto.idCurso}, ${CreateNotaDto.idInscrito}, ${CreateNotaDto.Nota}, ${CreateNotaDto.idRegistro}, '${fechaActual.toISOString()}', 'ACTUALIZAR')
         `);
 
@@ -48,9 +48,9 @@ async createNote(CreateNotaDto: CreateNotaDto) {
         },
       });
 
-      // Insertar en AuditoriasNotas después de crear
+      // Insertar en AuditoriaNotas después de crear
       await this.prisma.$executeRawUnsafe(`
-        INSERT INTO gescur.AuditoriasNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro, Accion)
+        INSERT INTO gescur.AuditoriaNotas (idCurso, idInscrito, Nota, idRegistro, FechaRegistro, Accion)
         VALUES (${CreateNotaDto.idCurso}, ${CreateNotaDto.idInscrito}, ${CreateNotaDto.Nota}, ${CreateNotaDto.idRegistro}, '${fechaActual.toISOString()}', 'CREAR')
       `);
 
