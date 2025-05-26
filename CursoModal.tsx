@@ -5,19 +5,27 @@ const fetchCursos = async () => {
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
     const data = await response.json();
     setCursos(data);
-    setCursosFiltrados(data);
 
-    // Extraer años únicos desde el campo Fin  
-const añosUnicos = Array.from(
-  new Set(
-    data.map((curso: Curso) => new Date(curso.Fin).getFullYear())
-  )
-) as number[];
+    // Obtener el año actual
+    const añoActual = new Date().getFullYear();
 
-añosUnicos.sort((a, b) => b - a);
-setYear(añosUnicos);
+    // Filtrar cursos por el año actual (usando campo Fin)
+    const cursosDelAñoActual = data.filter((curso: Curso) =>
+      new Date(curso.Fin).getFullYear() === añoActual
+    );
+    setCursosFiltrados(cursosDelAñoActual);
 
+    // Extraer años únicos desde el campo Fin
+    const añosUnicos = Array.from(
+      new Set(data.map((curso: Curso) => new Date(curso.Fin).getFullYear()))
+    ) as number[];
+    añosUnicos.sort((a, b) => b - a);
+    setYear(añosUnicos);
 
+    // Seleccionar el año actual en el filtro (si usas uno)
+    setSelectedYear(añoActual); // <--- Asegúrate de tener este estado
+
+    // Obtener opciones de listas
     const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
     if (!respOpciones.ok) throw new Error("Error al obtener lista de especificaciones");
     const dataOpciones = await respOpciones.json();
@@ -29,10 +37,8 @@ setYear(añosUnicos);
     setIsLoading(false);
   }
 };
-useEffect(() => {
-  fetchCursos();
-}, []);
 
-const handleUpdate = () => {
-  fetchCursos();
-};
+
+
+
+const [selectedYear, setSelectedYear] = useState<number | null>(null);
