@@ -1,53 +1,58 @@
+async getCourses() {
+  return this.prisma.$queryRawUnsafe(`
+    SELECT 
+      c.id,
+      c.NombreCurso,
+      c.Valor,
+      lp.Especificacion AS Publico,
+      c.Periodo,
+      c.Inicio,
+      c.Fin,
+      c.InicioInscr,
+      c.FinInscr,
+      c.Horas,
+      c.CupoMax,
+      c.Lugar,
+      c.LunesIni,
+      c.LunesFin,
+      c.MartesIni,
+      c.MartesFin,
+      c.MiercolesIni,
+      c.MiercolesFin,
+      c.JuevesIni,
+      c.JuevesFin,
+      c.ViernesIni,
+      c.ViernesFin,
+      c.SabadoIni,
+      c.SabadoFin,
+      c.DomingoIni,
+      c.DomingoFin,
+      c.Linea AS LineaId,
+      l.Especificacion AS LineaNombre,
+      c.Estado AS EstadoId,
+      est.Especificacion AS EstadoNombre,
+      c.Modalidad AS ModalidadId,
+      m.Especificacion AS ModalidadNombre,
+      u.nombre AS Unidad,
+      c.Profesor,
+      c.SegundoPro,
+      sp.nombre AS SegundoProNombre,
+      c.Proexterno,
+      c.Descripcion,
+      c.IdTipoCurso,
+      tc.Especificacion AS TipoCursoNombre,
+      e.nombre AS NombreProfesor,
 
-async createNote(CreateNotaDto: CreateNotaDto) {
-  console.log('DTO recibido:', CreateNotaDto);
+     
 
-  try {
-    
-    const notaExistente = await this.prisma.notas.findFirst({
-      where: {
-        idCurso: CreateNotaDto.idCurso,
-        idInscrito: CreateNotaDto.idInscrito,
-      },
-    });
-
-    if (notaExistente) {
-   
-
-      const nuevaNotaMasCompleta =
-        CreateNotaDto.Nota !== null &&
-        CreateNotaDto.Nota !== undefined &&
-        CreateNotaDto.Nota !== notaExistente.Nota;
-
-      if (nuevaNotaMasCompleta) {
-        const notaActualizada = await this.prisma.notas.update({
-          where: { id: notaExistente.id },
-          data: {
-            Nota: CreateNotaDto.Nota,
-            idRegistro: CreateNotaDto.idRegistro,
-            FechaRegistro: new Date(),
-          },
-        });
-        return notaActualizada;
-      } else {
-      
-        return notaExistente;
-      }
-    } else {
-      // Si no existe nota, la crea
-      const newNote = await this.prisma.notas.create({
-        data: {
-          idCurso: CreateNotaDto.idCurso,
-          idInscrito: CreateNotaDto.idInscrito,
-          Nota: CreateNotaDto.Nota,
-          idRegistro: CreateNotaDto.idRegistro,
-          FechaRegistro: new Date(),
-        },
-      });
-      return newNote;
-    }
-  } catch (error) {
-    console.error('Error al crear la nota:', error);
-    throw new Error(`No se pudo crear la nota: ${error.message}`);
-  }
+    FROM gescur.cursos c
+    LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+    LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
+    LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+    LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+    LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
+    LEFT JOIN gescur.emp_nomina e ON LTRIM(RTRIM(CAST(e.id_emp AS VARCHAR))) = LTRIM(RTRIM(CAST(c.Profesor AS VARCHAR)))
+    LEFT JOIN gescur.emp_nomina sp ON LTRIM(RTRIM(CAST(sp.id_emp AS VARCHAR))) = LTRIM(RTRIM(CAST(c.SegundoPro AS VARCHAR)))
+    LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+  `);
 }
