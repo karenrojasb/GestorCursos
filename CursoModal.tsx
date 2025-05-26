@@ -166,10 +166,18 @@ const fetchInscripcionesCurso = async (idCurso: number) => {
   };
 
   // EXPANDIR DETALLES DEL CURSO
-  const handleVerMas = (id: number) => {
-    setExpandedCursoId(expandedCursoId === id ? null : id);
-    
-  };
+
+const handleVerMas = async (id: number) => {
+  if (expandedCursoId === id) {
+    setExpandedCursoId(null);
+  } else {
+    setExpandedCursoId(id);
+    if (!inscripciones[id]) {
+      await fetchInscripcionesCurso(id); 
+    }
+  }
+};
+
 
   // ELIMINAR CURSO
   const handleDeleteCourse =async (id: number) => {
