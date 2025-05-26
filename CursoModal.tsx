@@ -1,60 +1,376 @@
-<div className="w-full text-[#990000] font-semibold px-4 py-2 rounded-t-lg bg-gray-100">
-  <div className="grid grid-cols-3 gap-4">
-    <span className="text-center">Inicio Curso</span>
-    <span className="text-center">Estado</span>
-    <span className="text-center">Acciones</span>
-  </div>
-</div>
+import { Injectable } from '@nestjs/common';
+import { CreateNotaDto } from './dto/create-nota.dto';
+import { UpdateNotaDto } from './dto/update-nota.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
-<div className="flex-1 overflow-y-auto max-h-[75vh] space-y-3">
-  {cursosFiltrados.length > 0 ? (
-    cursosFiltrados.map((curso) => (
-      <div key={curso.id} className="border-b py-2 px-4">
+@Injectable()
+export class NotasService {
+  updateNote(arg0: number, UpdateNotaDto: UpdateNotaDto) {
+    throw new Error('Method not implemented.');
+  }
+  constructor(private readonly prisma: PrismaService) {}
+
+//  OBTENER TODAS LAS NOTAS
+
+async findAll() {
+  const notas = await this.prisma.notas.findMany({
+    include: {
+      Listas: {
+        select: {
+          Especificacion: true,
+        },
+      },
+    },
+  });
+
+  const notasConInscrito = await Promise.all(notas.map(async (nota) => {
+    const inscrito = await this.prisma.inscripciones.findFirst({
+      where: {
+        docInscr: nota.idInscrito,
+      },
+      select: {
         
-        {/* Nombre del curso como fila separada */}
-        <div className="text-[#990000] font-semibold mb-1">{curso.NombreCurso}</div>
+        docInscr: true,
+      },
+    });
 
-        {/* Datos en columnas */}
-        <div className="grid grid-cols-3 items-center gap-4">
-          <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-          <span className="text-center">{curso.EstadoNombre}</span>
+    return {
+      ...nota,
+      inscrito: inscrito || null,
+    };
+  }));
 
-          <div className="flex justify-center space-x-2">
-            {/* Botón Ver Más */}
-            <button 
-              onClick={() => handleVerMas(curso.id)} 
-              className="bg-[#990000] hover:bg-red-700 text-white px-4 py-2 rounded transition-transform hover:scale-110 active:scale-95">
-              {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
-            </button>
+  return notasConInscrito;
+}
 
-            {/* Botón Editar */}
-            <button 
-              onClick={() => handleEditarCurso(curso)}
-              className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
-              title="Editar">
-              <PencilSquareIcon className="h-5 w-5" />
-            </button>
 
-            {/* Botón Eliminar */}
-            <button 
-              onClick={() => handleDeleteCourse(curso.id)} 
-              className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
-              title="Eliminar">
-              <TrashIcon className="h-5 w-5"/>
-            </button>
+// MÉTODO PARA CREAR NOTA
 
-            {/* Botón Exportar */}
-            <button 
-              onClick={() => exportarCursoAExcel(curso)} 
-              className="flex items-center hover:scale-110 active:scale-95 bg-green-600 text-white px-2 py-1 rounded-md hover:bg-green-700 transition"
-              title="Descargar">
-              <ArrowDownTrayIcon className="font-semibold h-5 w-5"/>
-            </button>
-          </div>
-        </div>
-      </div>
-    ))
-  ) : (
-    <p className="text-center text-gray-500 mt-4">No hay cursos disponibles.</p>
-  )}
-</div>
+async createNote(CreateNotaDto: CreateNotaDto) {
+  console.log('DTO recibido:', CreateNotaDto);
+
+  try {
+    
+    const notaExistente = await this.prisma.notas.findFirst({
+      where: {
+        idCurso: CreateNotaDto.idCurso,
+        idInscrito: CreateNotaDto.idInscrito,
+      },
+    });
+
+    if (notaExistente) {
+   
+
+      const nuevaNotaMasCompleta =
+        CreateNotaDto.Nota !== null &&
+        CreateNotaDto.Nota !== undefined &&
+        CreateNotaDto.Nota !== notaExistente.Nota;
+
+      if (nuevaNotaMasCompleta) {
+        const notaActualizada = await this.prisma.notas.update({
+          where: { id: notaExistente.id },
+          data: {
+            Nota: CreateNotaDto.Nota,
+            idRegistro: CreateNotaDto.idRegistro,
+            FechaRegistro: new Date(),
+          },
+        });
+        return notaActualizada;
+      } else {
+      
+        return notaExistente;
+      }
+    } else {
+      // Si no existe nota, la crea
+      const newNote = await this.prisma.notas.create({
+        data: {
+          idCurso: CreateNotaDto.idCurso,
+          idInscrito: CreateNotaDto.idInscrito,
+          Nota: CreateNotaDto.Nota,
+          idRegistro: CreateNotaDto.idRegistro,
+          FechaRegistro: new Date(),
+        },
+      });
+      return newNote;
+    }
+  } catch (error) {
+    console.error('Error al crear la nota:', error);
+    throw new Error(`No se pudo crear la nota: ${error.message}`);
+  }
+}
+
+
+
+
+
+    // OBTENER NOTA POR ID INSCRITO 
+    async getWrittenNote(idInscrito: number) {
+      const notas = await this.prisma.notas.findMany({
+        where: { idInscrito },
+        include: {
+          Listas: {
+            select: {
+              Especificacion: true,
+            },
+          },
+        },
+      });
+    
+      const notasConCurso = await Promise.all(
+        notas.map(async (nota) => {
+          if (!nota.idCurso) {
+            return {
+              ...nota,
+              idCurso: null,
+              NombreCurso: null,
+              Lugar: null,
+              Inicio: null,
+              Fin: null,
+              LunesIni: null,
+              LunesFin: null,
+              MartesIni: null,
+              MartesFin: null,
+              MiercolesIni: null,
+              MiercolesFin: null,
+              JuevesIni: null,
+              JuevesFin: null,
+              ViernesIni: null,
+              ViernesFin: null,
+              SabadoIni: null,
+              SabadoFin: null,
+              Profesor: null,
+              Proexterno: null,
+              SegundoPro: null,
+              ProfesorNombre: null,
+              SegundoProNombre: null,
+            };
+          }
+    
+          const curso = await this.prisma.cursos.findFirst({
+            where: {
+              id: nota.idCurso,
+            },
+            select: {
+              NombreCurso: true,
+              Lugar: true,
+              Inicio: true,
+              Fin: true,
+              LunesIni: true,
+              LunesFin: true,
+              MartesIni: true,
+              MartesFin: true,
+              MiercolesIni: true,
+              MiercolesFin: true,
+              JuevesIni: true,
+              JuevesFin: true,
+              ViernesIni: true,
+              ViernesFin: true,
+              SabadoIni: true,
+              SabadoFin: true,
+              Profesor: true,
+              SegundoPro: true,
+              Proexterno: true,
+            },
+          });
+    
+          const profesorId = curso?.Profesor?.toString() || '0';
+          const segundoProId = curso?.SegundoPro?.toString() || '0';
+    
+          const [profesor] = await this.prisma.$queryRaw<
+            { nombre: string }[]
+          >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
+    
+          const [segundoPro] = await this.prisma.$queryRaw<
+            { nombre: string }[]
+          >`SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
+    
+          return {
+            ...nota,
+            NombreCurso: curso?.NombreCurso || null,
+            Lugar: curso?.Lugar || null,
+            Inicio: curso?.Inicio || null,
+            Fin: curso?.Fin || null,
+            LunesIni: curso?.LunesIni || null,
+            LunesFin: curso?.LunesFin || null,
+            MartesIni: curso?.MartesIni || null,
+            MartesFin: curso?.MartesFin || null,
+            MiercolesIni: curso?.MiercolesIni || null,
+            MiercolesFin: curso?.MiercolesFin || null,
+            JuevesIni: curso?.JuevesIni || null,
+            JuevesFin: curso?.JuevesFin || null,
+            ViernesIni: curso?.ViernesIni || null,
+            ViernesFin: curso?.ViernesFin || null,
+            SabadoIni: curso?.SabadoIni || null,
+            SabadoFin: curso?.SabadoFin || null,
+            ProExterno: curso?.Proexterno || null,
+            Profesor: curso?.Profesor || null,
+            SegundoPro: curso?.SegundoPro || null,
+            ProfesorNombre: profesor?.nombre ?? null,
+            SegundoProNombre: segundoPro?.nombre ?? null,
+          };
+        })
+      );
+    
+      return notasConCurso;
+    }
+
+    
+// OBTENER NOTAS  POR IDINSCRITO 
+async getNotasId(idInscrito: number | string) {
+  const idInscritoInt = Number(idInscrito);
+  if (isNaN(idInscritoInt)) {
+    throw new Error('El ID del inscrito debe ser un número válido');
+  }
+
+ 
+  const notas = await this.prisma.notas.findMany({
+    where: {
+      idInscrito: idInscritoInt,
+    },
+    include: {
+      Listas: true,
+    },
+  });
+
+  
+  const notasConCurso = await Promise.all(
+    notas.map(async (nota) => {
+      if (!nota.idCurso) {
+        return {
+          ...nota,
+          NombreCurso: null,
+          Lugar: null,
+          Inicio: null,
+          Fin: null,
+          LunesIni: null,
+          LunesFin: null,
+          MartesIni: null,
+          MartesFin: null,
+          MiercolesIni: null,
+          MiercolesFin: null,
+          JuevesIni: null,
+          JuevesFin: null,
+          ViernesIni: null,
+          ViernesFin: null,
+          SabadoIni: null,
+          SabadoFin: null,
+          Profesor: null,
+          ProExterno: null,
+          SegundoPro: null,
+          ProfesorNombre: null,
+          SegundoProNombre: null,
+          Especificacion: nota.Listas?.Especificacion ?? null,
+        };
+      }
+
+      const curso = await this.prisma.cursos.findFirst({
+        where: { id: nota.idCurso },
+        select: {
+          NombreCurso: true,
+          Lugar: true,
+          Inicio: true,
+          Fin: true,
+          LunesIni: true,
+          LunesFin: true,
+          MartesIni: true,
+          MartesFin: true,
+          MiercolesIni: true,
+          MiercolesFin: true,
+          JuevesIni: true,
+          JuevesFin: true,
+          ViernesIni: true,
+          ViernesFin: true,
+          SabadoIni: true,
+          SabadoFin: true,
+          Profesor: true,
+          SegundoPro: true,
+          Proexterno: true,
+        },
+      });
+
+      const profesorId = curso?.Profesor?.toString() || '0';
+      const segundoProId = curso?.SegundoPro?.toString() || '0';
+
+      const [profesor] = await this.prisma.$queryRaw<{ nombre: string }[]>`
+        SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${profesorId} AS VARCHAR)`;
+
+      const [segundoPro] = await this.prisma.$queryRaw<{ nombre: string }[]>`
+        SELECT nombre FROM gescur.emp_nomina WHERE id_emp = CAST(${segundoProId} AS VARCHAR)`;
+
+      return {
+        ...nota,
+        NombreCurso: curso?.NombreCurso ?? null,
+        Lugar: curso?.Lugar ?? null,
+        Inicio: curso?.Inicio ?? null,
+        Fin: curso?.Fin ?? null,
+        LunesIni: curso?.LunesIni ?? null,
+        LunesFin: curso?.LunesFin ?? null,
+        MartesIni: curso?.MartesIni ?? null,
+        MartesFin: curso?.MartesFin ?? null,
+        MiercolesIni: curso?.MiercolesIni ?? null,
+        MiercolesFin: curso?.MiercolesFin ?? null,
+        JuevesIni: curso?.JuevesIni ?? null,
+        JuevesFin: curso?.JuevesFin ?? null,
+        ViernesIni: curso?.ViernesIni ?? null,
+        ViernesFin: curso?.ViernesFin ?? null,
+        SabadoIni: curso?.SabadoIni ?? null,
+        SabadoFin: curso?.SabadoFin ?? null,
+        ProExterno: curso?.Proexterno ?? null,
+        Profesor: curso?.Profesor ?? null,
+        SegundoPro: curso?.SegundoPro ?? null,
+        ProfesorNombre: profesor?.nombre ?? null,
+        SegundoProNombre: segundoPro?.nombre ?? null,
+        Especificacion: nota.Listas?.Especificacion ?? null,
+      };
+    })
+  );
+
+  return notasConCurso;
+}
+
+
+    // MÉTODO PARA ACTUALIZAR
+    async UpdateNote (id: number, data: Prisma.NotasUpdateInput){
+      console.log ('id received:', id);
+      console.log ('data received:', data);
+
+      try {
+        const UpdateNote = await this.prisma.notas.update({
+          where: {id},
+          data,
+        });
+        console.log ('update note:', UpdateNote);
+        return UpdateNote;
+      }
+      catch (error){
+        console.error ('error when updating note:', error);
+        throw new error('the note was not updated');
+      }
+    }
+
+    // MÉTODO PARA ELIMINAR
+    async deleteNote(id:number){
+      return this.prisma.notas.delete({where: {id}});
+    }
+
+// Obtener una nota por idCurso e idInscrito con Especificación
+
+async findByCursoAndInscrito(idCurso: number | string, idInscrito: number | string) {
+  return this.prisma.notas.findFirst({
+    where: {
+      idCurso: Number(idCurso),
+      idInscrito: Number(idInscrito),
+    },
+    include: {
+      Listas: {
+        select: {
+          Especificacion: true,
+        },
+      },
+    },
+  });
+}
+
+
+}
