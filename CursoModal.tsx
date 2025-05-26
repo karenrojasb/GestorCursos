@@ -41,10 +41,7 @@ async getCourses() {
       c.Descripcion,
       c.IdTipoCurso,
       tc.Especificacion AS TipoCursoNombre,
-      e.nombre AS NombreProfesor,
-
-     
-
+      e.nombre AS NombreProfesor
     FROM gescur.cursos c
     LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
     LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
