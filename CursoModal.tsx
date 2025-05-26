@@ -1,549 +1,307 @@
-"use client";
-import { TrashIcon, XMarkIcon, MagnifyingGlassIcon, PencilSquareIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
-import CursoEditarModal from "../components/CursoEditarModal"
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateInscripcionDto } from './dto/create-inscripciones.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripciones.dto';
 
+@Injectable()
+export class InscripcionesService {
+  constructor(private readonly prisma: PrismaService) {}
 
+  // CREAR INSCRITO
+  async createRegistration(data: CreateInscripcionDto) {
+    const inscripcionExistente = await this.prisma.inscripciones.findFirst({
+      where: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+      },
+    });
 
+    if (inscripcionExistente) {
+      return this.prisma.inscripciones.update({
+        where: { id: inscripcionExistente.id },
+        data: { est: true },
+      });
+    }
 
-interface Curso {
-  id: number;
-  NombreCurso: string;
-  Valor: number;
-  Publico: number;
-  Periodo: string;
-  Inicio: string;
-  Fin: string;
-  Horas: number;
-  CupoMax: number;
-  Lugar: string;
-  Linea: number;
-  LineaNombre: number;
-  Estado: string;
-  EstadoNombre: string;
-  Modalidad: number;
-  ModalidadNombre: string;
-  Unidad: number;
-  Profesor: number;
-  SegundoPro: string;
-  Proexterno: string;
-  Descripcion: string;
-  IdTipoCurso: number;
-  NombreProfesor?: string;
-  LunesIni: string;
-  LunesFin: string;
-  MartesIni: string;
-  MartesFin: string;
-  MiercolesIni: string;
-  MiercolesFin: string;
-  JuevesIni: string;
-  JuevesFin: string;
-  ViernesIni: string;
-  ViernesFin: string;
-  SabadoIni: string;
-  SabadoFin: string;
-  DomingoIni: string;
-  DomingoFin: string;
-  InicioInscr: string;
-  FinInscr: string;
-  SegundoProNombre: string;
+    const curso = await this.prisma.cursos.findUnique({
+      where: { id: data.idCur },
+      select: { CupoMax: true },
+    });
 
-  Inscritos ?: string;
+    if (!curso) {
+      throw new NotFoundException('Curso no encontrado');
+    }
 
-}
+    if (curso.CupoMax === null) {
+      return this.prisma.inscripciones.create({
+        data: {
+          idCur: data.idCur,
+          docInscr: data.docInscr,
+          est: true,
+          fecreg: new Date(),
+        },
+      });
+    }
 
-interface Inscritos {
-  id: number;
-  idCur: number;
-  docInscr: number;
-  fecreg: string;
-}
+    const inscripcionesContadas = await this.prisma.inscripciones.count({
+      where: { idCur: data.idCur },
+    });
 
-interface OpcionLista {
-  id: number;
-  Especificacion: string;
-}
+    if (inscripcionesContadas >= curso.CupoMax) {
+      throw new Error('El cupo máximo del curso ha sido alcanzado');
+    }
 
-
-export default function CatalogoModal({ onClose }: { onClose: () => void }) {
-  
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursosFiltrados, setCursosFiltrados] = useState<Curso[]>([]);
-  const [expandedCursoId, setExpandedCursoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [mensajeExito, setMensajeExito] = useState("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [cursoEditar, setCursoEditar ] = useState <Curso | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [errorMensaje, setErrorMensaje] = useState(false);
-  const [opciones, setOpciones] = useState<OpcionLista[]>([]);
-  const [guardando, setGuardando] = useState(false);  
-const [inscripciones, setInscripciones] = useState<{ [key: number]: Inscritos[] }>({});
-
-    
-
-  // OBTENER CURSO DE BACKEND
-const fetchCursos = async () => {
-  setIsLoading(true);
-  try {
-    // Traer cursos
-    const response = await fetch("http://localhost:8090/api/cursos");
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
-    setCursos(data);
-    setCursosFiltrados(data);
-
-    // Traer opciones de especificaciones
-    const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-    if (!respOpciones.ok) throw new Error("Error al obtener lista de especificaciones");
-    const dataOpciones = await respOpciones.json();
-    console.log("Opciones recibidas:", dataOpciones);
-    setOpciones(dataOpciones);
-
-  } catch (error) {
-    console.error("Error al obtener los cursos o especificaciones:", error);
-  } finally {
-    setIsLoading(false);
+    return this.prisma.inscripciones.create({
+      data: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+        est: true,
+        fecreg: new Date(),
+      },
+    });
   }
-};
-
-useEffect(() => {
-  fetchCursos();
-}, []);
-
-const handleUpdate = () => {
-  fetchCursos();
-};
 
 
-
-const fetchInscripcionesCurso = async (idCurso: number) => {
-  try {
-    const response = await fetch(`http://localhost:8090/api/inscripciones/${idCurso}`);
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
-    setInscripciones(prev => ({ ...prev, [idCurso]: data }));
-  } catch (error) {
-    console.error(`Error al obtener inscripciones del curso ${idCurso}:`, error);
-  }
-};
-
-
-  const formatearHorario = (curso: Curso) => {
-    const dias = [
-      { dia: "Lunes", ini: curso.LunesIni, fin: curso.LunesFin },
-      { dia: "Martes", ini: curso.MartesIni, fin: curso.MartesFin },
-      { dia: "Miércoles", ini: curso.MiercolesIni, fin: curso.MiercolesFin },
-      { dia: "Jueves", ini: curso.JuevesIni, fin: curso.JuevesFin },
-      { dia: "Viernes", ini: curso.ViernesIni, fin: curso.ViernesFin },
-      { dia: "Sábado", ini: curso.SabadoIni, fin: curso.SabadoFin },
-      { dia: "Domingo", ini: curso.DomingoIni, fin: curso.DomingoFin },
-      
-    ];
-  
-    return dias
-      .filter(d => d.ini && d.fin)
-     ; 
-  };
-
-  // BUSCAR CURSOS
-  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const texto = e.target.value.toLowerCase();
-    setBusqueda(texto);
-    setCursosFiltrados(cursos.filter(curso => curso.NombreCurso.toLowerCase().includes(texto)));
-  };
-
-  const handleMouseEnter = () => {
-    setIsSearchActive(true);
-  };
-
-  const handleMouseLeave = () => {
-    if (busqueda === "") {
-      setIsSearchActive(true);
-    }
-  };
-
-  // EXPANDIR DETALLES DEL CURSO
-
-const handleVerMas = async (id: number) => {
-  if (expandedCursoId === id) {
-    setExpandedCursoId(null);
-  } else {
-    setExpandedCursoId(id);
-    if (!inscripciones[id]) {
-      await fetchInscripcionesCurso(id); 
-    }
-  }
-};
-
-
-  // ELIMINAR CURSO
-  const handleDeleteCourse =async (id: number) => {
-    const confirmar = window.confirm("¿Estas seguro de que deseas eliminar este curso?");
-    if (!confirmar) return;
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(`http://localhost:8090/api/cursos/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
-
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-      
-      
-      setCursos(prev => prev.filter(curso => curso.id !== id));
-      setCursosFiltrados(prev => prev.filter(curso => curso.id !== id));
-    } catch (error) {
-      console.error("Error al eliminar el curso:", error);
-      alert("No se pudo eliminar el curso");
-    }
-    setIsLoading(false);
-  };
-
-
-
-  const handleEditarCurso = (curso: Curso) => {
-    setCursoEditar({...curso});
-  };
-
-  const handleCerrarEditor = ()  => {
-    setCursoEditar(null);
-  };
-
-  const handleGuardarEdicion = () => {
-    if (cursoEditar) {
-      setCursos((prevCursos) =>
-        prevCursos.map((curso) => (curso.id === cursoEditar.id ? cursoEditar : curso))
-      );
-      setCursosFiltrados((prevCursos) =>
-        prevCursos.map((curso) => (curso.id === cursoEditar.id ? cursoEditar : curso))
-      );
-
-      
-      setCursoEditar(null);
-      fetchCursos();
-    }
-  };
-
-
-
-
-
-
-  function exportarCursoAExcel(curso: Curso) {
- 
-
- 
-  const datosCurso = [
-    {
-      ID: curso.id,
-      Nombre: curso.NombreCurso,
-      Valor: curso.Valor,
-      Público: curso.Publico,
-      Periodo: curso.Periodo,
-      CupoMax: curso.CupoMax,
-      Inicio: curso.Inicio,
-      Fin: curso.Fin,
-      Horas: curso.Horas,
-      Lugar: curso.Lugar,
-      Estado: curso.EstadoNombre,
-      Linea: curso.LineaNombre,
-      Modalidad: curso.ModalidadNombre,
-      Unidad: curso.Unidad,
-      Profesor: curso.NombreProfesor,
-      SegundoProfesor: curso.SegundoPro,
-      ProfesorExterno: curso.Proexterno,
-      TipoCurso: curso.IdTipoCurso,
-      InicioInscripción: curso.InicioInscr,
-      FinInscripción: curso.FinInscr,
-      Descripción: curso.Descripcion,
-    },
-  ];
-  const hojaCurso = XLSX.utils.json_to_sheet(datosCurso);
-
- 
-
-
-  
-  const libro = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(libro, hojaCurso, "Datos del Curso");
-
-
-  const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
-  const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-  saveAs(blob, `Reporte_Curso_${curso.NombreCurso.replace(/\s+/g, "_")}.xlsx`);
+  // OBTENER CURSOS POR DOCUMENTO DE INSCRITO
+async getCoursesByDocInscr(docInscr: string) {
+  return this.prisma.$queryRawUnsafe<
+    Array<{
+      idCur: number;
+      NombreCurso: string;
+      Inicio: Date;
+      Fin: Date;
+      Lugar: string;
+      Valor: number;
+      Horas: number;
+      Profesor: number;
+      SegundoPro: number;
+      nombreProfesor: string | null;
+      segundoProfe: string | null;
+      CupoMax: number | null;
+      fecreg: Date;
+      Descripcion: string;
+    }>
+  >(
+    `SELECT 
+      c.id AS idCur,
+      c.NombreCurso,
+      c.Inicio,
+      c.Fin,
+      c.Lugar,
+      c.Valor,
+      c.Horas,
+      c.Profesor,
+      c.SegundoPro,
+      p.nombre AS nombreProfesor,
+      sp.nombre AS segundoProfe,
+      c.CupoMax,
+      i.fecreg,
+      c.Descripcion
+    FROM gescur.Inscripciones i
+    LEFT JOIN gescur.Cursos c ON i.idCur = c.id
+    LEFT JOIN gescur.emp_nomina p ON CAST(c.Profesor AS VARCHAR) = p.id_emp
+    LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+    WHERE i.docInscr = '${docInscr}'
+      AND i.est = 1`
+  );
 }
 
+  // OBTENER DATOS DE TODOS LOS INSCRITOS
+  async getRegistration() {
+    return this.prisma.$queryRawUnsafe<
+      Array<{
+        id: number;
+        idCur: number;
+        NombreCurso: string;
+        docInscr: string;
+        nombre: string | null;
+        est: boolean;
+        fecreg: Date;
+        Profesor: number;
+        SegundoPro: number;
+        CupoMax: number | null;
+        Proexterno: string;
+      }>
+    >(
+      `SELECT 
+        i.id, 
+        i.idCur, 
+        c.NombreCurso, 
+        i.docInscr, 
+        e.nombre, 
+        i.est, 
+        i.fecreg,
+        c.Profesor,
+        c.SegundoPro,
+        c.CupoMax,
+        c.Proexterno
+      FROM gescur.Inscripciones i
+      LEFT JOIN gescur.Cursos c ON i.idCur = c.id
+      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
+      WHERE i.est = 1`
+    );
+  }
+
+
+ 
 
 
 
-  return (
-    <div className="p-10 rounded-xl shadow-black fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-     
-      {errorMensaje && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600  text-white px-6 py-3 rounded shadow-lg 
-        z-50 animate">
 
-        </div> 
-      )}
-     <div className="bg-white rounded-lg p-6 shadow-md max-w-6xl w-full h-[90vh] overflow-hidden flex flex-col">
-        
+  async getCoursesTeacher(idProfesor: number) {
+    return this.prisma.$queryRawUnsafe<
+      Array<{
+        id: number;
+        idNotas: number | null; 
+        idRegistro: number | null;
+        FechaRegistro: Date | null;
+        idCur: number;
+        NombreCurso: string;
+        Publico: number;
+        Profesor: number;
+        SegundoPro: number;
+        Valor: number;
+        Horas: number;
+        Lugar: string;
+        Inicio: Date;
+        Fin: Date;
+        LunesIni: string;
+        LunesFin: string;
+        MartesIni: string;
+        MartesFin: string;
+        MiercolesIni: string;
+        MiercolesFin: string;
+        JuevesIni: string;
+        JuevesFin: string;
+        ViernesIni: string;
+        ViernesFin: string;
+        SabadoIni: string;
+        SabadoFin: string;
+        DomingoIni: string;
+        DomingoFin: string;
+        Periodo: number;
+        Linea: number;
+        Proexterno: string;
+        Estado: string;
+        Modalidad: number;
+        Unidad: number;
+        docInscr: string;
+        nombre: string | null;
+        fecreg: Date;
+        rol: string;
+        CupoMax: number | null;
+        Nota: number | null;
+        Especificacion: string | null;
+        InscritoNumerico: number | null;
+        SegundoProfe: string | null;
+        IdTipoCurso: string;
+        NombreProfesor: string | null;
+        Descripcion: string;
+      }>
+    >(
+      `SELECT 
+        i.id,
+        n.id AS idNotas, -- ← Agregado
+        i.idCur,
+        c.NombreCurso,
+        lp.Especificacion AS Publico,
+        c.Profesor,
+        c.SegundoPro,
+        c.Valor,
+        c.Horas,
+        c.Lugar,
+        c.Inicio,
+        c.Fin,
+        c.LunesIni,
+        c.LunesFin,
+        c.MartesIni,
+        c.MartesFin,
+        c.MiercolesIni,
+        c.MiercolesFin,
+        c.JuevesIni,
+        c.JuevesFin,
+        c.ViernesIni,
+        c.ViernesFin,
+        c.SabadoIni,
+        c.SabadoFin,
+        c.DomingoIni,
+        c.DomingoFin,
+        c.Periodo,
+        ll.Especificacion AS Linea,
+        c.Proexterno,
+        c.Estado,
+        est.Especificacion AS Est,
+        m.Especificacion AS Modalidad,
+        u.nombre AS Unidad,
+        i.docInscr,
+        e.nombre,
+        i.fecreg,
+        c.CupoMax,
+        sp.nombre AS SegundoProfe,
+        tc.Especificacion AS IdTipoCurso,
+        p.nombre AS NombreProfesor,
+        TRY_CAST(i.docInscr AS INT) AS InscritoNumerico,
+        n.idRegistro,
+        n.FechaRegistro,
+        n.Nota,
+        l.Especificacion,
+        c.Descripcion,
+        emp.nombre AS NombreRegistro,
+        CASE 
+          WHEN c.Profesor = ${idProfesor} THEN 'Titular'
+          WHEN c.SegundoPro = ${idProfesor} THEN 'Segundo'
+          ELSE 'Otro'
+        END AS rol
+      FROM gescur.Cursos c
+      LEFT JOIN gescur.Inscripciones i ON i.idCur = c.id
+      LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
+      LEFT JOIN gescur.emp_nomina p ON CAST(c.Profesor AS VARCHAR) = p.id_emp
+      LEFT JOIN gescur.emp_nomina sp ON CAST(c.SegundoPro AS VARCHAR) = sp.id_emp
+      OUTER APPLY (
+        SELECT TOP 1 
+          n.id,
+          n.Nota,
+          n.idRegistro,
+          n.FechaRegistro
+        FROM gescur.Notas n 
+        WHERE n.idInscrito = TRY_CAST(i.docInscr AS INT)
+          AND n.IdCurso = c.id
+        ORDER BY n.id ASC
+      ) n
+      LEFT JOIN gescur.Listas l ON l.id = n.Nota
+        LEFT JOIN gescur.emp_nomina emp ON CAST(emp.id_emp AS VARCHAR) = LTRIM(RTRIM(n.idRegistro))
+      LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
+      LEFT JOIN gescur.listas ll ON ll.id = c.Linea AND ll.Tipo = 2
+      LEFT JOIN gescur.listas m ON m.id = c.Modalidad AND m.Tipo = 3
+      LEFT JOIN gescur.listas est ON est.id = c.Estado AND est.Tipo = 4
+      LEFT JOIN gescur.listas tc ON tc.id = c.IdTipoCurso AND tc.Tipo = 8
+      LEFT JOIN gescur.unidad u ON c.Unidad = u.codigo
+      WHERE (c.Profesor = ${idProfesor} OR c.SegundoPro = ${idProfesor})
+        AND i.est = 1`
+    );
+  }
+  
+  
+  
   
 
-        {/* BARRA DE BUSQUEDA */}
-        <div className="flex justify-between items-center mb-4">
-        <div className="relative flex items-center"
-           onMouseEnter={handleMouseEnter}
-           onMouseLeave={handleMouseLeave}>
-            <button onClick={() => setIsSearchActive(!isSearchActive)} className="p-2 rounded-full bg-gray-200">
-              <MagnifyingGlassIcon className="h-6 w-6 text-[#990000] " />
-            </button>
-            <input
-              type="text"
-              placeholder="Busque el nombre del curso"
-              value={busqueda}
-              onChange={handleBuscar}
-              className={`px-4 py-2 border w-9/12 ml-4 rounded-full transition-all duration-500 ease-in-out 
-                ${isSearchActive ? "w-96 opacity-100 bg-white shadow-md" : "w-0 opacity-0"} focus:outline-none`}
-            />   
+  // OBTENER INSCRIPCIONES POR ID
+  async getRegistrationId(id: number) {
+    const inscripcion = await this.prisma.inscripciones.findUnique({ where: { id } });
+    if (!inscripcion) throw new NotFoundException('Inscripción no encontrada');
+    return inscripcion;
+  }
 
-     </div>
-             <button
-            onClick={onClose}
-            className=" text-gray-500 hover:text-[#990000] transition-transform duration-300 transform hover:rotate-90 hover:scale-110"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button> 
-          
-        </div>
-     
+  //  ACTUALIZAR EL ESTADO DEL INSCRITO
+  async getState(id: number, dto: UpdateInscripcionDto) {
+    return this.prisma.inscripciones.update({
+      where: { id },
+      data: { est: Boolean(dto.est) },
+    });
+  }
 
-         <div className="w-full flex justify-between text-[#990000] font-semibold px-4 py-2 rounded-t-lg">
-           <span className="w-1/5 text-left">Nombre del curso</span>
-           
-           <span className="w-96 text-right">Inicio Curso</span>
-           <span className="w-1/5"></span>
-         </div>
-
-
-        {/* SPINNER DE CARGA */}
-        {isLoading && (
-          <div className="flex justify-center my-4">
-            <div className="w-8 h-8 border-4 border-gray-300 border-t-[#990000] rounded-full animate-spin"></div>
-          </div>
-        )}
-
-         {/* LISTA DE CURSOS */}
-        
-         <div className="flex-1 overflow-y-auto max-h-[75vh] space-y-2">
-           {cursosFiltrados.length > 0 ? (
-            cursosFiltrados.map((curso, index) => (
-              <div key={curso.id} className="border-b py-2">
-                <div className="grid grid-cols-4 items-center">
-                  <span className="text-left">{curso.NombreCurso}</span>
-                   <span></span>
-                  <span className="text-center">{curso.Inicio || "dd/mm/aaaa"}</span>
-                 
-
-                  {/* BOTONES */}
-                 
-                  {/* BOTÓN PARA VER MÁS */}
-                  <div className="flex space-x-2">
-                    <button 
-                    onClick={() => handleVerMas(curso.id)} 
-                    className="bg-[#990000] hover:bg-red-700 text-white px-4 py-2 rounded transition-transform hover:scale-110 active:scale-95">
-                      {expandedCursoId === curso.id ? "Ver menos" : "Ver más"}
-                    </button>
-                   
-                    {/* BOTÓN PARA EDITAR */}
-                    <button 
-                   onClick={() => handleEditarCurso(curso)}
-                    className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
-                    title="Editar">
-                      <PencilSquareIcon className="h-5 w-5" />
-                    </button>
-                    
-                    
-                    {/* BOTÓN PARA ELIMINAR */}
-                     
-                     <button 
-                     onClick={() => handleDeleteCourse(curso.id)} 
-                     className="bg-[#990000] hover:bg-red-700 text-white p-2 rounded transition-transform hover:scale-110 active:scale-95"
-                     title="Eliminar">                    
-                       <TrashIcon className="h-5 w-5"/>
-                     </button>
-
-                     <button 
-                     onClick={() => exportarCursoAExcel(curso)} 
-                     className="flex items-center hover:scale-110 active:scale-95 bg-green-600 text-white px-2 py-1 rounded-md hover:bg-green-700 transition"
-      
-                     title="Descargar">                    
-                
-            <ArrowDownTrayIcon className="font-semibold h-5 w-5"/>
-                     </button>
-                   </div>
-
-
-                   {/* CONTENIDO DE CURSO */}
-                   {expandedCursoId === curso.id && (
-                  
-                  
-                  <div className=" bg-gray-100 p-4 mt-4 flex flex-col justify-center overflow-x-auto min-w-[1100px]">
-                     <div className="w-full flex justify-center">
-    <table className="min-w-full table-fixed text-[0.8rem] shadow-md rounded-lg border border-gray-300 bg-white">
-      <colgroup>
-        <col className="w-[16.6%]" />
-        <col className="w-[16.6%]" />
-        <col className="w-[16.6%]" />
-        <col className="w-[16.6%]" />
-        <col className="w-[16.6%]" />
-        <col className="w-[16.6%]" />
-      </colgroup>
-      <thead>
-        <tr className="bg-[#990000] text-white">
-          <th colSpan={6} className="text-center py-2 text-base font-semibold border-b border-gray-300">
-            Datos del Curso
-          </th>
-        </tr>
-        <tr className="bg-gray-100 text-[#990000] font-medium">
-          <th className="px-3 py-1 border">ID</th>
-          <th className="px-3 py-1 border">Nombre</th>
-          <th className="px-3 py-1 border">Valor</th>
-          <th className="px-3 py-1 border">Público</th>
-          <th className="px-3 py-1 border">Periodo</th>
-          <th className="px-3 py-1 border">Cupo Máx</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr className="text-gray-700 text-center">
-          <td className="px-3 py-1 border">{curso.id}</td>
-          <td className="px-3 py-1 border">{curso.NombreCurso}</td>
-          <td className="px-3 py-1 border">{curso.Valor || " - - "}</td>
-          <td className="px-3 py-1 border">{curso.Publico}</td>
-          <td className="px-3 py-1 border">{curso.Periodo}</td>
-          <td className="px-3 py-1 border">{curso.CupoMax}</td>
-        </tr>
-
-        <tr className="bg-gray-100 text-[#990000] font-medium">
-          <th className="px-3 py-1 border">Inicio</th>
-          <th className="px-3 py-1 border">Fin</th>
-          <th className="px-3 py-1 border">Horas</th>
-          <th className="px-3 py-1 border">Horario</th>
-          <th className="px-3 py-1 border">Lugar</th>
-          <th className="px-3 py-1 border">Línea</th>
-        </tr>
-        <tr className="text-gray-700 text-center">
-          <td className="px-3 py-1 border">{curso.Inicio}</td>
-          <td className="px-3 py-1 border">{curso.Fin}</td>
-          <td className="px-3 py-1 border">{curso.Horas}</td>
-          <td className="px-3 py-1 border text-left">
-           
-{formatearHorario(curso).map((h) => (
-  <div key={`${curso.id}-${h.dia}`}>
-    <strong>{h.dia}</strong> {h.ini} - {h.fin}
-  </div>
-))}
-
-          </td>
-          <td className="px-3 py-1 border">{curso.Lugar}</td>
-          <td className="px-3 py-1 border">{curso.LineaNombre}</td>
-        </tr>
-
-        <tr className="bg-gray-100 text-[#990000] font-medium">
-          <th className="px-3 py-1 border">Estado</th>
-          <th className="px-3 py-1 border">Modalidad</th>
-          <th className="px-3 py-1 border">Profesor</th>
-          <th className="px-3 py-1 border">Segundo Profesor</th>
-          <th className="px-3 py-1 border">Profesor Externo</th>
-          <th className="px-3 py-1 border">Unidad</th>
-        </tr>
-        <tr className="text-gray-700 text-center">
-          <td className="px-3 py-1 border">{curso.EstadoNombre}</td>
-          <td className="px-3 py-1 border">{curso.ModalidadNombre}</td>
-          <td className="px-3 py-1 border">{curso.NombreProfesor}</td>
-          <td className="px-3 py-1 border">{curso.SegundoProNombre}</td>
-          <td className="px-3 py-1 border">{curso.Proexterno}</td>
-          <td className="px-3 py-1 border">{curso.Unidad}</td>
-        </tr>
-
-        <tr className="bg-gray-100 text-[#990000] font-medium">
-          <th className="px-3 py-1 border">Tipo</th>
-          <th className="px-3 py-1 border">Inicio Inscripciones</th>
-          <th className="px-3 py-1 border">Cierre Inscripciones</th>
-          <th className="px-3 py-1 border" colSpan={3}>Descripción</th>
-        </tr>
-        <tr className="text-gray-700 text-center">
-          <td className="px-3 py-1 border">{curso.IdTipoCurso}</td>
-          <td className="px-3 py-1 border">{curso.InicioInscr }</td>
-          <td className="px-3 py-1 border">{curso.FinInscr}</td>
-          <td className="px-3 py-1 border text-left" colSpan={3}>{curso.Descripcion}</td>
-        </tr>
-      
-    </tbody>
-
-          
-                    
-  </table>
- 
- 
-</div> 
- 
-
-
- {inscripciones[curso.id] && inscripciones[curso.id].length > 0 ? (
-        <div className="mt-4">
-          <h4 className="font-semibold mb-2 text-[#990000]">Inscritos:</h4>
-          <ul className="list-disc ml-5 space-y-1 text-sm">
-            {inscripciones[curso.id].map((inscrito, idx) => (
-              <li key={idx}>
-                <strong>Documento:</strong> {inscrito.docInscr} |{" "}
-                <strong>Fecha:</strong>{" "}
-                {new Date(inscrito.fecreg).toLocaleDateString()}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <p className="text-gray-600 italic mt-2">No hay inscritos para este curso.</p>
-      )}
-
-
- </div>          
-                     
-              
-                 )}
-               </div>
-              </div>
-              ))
-           ) : !isLoading && (
-            <p className="text-center py-4">No hay cursos disponibles.</p>
-           )}
-           
-         </div>
-       
-       </div>  
-       {showSuccess && (
-  <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-[9999]">
-    <div className="animate-check-spin scale-125">
-      <TrashIcon className="h-32 w-32 text-green-500" />
-    </div>
-    <p className="text-white text-2xl font-bold mt-2 animate-fade-in">Curso eliminado correctamente</p>
-  </div>
-)}
-      
-
-      
-       {cursoEditar && (
-        <CursoEditarModal
-        courseId={cursoEditar.id} 
-        onClose={handleCerrarEditor}
-        onUpdate={handleUpdate}
-        isOpen={true}/>
-      ) }
-     </div>
-   );
- }
+  // ELIMINAR LA INSCRIPCIÓN
+  async deleteRegistration(id: number) {
+    return this.prisma.inscripciones.delete({ where: { id } });
+  }
+}
