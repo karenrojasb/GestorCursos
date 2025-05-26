@@ -1,38 +1,18 @@
-[async getRegistrationsByCourseId(idCur: number) {
-  return this.prisma.$queryRawUnsafe<
-    Array<{
-      id: number;
-      idCur: number;
-      docInscr: string;
-      est: boolean;
-      fecreg: Date;
-      notaId: number | null;
-      nota: number | null;
-      idRegistro: number | null;
-      fechaRegistro: Date | null;
-      especificacion: string | null;
-      nombreInscrito: string | null;
-    }>
-  >(
-    `SELECT 
-      i.id, 
-      i.idCur, 
-      i.docInscr, 
-      i.est, 
-      i.fecreg,
-      n.id AS notaId,
-      n.Nota AS nota,
-      n.idRegistro,
-      n.FechaRegistro AS fechaRegistro,
-      l.Especificacion AS especificacion,
-      e.nombre AS nombreInscrito
-    FROM gescur.Inscripciones i
-    LEFT JOIN gescur.Notas n
-      ON i.idCur = n.idCurso AND i.docInscr = n.idInscrito
-    LEFT JOIN gescur.Listas l
-      ON n.Nota = l.id
-    LEFT JOIN gescur.emp_nomina e
-      ON i.docInscr = CAST(e.id_emp AS VARCHAR)
-    WHERE i.est = 1 AND i.idCur = ${idCur}`
-  );
+[Nest] 6940  - 26/05/2025, 12:57:49 p. m.   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `248`. Message: `The conversion of the varchar value '88040561930 ' overflowed an int column.`
+    at Bn.handleRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:7362)
+    at Bn.handleAndLogRequestError (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6686)
+    at Bn.request (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:121:6393)
+    at async l (C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@prisma\client\runtime\library.js:130:9645)
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  code: 'P2010',
+  clientVersion: '6.8.2',
+  meta: {
+    code: '248',
+    message: "The conversion of the varchar value '88040561930 ' overflowed an int column."
+  }
 }
