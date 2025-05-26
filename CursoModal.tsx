@@ -1,41 +1,47 @@
-// OBTENER INSCRITOS POR ID DE CURSO
+
+return this.prisma.$queryRaw<
+  Array<{
+    id: number;
+    idCur: number;
+    docInscr: string;
+    est: boolean;
+    fecreg: Date;
+  }>
+>(
+  `SELECT 
+    i.id, 
+    i.idCur, 
+    i.docInscr, 
+    i.est, 
+    i.fecreg
+  FROM gescur.Inscripciones i
+  WHERE i.est = 1 AND i.idCur = $1`, 
+  idCur
+);
+
+
+
+
+
+
+// OBTENER INSCRITOS POR ID DE CURSO (versión simple)
 async getRegistrationsByCourseId(idCur: number) {
   return this.prisma.$queryRawUnsafe<
     Array<{
       id: number;
       idCur: number;
-      NombreCurso: string;
       docInscr: string;
-      nombre: string | null;
       est: boolean;
       fecreg: Date;
-      Profesor: number;
-      SegundoPro: number;
-      CupoMax: number | null;
-      Proexterno: string;
     }>
   >(
     `SELECT 
       i.id, 
       i.idCur, 
-      c.NombreCurso, 
       i.docInscr, 
-      e.nombre, 
       i.est, 
-      i.fecreg,
-      c.Profesor,
-      c.SegundoPro,
-      c.CupoMax,
-      c.Proexterno
+      i.fecreg
     FROM gescur.Inscripciones i
-    LEFT JOIN gescur.Cursos c ON i.idCur = c.id
-    LEFT JOIN gescur.emp_nomina e ON i.docInscr = e.id_emp
     WHERE i.est = 1 AND i.idCur = ${idCur}`
   );
-}
-
-
-@Get('curso/:id')
-getByCourseId(@Param('id') id: number) {
-  return this.inscripcionesService.getRegistrationsByCourseId(id);
 }
