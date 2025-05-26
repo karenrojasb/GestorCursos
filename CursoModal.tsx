@@ -42,7 +42,22 @@ async getCourseByCurAndInscrito(idCur: number, idInscr: string) {
       c.IdTipoCurso,
       tc.Especificacion AS TipoCursoNombre,
       e.nombre AS NombreProfesor,
-      c.URL
+      c.URL,
+
+      (
+        SELECT 
+          n.Nota,
+          n.idRegistro,
+          n.FechaRegistro,
+          li.Especificacion AS NotaEspecificacion,
+          emp.nombre AS NombreRegistro
+        FROM gescur.Notas n
+        LEFT JOIN gescur.Listas li ON li.id = n.Nota AND li.Tipo = 9
+        LEFT JOIN gescur.emp_nomina emp ON LTRIM(RTRIM(CAST(emp.id_emp AS VARCHAR))) = LTRIM(RTRIM(n.idRegistro))
+        WHERE n.IdCurso = c.id AND n.IdInscrito = '${idInscr}'
+        FOR JSON PATH
+      ) AS Notas
+
     FROM gescur.cursos c
     LEFT JOIN gescur.listas lp ON lp.id = c.Publico AND lp.Tipo = 1
     LEFT JOIN gescur.listas l ON l.id = c.Linea AND l.Tipo = 2
@@ -58,4 +73,23 @@ async getCourseByCurAndInscrito(idCur: number, idInscr: string) {
         WHERE i.idCur = c.id AND i.docInscr = '${idInscr}' AND i.est = 1
       )
   `);
+}
+
+
+
+
+import { Controller, Get, Param } from '@nestjs/common';
+import { CursosService } from './cursos.service';
+
+@Controller('cursos')
+export class CursosController {
+  constructor(private readonly cursosService: CursosService) {}
+
+  @Get(':idCur/inscrito/:idInscr')
+  async getCursoConNotaPorInscrito(
+    @Param('idCur') idCur: number,
+    @Param('idInscr') idInscr: string,
+  ) {
+    return this.cursosService.getCourseByCurAndInscrito(idCur, idInscr);
+  }
 }
