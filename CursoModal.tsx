@@ -1,3 +1,10 @@
+ <div className="w-full flex justify-between text-[#990000] font-semibold px-4 py-2 rounded-t-lg bg-gray-100">
+  <span className="w-2/5 text-left">Nombre del curso</span>
+  <span className="w-1/5 text-center">Inicio Curso</span>
+  <span className="w-1/5 text-center">Estado</span>
+  <span className="w-1/5 text-center">Acciones</span>
+</div>
+
 <div className="flex-1 overflow-y-auto max-h-[75vh] space-y-3">
            {cursosFiltrados.length > 0 ? (
             cursosFiltrados.map((curso, index) => (
