@@ -1,31 +1,53 @@
-const fetchCursos = async () => {
-  setIsLoading(true);
+
+async createNote(CreateNotaDto: CreateNotaDto) {
+  console.log('DTO recibido:', CreateNotaDto);
+
   try {
-    // Traer cursos
-    const response = await fetch("http://localhost:8090/api/cursos");
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
-    setCursos(data);
-    setCursosFiltrados(data);
+    
+    const notaExistente = await this.prisma.notas.findFirst({
+      where: {
+        idCurso: CreateNotaDto.idCurso,
+        idInscrito: CreateNotaDto.idInscrito,
+      },
+    });
 
-    // Traer opciones de especificaciones
-    const respOpciones = await fetch("http://localhost:8090/api/listas/Especificaciones");
-    if (!respOpciones.ok) throw new Error("Error al obtener lista de especificaciones");
-    const dataOpciones = await respOpciones.json();
-    console.log("Opciones recibidas:", dataOpciones);
-    setOpciones(dataOpciones);
+    if (notaExistente) {
+   
 
+      const nuevaNotaMasCompleta =
+        CreateNotaDto.Nota !== null &&
+        CreateNotaDto.Nota !== undefined &&
+        CreateNotaDto.Nota !== notaExistente.Nota;
+
+      if (nuevaNotaMasCompleta) {
+        const notaActualizada = await this.prisma.notas.update({
+          where: { id: notaExistente.id },
+          data: {
+            Nota: CreateNotaDto.Nota,
+            idRegistro: CreateNotaDto.idRegistro,
+            FechaRegistro: new Date(),
+          },
+        });
+        return notaActualizada;
+      } else {
+      
+        return notaExistente;
+      }
+    } else {
+      // Si no existe nota, la crea
+      const newNote = await this.prisma.notas.create({
+        data: {
+          idCurso: CreateNotaDto.idCurso,
+          idInscrito: CreateNotaDto.idInscrito,
+          Nota: CreateNotaDto.Nota,
+          idRegistro: CreateNotaDto.idRegistro,
+          FechaRegistro: new Date(),
+        },
+      });
+      return newNote;
+    }
   } catch (error) {
-    console.error("Error al obtener los cursos o especificaciones:", error);
-  } finally {
-    setIsLoading(false);
+    console.error('Error al crear la nota:', error);
+    throw new Error(`No se pudo crear la nota: ${error.message}`);
   }
-};
-
-useEffect(() => {
-  fetchCursos();
-}, []);
-
-const handleUpdate = () => {
-  fetchCursos();
-};
+}
