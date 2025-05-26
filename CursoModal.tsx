@@ -10,6 +10,7 @@ async getRegistrationsByCourseId(idCur: number) {
       nota: number | null;
       idRegistro: number | null;
       fechaRegistro: Date | null;
+      especificacion: string | null;
     }>
   >(
     `SELECT 
@@ -21,10 +22,13 @@ async getRegistrationsByCourseId(idCur: number) {
       n.id AS notaId,
       n.Nota AS nota,
       n.idRegistro,
-      n.FechaRegistro AS fechaRegistro
+      n.FechaRegistro AS fechaRegistro,
+      l.Especificacion AS especificacion
     FROM gescur.Inscripciones i
     LEFT JOIN gescur.Notas n
       ON i.idCur = n.idCurso AND i.docInscr = n.idInscrito
+    LEFT JOIN gescur.Listas l
+      ON n.Nota = l.id
     WHERE i.est = 1 AND i.idCur = ${idCur}`
   );
 }
