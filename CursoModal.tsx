@@ -1,18 +1,15 @@
-    <select
+<div className="flex flex-col gap-1 w-52">
+  <span className="text-sm font-semibold text-gray-600">Año</span>
+  <select
+    id="year-select"
     value={yearSeleccionado ?? ""}
-    onChange={(e) => {
-      const value = e.target.value;
-      setYearSeleccionado(value === "" ? null : parseInt(value));
-      if (value === "") {
-        setCursosFiltrados(cursos);
-      } else {
-        setCursosFiltrados(cursos.filter(c => new Date(c.Fin).getFullYear() === parseInt(value)));
-      }
-    }}
-    className="border rounded px-3 py-2 text-sm"
+    onChange={(e) => handleChangeYear(e.target.value)}
+    className="bg-white border border-gray-300 rounded-md px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
   >
-    <option value="">Todos los años</option>
-    {year.map(year => (
-      <option key={year} value={year}>{year}</option>
+    {year.map((año) => (
+      <option key={año} value={año}>
+        {año}
+      </option>
     ))}
   </select>
+</div>
