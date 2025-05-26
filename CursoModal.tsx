@@ -1,6 +1,3 @@
-id, idCur,fecreg, docInscr
-
-
 async getRegistrationsByCourseId(idCur: number) {
   return this.prisma.$queryRawUnsafe<
     Array<{
@@ -9,6 +6,10 @@ async getRegistrationsByCourseId(idCur: number) {
       docInscr: string;
       est: boolean;
       fecreg: Date;
+      notaId: number | null;
+      nota: number | null;
+      idRegistro: number | null;
+      fechaRegistro: Date | null;
     }>
   >(
     `SELECT 
@@ -16,11 +17,14 @@ async getRegistrationsByCourseId(idCur: number) {
       i.idCur, 
       i.docInscr, 
       i.est, 
-      i.fecreg
+      i.fecreg,
+      n.id AS notaId,
+      n.Nota AS nota,
+      n.idRegistro,
+      n.FechaRegistro AS fechaRegistro
     FROM gescur.Inscripciones i
+    LEFT JOIN gescur.Notas n
+      ON i.idCur = n.idCurso AND i.docInscr = n.idInscrito
     WHERE i.est = 1 AND i.idCur = ${idCur}`
   );
 }
-
-
-
