@@ -1,3 +1,52 @@
-Type 'number | undefined' is not assignable to type 'number'.
-  Type 'undefined' is not assignable to type 'number'.ts(2322)
-index.d.ts(10150, 5): The expected type comes from property 'idCurso' which is declared here on type '(Without<AuditoriasNotasCreateInput, AuditoriasNotasUncheckedCreateInput> & AuditoriasNotasUncheckedCreateInput) | (Without<...> & AuditoriasNotasCreateInput)'
+async createRegistration(data: CreateInscripcionDto) {
+    const inscripcionExistente = await this.prisma.inscripciones.findFirst({
+      where: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+      },
+    });
+
+    if (inscripcionExistente) {
+      return this.prisma.inscripciones.update({
+        where: { id: inscripcionExistente.id },
+        data: { est: true },
+      });
+    }
+
+    const curso = await this.prisma.cursos.findUnique({
+      where: { id: data.idCur },
+      select: { CupoMax: true },
+    });
+
+    if (!curso) {
+      throw new NotFoundException('Curso no encontrado');
+    }
+
+    if (curso.CupoMax === null) {
+      return this.prisma.inscripciones.create({
+        data: {
+          idCur: data.idCur,
+          docInscr: data.docInscr,
+          est: true,
+          fecreg: new Date(),
+        },
+      });
+    }
+
+    const inscripcionesContadas = await this.prisma.inscripciones.count({
+      where: { idCur: data.idCur },
+    });
+
+    if (inscripcionesContadas >= curso.CupoMax) {
+      throw new Error('El cupo máximo del curso ha sido alcanzado');
+    }
+
+    return this.prisma.inscripciones.create({
+      data: {
+        idCur: data.idCur,
+        docInscr: data.docInscr,
+        est: true,
+        fecreg: new Date(),
+      },
+    });
+  }
