@@ -1,10 +1,7 @@
-http://localhost:8090/api/AuditoriaNotas
-
 const handleChangeEspecificacion = async (
   idInscripcion: number,
   idEspecificacion: number
 ) => {
- 
   let inscripcion: Inscritos | undefined;
   let cursoIdEncontrado: number | null = null;
 
@@ -45,7 +42,7 @@ const handleChangeEspecificacion = async (
       idInscrito: inscripcion.docInscr,
       idRegistro: idEmp,
       Nota: idEspecificacion,
-      FechaRegistro: new Date(),
+      FechaRegistro: new Date(), // Puede omitirlo si el backend lo genera automáticamente
     };
 
     let response;
@@ -65,9 +62,15 @@ const handleChangeEspecificacion = async (
 
     if (!response.ok) throw new Error("Error al guardar la nota");
 
+    // ✅ También crear en /api/AuditoriaNotas
+    await fetch("http://localhost:8090/api/AuditoriaNotas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(notaData),
+    });
+
     const nuevoIdNota = !inscripcion.notaId ? (await response.json()).id : inscripcion.notaId;
 
-    
     setInscripciones((prev) => ({
       ...prev,
       [cursoIdEncontrado!]: prev[cursoIdEncontrado!].map((i) =>
