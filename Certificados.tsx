@@ -1,82 +1,88 @@
-[Nest] 8900  - 27/05/2025, 2:52:27 p. m.   ERROR [ExceptionsHandler] Error: No se pudo crear la auditoría de nota:
-Invalid `this.prisma.auditoriasNotas.create()` invocation in
-C:\Users\desarrollador5\Documents\gestor_cursos\src\auditorias_notas\auditorianotas.service.ts:43:59
+// create-auditorianotas.dto.ts
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
-  40 }
-  41
-  42 // Si no existe, crea un nuevo registro
-→ 43 const nuevaNota = await this.prisma.auditoriasNotas.create({
-       data: {
-         idInscrito: undefined,
-         Nota: undefined,
-         idRegistro: undefined,
-         FechaRegistro: "2025-05-27T19:52:27.887Z",
-     +   idCurso: Int
-       }
-     })
+export class CreateAuditoriaNotaDto {
+  @IsNumber()
+  @IsNotEmpty()
+  idCurso: number;
 
-Argument `idCurso` is missing.
-    at AuditoriaNotasService.createAuditoria (C:\Users\desarrollador5\Documents\gestor_cursos\src\auditorias_notas\auditorianotas.service.ts:57:13)
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\desarrollador5\Documents\gestor_cursos\node_modules\@nestjs\core\router\router-proxy.js:9:17
+  @IsNumber()
+  @IsNotEmpty()
+  idInscrito: number;
 
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateAuditoriaNotaDto } from './dto/create-auditorianotas.dto';
+  @IsNumber()
+  @IsNotEmpty()
+  Nota: number;
 
-@Injectable()
-export class AuditoriaNotasService {
-  constructor(private prisma: PrismaService) {}
+  @IsNumber()
+  @IsNotEmpty()
+  idRegistro: number;
+}
 
-  async createAuditoria(dto: CreateAuditoriaNotaDto) {
-    console.log('DTO recibido:', dto);
 
-    try {
-      // Verifica si ya existe un registro para ese idCurso + idInscrito
-      const notaExistente = await this.prisma.auditoriasNotas.findFirst({
-        where: {
-          idCurso: dto.idCurso!,
-          idInscrito: dto.idInscrito!,
-        },
-      });
 
-      if (notaExistente) {
-        const nuevaNotaDiferente =
-          dto.Nota !== null &&
-          dto.Nota !== undefined &&
-          dto.Nota !== notaExistente.Nota;
 
-        if (nuevaNotaDiferente) {
-          const notaActualizada = await this.prisma.auditoriasNotas.update({
-            where: { id: notaExistente.id },
-            data: {
-              Nota: dto.Nota!,
-              idRegistro: dto.idRegistro!,
-              FechaRegistro: new Date().toISOString(), // ← Fecha actual
-            },
-          });
-          return notaActualizada;
-        } else {
-          return notaExistente; // No se actualiza si no hay cambios
-        }
-      }
+@Post()
+@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+create(@Body() dto: CreateAuditoriaNotaDto) {
+  return this.auditoriaNotasService.createAuditoria(dto);
+}
 
-      // Si no existe, crea un nuevo registro
-      const nuevaNota = await this.prisma.auditoriasNotas.create({
-        data: {
-          idCurso: dto.idCurso!,
-          idInscrito: dto.idInscrito!,
-          Nota: dto.Nota!,
-          idRegistro: dto.idRegistro!,
-          FechaRegistro: new Date().toISOString(),
-        },
-      });
 
-      return nuevaNota;
 
-    } catch (error) {
-      console.error('Error al crear la auditoría de nota:', error);
-      throw new Error(`No se pudo crear la auditoría de nota: ${error.message}`);
+
+async createAuditoria(dto: CreateAuditoriaNotaDto) {
+  console.log('DTO recibido:', dto);
+
+  try {
+    if (
+      dto.idCurso == null ||
+      dto.idInscrito == null ||
+      dto.Nota == null ||
+      dto.idRegistro == null
+    ) {
+      throw new Error('Campos requeridos faltan en el DTO');
     }
+
+    const notaExistente = await this.prisma.auditoriasNotas.findFirst({
+      where: {
+        idCurso: dto.idCurso,
+        idInscrito: dto.idInscrito,
+      },
+    });
+
+    if (notaExistente) {
+      const nuevaNotaDiferente =
+        dto.Nota !== notaExistente.Nota;
+
+      if (nuevaNotaDiferente) {
+        const notaActualizada = await this.prisma.auditoriasNotas.update({
+          where: { id: notaExistente.id },
+          data: {
+            Nota: dto.Nota,
+            idRegistro: dto.idRegistro,
+            FechaRegistro: new Date().toISOString(),
+          },
+        });
+        return notaActualizada;
+      } else {
+        return notaExistente;
+      }
+    }
+
+    const nuevaNota = await this.prisma.auditoriasNotas.create({
+      data: {
+        idCurso: dto.idCurso,
+        idInscrito: dto.idInscrito,
+        Nota: dto.Nota,
+        idRegistro: dto.idRegistro,
+        FechaRegistro: new Date().toISOString(),
+      },
+    });
+
+    return nuevaNota;
+  } catch (error) {
+    console.error('Error al crear la auditoría de nota:', error);
+    throw new Error(`No se pudo crear la auditoría de nota: ${error.message}`);
   }
 }
