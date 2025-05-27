@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // o el nombre que tengas
+import { PrismaService } from 'src/prisma.service';
 import { CreateAuditoriaNotaDto } from './dto/create-auditoria-nota.dto';
 
 @Injectable()
-export class AuditoriaNotasService {
-  constructor(private prisma: PrismaService) {}
+export class AuditoriasNotasService {
+  constructor(private readonly prisma: PrismaService) {}
 
-  async crearAuditoria(createAuditoriaDto: CreateAuditoriaNotaDto) {
+  async crearAuditoria(dto: CreateAuditoriaNotaDto) {
     return await this.prisma.$executeRawUnsafe(`
-      INSERT INTO gescur.auditoria_notas (idNota, idInscrito, nota, usuario, fecha)
-      VALUES (${createAuditoriaDto.idNota}, ${createAuditoriaDto.idInscrito}, ${createAuditoriaDto.nota}, '${createAuditoriaDto.usuario}', GETDATE())
+      INSERT INTO gescur.AuditoriasNotas (idInscrito, idCurso, Nota, idRegistro)
+      VALUES (${dto.idInscrito}, ${dto.idCurso}, ${dto.nota}, ${dto.idRegistro})
     `);
   }
 }
@@ -19,29 +19,36 @@ export class AuditoriaNotasService {
 
 
 import { Controller, Post, Body } from '@nestjs/common';
-import { AuditoriaNotasService } from './auditoria-notas.service';
+import { AuditoriasNotasService } from './auditorias-notas.service';
 import { CreateAuditoriaNotaDto } from './dto/create-auditoria-nota.dto';
 
-@Controller('auditoria-notas')
-export class AuditoriaNotasController {
-  constructor(private readonly auditoriaNotasService: AuditoriaNotasService) {}
+@Controller('auditorias-notas')
+export class AuditoriasNotasController {
+  constructor(private readonly auditoriasNotasService: AuditoriasNotasService) {}
 
   @Post()
-  create(@Body() dto: CreateAuditoriaNotaDto) {
-    return this.auditoriaNotasService.crearAuditoria(dto);
+  async crearAuditoria(@Body() dto: CreateAuditoriaNotaDto) {
+    return await this.auditoriasNotasService.crearAuditoria(dto);
   }
 }
 
 
 
 
-import { Module } from '@nestjs/common';
-import { AuditoriaNotasService } from './auditoria-notas.service';
-import { AuditoriaNotasController } from './auditoria-notas.controller';
 
-@Module({
-  controllers: [AuditoriaNotasController],
-  providers: [AuditoriaNotasService],
-  exports: [AuditoriaNotasService] // para poder llamarlo desde otros módulos
-})
-export class AuditoriaNotasModule {}
+const nuevaNota = await this.prisma.notas.create({
+  data: {
+    idInscrito: dto.idInscrito,
+    idCurso: dto.idCurso,
+    Nota: dto.nota,
+    // otros campos
+  },
+});
+
+// Crear auditoría
+await this.auditoriasNotasService.crearAuditoria({
+  idInscrito: dto.idInscrito,
+  idCurso: dto.idCurso,
+  nota: dto.nota,
+  idRegistro: nuevaNota.id, // el ID de la nota recién creada
+});
