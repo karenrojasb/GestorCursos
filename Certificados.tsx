@@ -1,3 +1,6 @@
+Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.ts(2322)
+index.d.ts(10151, 5): The expected type comes from property 'idInscrito' which is declared here on type '(Without<AuditoriasNotasCreateInput, AuditoriasNotasUncheckedCreateInput> & AuditoriasNotasUncheckedCreateInput) | (Without<...> & AuditoriasNotasCreateInput)'
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAuditoriaNotaDto } from './dto/create-auditorianotas.dto';
