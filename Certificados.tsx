@@ -11,7 +11,6 @@ const handleChangeEspecificacion = async (
     const especificacionObj = opciones.find((op) => op.id === idEspecificacion);
     if (!especificacionObj) {
       alert("Especificación no encontrada.");
-      setGuardando(false);
       return;
     }
 
@@ -20,33 +19,26 @@ const handleChangeEspecificacion = async (
     const idEmpString = localStorage.getItem("id_emp");
     if (!idEmpString) {
       alert("No se encontró el id_emp en localStorage");
-      setGuardando(false);
       return;
     }
     const idEmp = Number(idEmpString);
 
-    const notaNumerica = idEspecificacion;
-
-   
     const notaData = {
       idCurso: inscripcion.idCur,
       idInscrito: inscripcion.docInscr,
       idRegistro: idEmp,
-      Nota: notaNumerica,
+      Nota: idEspecificacion,
       FechaRegistro: new Date(),
     };
 
     let response;
-
     if (inscripcion.idNotas) {
-   
       response = await fetch(`http://localhost:8090/api/notas/${inscripcion.idNotas}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notaData),
       });
     } else {
-   
       response = await fetch("http://localhost:8090/api/notas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,13 +48,17 @@ const handleChangeEspecificacion = async (
 
     if (!response.ok) throw new Error("Error al guardar la nota");
 
-   
+    // ✅ Registrar también en Auditoría
+    await fetch("http://localhost:8090/api/AuditoriaNotas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(notaData),
+    });
+
     if (!inscripcion.idNotas) {
       const respuestaJson = await response.json();
-   
-      const nuevoIdNota = respuestaJson.id; 
-      
-   
+      const nuevoIdNota = respuestaJson.id;
+
       setInscripciones((prev) =>
         prev.map((i) =>
           i.id === idInscripcion
@@ -79,7 +75,6 @@ const handleChangeEspecificacion = async (
         )
       );
     } else {
-   
       setInscripciones((prev) =>
         prev.map((i) =>
           i.id === idInscripcion
