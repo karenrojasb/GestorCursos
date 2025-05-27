@@ -1,4 +1,4 @@
-http://localhost:8090/api/AuditoriasNotas
+http://localhost:8090/api/AuditoriaNotas
 
 const handleChangeEspecificacion = async (
   idInscripcion: number,
