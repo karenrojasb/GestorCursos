@@ -6,33 +6,45 @@ import { CreateAuditoriaNotaDto } from './dto/create-auditorianotas.dto';
 export class AuditoriaNotasService {
   constructor(private prisma: PrismaService) {}
 
-  async crearAuditoria(dto: CreateAuditoriaNotaDto) {
-   
-    return await this.prisma.$executeRawUnsafe(`
-      INSERT INTO gescur.AuditoriasNotas (idInscrito, idCurso, Nota, idRegistro)
-      VALUES (${dto.idInscrito}, ${dto.idCurso}, ${dto.Nota}, ${dto.idRegistro})
-    `);
-  }
-}
+async createAuditoria(CreateAuditoriaNotaDto: CreateAuditoriaNotaDto) {
+  console.log('DTO recibido:', CreateAuditoriaNotaDto);
 
-import { Controller, Post, Body } from '@nestjs/common';
-import { AuditoriaNotasService } from './auditorianotas.service';
-import { CreateAuditoriaNotaDto } from './dto/create-auditorianotas.dto';
-
-@Controller('AuditoriaNotas')
-export class AuditoriaNotasController {
-  constructor(private readonly auditoriaNotasService: AuditoriaNotasService) {}
-
-  @Post()
-  create(@Body() dto: CreateAuditoriaNotaDto) {
-    return this.auditoriaNotasService.crearAuditoria(dto);
-  }
-}
-export class CreateAuditoriaNotaDto {
-
-    idCurso: number;
-    idInscrito: number;
-    Nota: number;
-    idRegistro: number;
+  try {
     
+    const notaExistente = await this.prisma.auditoriasNotas.findFirst({
+      where: {
+        idCurso: CreateAuditoriaNotaDto.idCurso,
+        idInscrito: CreateAuditoriaNotaDto.idInscrito,
+      },
+    });
+
+    if (notaExistente) {
+   
+
+      const nuevaNotaMasCompleta =
+        CreateAuditoriaNotaDto.Nota !== null &&
+        CreateAuditoriaNotaDto.Nota !== undefined &&
+       CreateAuditoriaNotaDto.Nota !== notaExistente.Nota;
+
+      if (nuevaNotaMasCompleta) {
+        const notaActualizada = await this.prisma.auditoriasNotas.update({
+          where: { id: notaExistente.id },
+          data: {
+            Nota: CreateAuditoriaNotaDto
+            .Nota,
+            idRegistro: CreateAuditoriaNotaDto.idRegistro,
+            
+          },
+        });
+        return notaActualizada;
+      } else {
+      
+        return notaExistente;
+      }
+    }
+  } catch (error) {
+    console.error('Error al crear la nota:', error);
+    throw new Error(`No se pudo crear la nota: ${error.message}`);
+  }
+}
 }
