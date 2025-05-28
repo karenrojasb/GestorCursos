@@ -1,55 +1,22 @@
-const [inscripcionesPorCurso, setInscripcionesPorCurso] = useState<{ [idCur: number]: number }>({});
-
-useEffect(() => {
-  if (!idEmp) return;
-  const fetchInscripciones = async () => {
-    try {
-      const response = await fetch(`http://localhost:8090/api/inscripciones?docInscr=${idEmp}`);
-      if (!response.ok) throw new Error("Error al obtener inscripciones");
-      const data: Inscripcion[] = await response.json();
-
-      const activas = data.filter((ins) => ins.est === true);
-      setInscripciones(activas);
-
-      // Contar por curso
-      const conteo: { [idCur: number]: number } = {};
-      activas.forEach((ins) => {
-        conteo[ins.idCur] = (conteo[ins.idCur] || 0) + 1;
-      });
-
-      setInscripcionesPorCurso(conteo);
-    } catch (error) {
-      console.error("Error al obtener inscripciones:", error);
-    }
+  const formatearHorario = (curso: Curso) => {
+    const dias = [
+      { dia: "Lunes", ini: curso.LunesIni, fin: curso.LunesFin },
+      { dia: "Martes", ini: curso.MartesIni, fin: curso.MartesFin },
+      { dia: "Miércoles", ini: curso.MiercolesIni, fin: curso.MiercolesFin },
+      { dia: "Jueves", ini: curso.JuevesIni, fin: curso.JuevesFin },
+      { dia: "Viernes", ini: curso.ViernesIni, fin: curso.ViernesFin },
+      { dia: "Sábado", ini: curso.SabadoIni, fin: curso.SabadoFin },
+      { dia: "Domingo", ini: curso.DomingoIni, fin: curso.DomingoFin },
+    ];
+  
+    return dias
+      .filter(d => d.ini && d.fin)
+     ; 
   };
-  fetchInscripciones();
-}, [idEmp]);
 
 
-
-
-<td className="border p-2">
-  {(() => {
-    const totalInscritos = inscripcionesPorCurso[curso.id] || 0;
-    const estaInscrito = inscripciones.some(ins => ins.idCur === curso.id && ins.docInscr === idEmp);
-    const inscripcionId = inscripciones.find(ins => ins.idCur === curso.id && ins.docInscr === idEmp)?.id;
-
-    if (totalInscritos >= curso.CupoMax && !estaInscrito) {
-      return <span className="text-red-500 font-semibold">Sin cupos</span>;
-    }
-
-    return (
-      <button
-        disabled={inscribiendo}
-        onClick={() => handleInscripcion(curso.id, estaInscrito, inscripcionId)}
-        className={`px-3 py-1 rounded ${
-          estaInscrito
-            ? "bg-red-500 hover:bg-red-600"
-            : "bg-green-600 hover:bg-green-700"
-        } text-white transition`}
-      >
-        {estaInscrito ? "Cancelar" : "Inscribirse"}
-      </button>
-    );
-  })()}
-</td>
+<td className="px-3 py-1 border text-left"  colSpan={5}>{formatearHorario(curso).map((h, index) => (
+                        <div key={index}>
+                           <strong>{h.dia}</strong> {h.ini} - {h.fin}
+                               </div>
+                                 ))}</td>
